@@ -1,0 +1,21 @@
+configurations.create('embed')
+
+dependencies {
+  compile project(':ogema')
+  embed project(':ogema')
+}
+
+jar {
+  manifest {
+    name = "HomeMatic"
+    instruction 'Bundle-ClassPath', '.,lib/ogema-' + cfgVersion + '.jar'
+    instruction 'Import-Package', '!org.ogema.core*,*' + jarDefaultImportPackageVersion
+    instruction 'Export-Package', ''
+  }
+}
+
+jar {
+  into('lib') {
+    from configurations.embed
+  }
+}

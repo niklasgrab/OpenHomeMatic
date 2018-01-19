@@ -1,0 +1,6 @@
+include "ogema", "homematic", "openmuc-driver-homematic"
+
+project(":ogema").projectDir = file("projects/ogema")
+project(":homematic").projectDir = file("projects/homematic")
+
+project(":openmuc-driver-homematic").projectDir = file("projects/openmuc-driver")

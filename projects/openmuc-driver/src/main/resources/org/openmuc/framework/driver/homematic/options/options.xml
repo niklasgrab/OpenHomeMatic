@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configuration>
+  <driver id="homematic">
+    <name>HomeMatic eQ-3</name>
+    <description><![CDATA[
+      ]]>
+    </description>
+  </driver>
+</configuration>

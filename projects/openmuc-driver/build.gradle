@@ -1,0 +1,34 @@
+configurations.create('embed')
+
+def openmucversion = '1.0.0'
+
+repositories {
+   flatDir {
+       dirs 'dependencies/openmuc'
+   }
+}
+
+dependencies {
+  compile group: 'org.osgi', name: 'org.osgi.core', version: '6.0.0'
+  compile group: 'org.osgi', name: 'org.osgi.compendium', version: '5.0.0'
+  compile group: 'org.openmuc.framework', name: 'openmuc-core-api', version: openmucversion
+  compile group: 'org.openmuc.framework', name: 'openmuc-core-spi', version: openmucversion
+  
+  compile project(':homematic')
+  embed project(':homematic')
+}
+
+jar {
+  manifest {
+    name = "OpenMUC Driver - HomeMatic"
+    instruction 'Bundle-ClassPath', '.,lib/homematic-' + cfgVersion + '.jar'
+    instruction 'Import-Package', '!org.ogema.driver.homematic*,*' + jarDefaultImportPackageVersion
+    instruction 'Export-Package', ''
+  }
+}
+
+jar {
+  into('lib') {
+    from configurations.embed
+  }
+}
