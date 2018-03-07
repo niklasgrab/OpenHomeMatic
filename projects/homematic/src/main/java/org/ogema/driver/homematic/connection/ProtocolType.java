@@ -18,25 +18,14 @@
  * along with OpenHomeMatic.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.ogema.driver.homematic;
+package org.ogema.driver.homematic.connection;
 
-import org.ogema.core.OgemaDependency;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
-public class HomeMaticConnection {
-	private final static Logger logger = LoggerFactory.getLogger(HomeMaticConnection.class);
-
-	public HomeMaticConnection(String address) {
-		logger.info("Registered homematic test: {}", address);
-
-		OgemaDependency dependency = new OgemaDependency();
-	}
-
-	public Object read(String foo) {
-		
-		return null;
-	}
-
+/**
+ * 
+ * @author Godwin Burkhardt
+ * 
+ */
+public enum ProtocolType {
+	asksin,
+	other;
 }

@@ -18,13 +18,22 @@
  * along with OpenHomeMatic.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.ogema.core;
+package org.ogema.driver.homematic.connection.usb;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.ogema.driver.homematic.connection.ProtocolType;
 
+/**
+ * 
+ * @author Godwin Burkhardt
+ * 
+ */
+public class UsbConnection extends org.ogema.driver.homematic.usbconnection.UsbConnection {
 
-public class OgemaDependency {
-	private final static Logger logger = LoggerFactory.getLogger(OgemaDependency.class);
+	private ProtocolType protocolType = ProtocolType.other;
+	
+	public UsbConnection(final ProtocolType type) {
+		super();
+		protocolType = type;
+	}
 
 }

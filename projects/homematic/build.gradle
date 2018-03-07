@@ -1,21 +1,23 @@
-configurations.create('embed')
+repositories {
+   flatDir {
+       dirs '../../dependencies/ogema/core'
+       dirs '../../dependencies/ogema/drivers'
+   }
+}
 
 dependencies {
-  compile project(':ogema')
-  embed project(':ogema')
+  compile group: 'org.ogema.core', name: 'api', version: '2.1.2'
+  compile group: 'org.ogema.drivers', name: 'homematic', version: '2.1.2'
+
+  // https://mvnrepository.com/artifact/org.rxtx/rxtx
+  compile group: 'org.openmuc', name: 'jrxtx', version: '1.0.0' //2.1.7
+  
+  compile group: 'org.json', name: 'json', version: '20170516'
 }
 
 jar {
   manifest {
     name = "HomeMatic"
-    instruction 'Bundle-ClassPath', '.,lib/ogema-' + cfgVersion + '.jar'
-    instruction 'Import-Package', '!org.ogema.core*,*' + jarDefaultImportPackageVersion
-    instruction 'Export-Package', ''
-  }
-}
-
-jar {
-  into('lib') {
-    from configurations.embed
+    instruction 'Export-Package', '!*.internal.*,*'
   }
 }
