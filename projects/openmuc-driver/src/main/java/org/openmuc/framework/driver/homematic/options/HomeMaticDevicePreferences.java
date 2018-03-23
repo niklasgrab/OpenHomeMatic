@@ -24,17 +24,17 @@ import org.openmuc.framework.config.options.Preferences;
 
 public class HomeMaticDevicePreferences {
 
-	private static final String ADDRESS_KEY = "address";
+	private static final String TYPE_KEY = "type";
 
-	protected final Preferences address;
+	protected final Preferences settings;
 
-	public HomeMaticDevicePreferences(Preferences address) {
-		this.address = address;
+	public HomeMaticDevicePreferences(Preferences settings) {
+		this.settings = settings;
 	}
 
-	public String getAddress() {
-		if(address.contains(ADDRESS_KEY)) {
-			return address.getString(ADDRESS_KEY);
+	public String getType() {
+		if(settings.contains(TYPE_KEY)) {
+			return settings.getString(TYPE_KEY);
 		}
 		return null;
 	}

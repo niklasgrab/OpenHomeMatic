@@ -38,16 +38,18 @@ public class LocalDevice extends org.ogema.driver.homematic.manager.LocalDevice 
 	private FileStorage fileStorage;
 	private boolean ignoreExisting;
 
-	private ProtocolType protocolType = ProtocolType.other;
+	private ProtocolType protocolType = ProtocolType.OTHER;
 	
 	public LocalDevice(String port, IUsbConnection con, ProtocolType type) {
 		super(port, con);
 		this.protocolType = type;
+		initialize();
 	}
 
 	@Override
 	protected void initialize() {
-		if (protocolType.equals(ProtocolType.other)) {
+		if (protocolType == null) return;
+		if (protocolType.equals(ProtocolType.OTHER)) {
 			messageHandler = new MessageHandler(this);
 			inputHandler = new InputHandler(this);
 		}
@@ -77,26 +79,15 @@ public class LocalDevice extends org.ogema.driver.homematic.manager.LocalDevice 
 		loadDevicesThread.start();
 	}
 	
-//	public void addPairedDevice(HMRemoteDevice remoteDevice) {
-//		if (pairedDevices.containsKey(remoteDevice.getAddress())) return;
-//		
-//		if (ignoreExisting) {
-//			if (! devices.containsKey(remoteDevice.getAddress())) {
-//				pairedDevices.put(remoteDevice.getAddress(), remoteDevice);
-//			}
-//		}
-//		else {
-//			pairedDevices.put(remoteDevice.getAddress(), remoteDevice);
-//		}
-//	}
-	
-	public void sendCmdMessage(RemoteDevice rd, byte flag, byte type, String data) {
-		CmdMessage cmdMessage = new CmdMessage(this, rd, flag, type, data);
+	@Override
+	public void sendCmdMessage(org.ogema.driver.homematic.manager.RemoteDevice rd, byte flag, byte type, String data) {
+		CmdMessage cmdMessage = new CmdMessage(this, (RemoteDevice)rd, flag, type, data);
 		messageHandler.sendMessage(cmdMessage);
 	}
 
-	public void sendCmdMessage(RemoteDevice rd, byte flag, byte type, byte[] data) {
-		CmdMessage cmdMessage = new CmdMessage(this, rd, flag, type, data);
+	@Override
+	public void sendCmdMessage(org.ogema.driver.homematic.manager.RemoteDevice rd, byte flag, byte type, byte[] data) {
+		CmdMessage cmdMessage = new CmdMessage(this, (RemoteDevice)rd, flag, type, data);
 		messageHandler.sendMessage(cmdMessage);
 	}
 

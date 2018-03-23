@@ -18,22 +18,25 @@
  * along with OpenHomeMatic.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.ogema.driver.homematic.connection.usb;
+package org.openmuc.framework.driver.homematic.options;
 
-import org.ogema.driver.homematic.connection.ProtocolType;
+import org.openmuc.framework.config.options.Preferences;
 
-/**
- * 
- * @author Godwin Burkhardt
- * 
- */
-public class UsbConnection extends org.ogema.driver.homematic.usbconnection.UsbConnection {
+public class HomeMaticDeviceScanPreferences {
 
-	private ProtocolType protocolType = ProtocolType.OTHER;
-	
-	public UsbConnection(final ProtocolType type) {
-		super();
-		protocolType = type;
+	private static final String IGNORE_EXISTING_KEY = "ignoreExisting";
+
+	protected final Preferences settings;
+
+	public HomeMaticDeviceScanPreferences(Preferences settings) {
+		this.settings = settings;
+	}
+
+	public Boolean getIgnoreExiting() {
+		if(settings.contains(IGNORE_EXISTING_KEY)) {
+			return settings.getBoolean(IGNORE_EXISTING_KEY);
+		}
+		return null;
 	}
 
 }

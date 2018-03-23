@@ -47,7 +47,7 @@ public class AsksinStatusMessage extends StatusMessage {
 			byte[] tmp = hexAsciiByte2binaryByte(Arrays.copyOfRange(data, 1, data.length));
 			byte[] newData = new byte[tmp.length+1];
 			newData[0] = 0;
-			System.arraycopy(newData, 1, tmp, 0, tmp.length);
+			System.arraycopy(tmp, 0, newData, 1, tmp.length);
 			parseMsgAll(newData, 1);
 			break;
 		case 'a':
@@ -73,7 +73,7 @@ public class AsksinStatusMessage extends StatusMessage {
 		if (source.equals(destination))
 			partyMode = true;		
 
-		logger.info("Msg Len: " + msg_len +  ", Num: " + msg_num + ", Flag: " + msg_flag + ", type: " + msg_type + 
+		logger.debug("Msg Len: " + msg_len +  ", Num: " + msg_num + ", Flag: " + msg_flag + ", type: " + msg_type + 
 				", src: " + source + ", dest: " + destination + ", data: " + Converter.dumpHexString(msg_data));
 		
 	}
@@ -87,40 +87,4 @@ public class AsksinStatusMessage extends StatusMessage {
 		
 		return retVal;
 	}
-	
-//	void parseSerialData(byte[] data) {
-//		type = data[0];
-//		String msg_data_str = "";
-//		try {
-//			msg_len = Long.parseLong(new String(Arrays.copyOfRange(data, 1, 3), "UTF-8"), 16);
-//			msg_num = Integer.parseInt(new String(Arrays.copyOfRange(data, 3, 5), "UTF-8"), 16);
-//			String str = new String(Arrays.copyOfRange(data, 5, 7), "UTF-8");
-//			msg_flag = (byte) ((Character.digit(str.charAt(0), 16) << 4)
-//                    + Character.digit(str.charAt(1), 16));
-//			str = new String(Arrays.copyOfRange(data, 7, 9), "UTF-8");
-//			msg_type = (byte) ((Character.digit(str.charAt(0), 16) << 4)
-//                    + Character.digit(str.charAt(1), 16));
-//			source = new String(Arrays.copyOfRange(data, 9, 15), "UTF-8");
-//			destination = new String(Arrays.copyOfRange(data, 15, 21), "UTF-8");
-//			msg_data_str = new String(Arrays.copyOfRange(data, 21, (int) (3+this.msg_len*2)), "UTF-8");
-//			msg_data = new byte[msg_data_str.length()/2];
-//			for (int i = 0; i < msg_data_str.length(); i+=2) {
-//				msg_data[i/2] = (byte) ((Character.digit(msg_data_str.charAt(i), 16) << 4)
-//	                    + Character.digit(msg_data_str.charAt(i+1), 16));
-//			}
-//		} catch (UnsupportedEncodingException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-////		if (this.msg_len > 9)
-////			msg_data = Arrays.copyOfRange(data, 11, (int) (1 + this.msg_len));
-////		msg_all = Arrays.copyOfRange(data, 1, (int) (1 + this.msg_len));
-//
-//		logger.info("Msg Len: " + msg_len +  ", Num: " + msg_num + ", Flag: " + msg_flag + ", type: " + msg_type + 
-//				", src: " + source + ", dest: " + destination + ", data: " + msg_data_str);
-//
-//		if (source.equals(destination))
-//			partyMode = true;
-//	}
-
 }

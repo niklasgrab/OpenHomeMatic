@@ -23,19 +23,20 @@ package org.openmuc.framework.driver.homematic;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openmuc.framework.config.ArgumentSyntaxException;
-import org.openmuc.framework.config.DeviceScanInfo;
-import org.openmuc.framework.config.DriverInfo;
-import org.openmuc.framework.config.ScanException;
-import org.openmuc.framework.config.ScanInterruptedException;
-import org.openmuc.framework.config.options.Preferences;
 import org.ogema.driver.homematic.Activator;
 import org.ogema.driver.homematic.connection.LocalConnection;
 import org.ogema.driver.homematic.connection.LocalSerialConnection;
 import org.ogema.driver.homematic.connection.LocalUsbConnection;
 import org.ogema.driver.homematic.manager.asksin.LocalDevice;
 import org.ogema.driver.homematic.manager.asksin.RemoteDevice;
-import org.openmuc.framework.driver.homematic.options.HomeMaticDeviceOptions;
+import org.openmuc.framework.config.ArgumentSyntaxException;
+import org.openmuc.framework.config.DeviceScanInfo;
+import org.openmuc.framework.config.DriverInfo;
+import org.openmuc.framework.config.ScanException;
+import org.openmuc.framework.config.ScanInterruptedException;
+import org.openmuc.framework.driver.homematic.options.HomeMaticDevicePreferences;
+import org.openmuc.framework.driver.homematic.options.HomeMaticDeviceScanPreferences;
+import org.openmuc.framework.driver.homematic.options.HomeMaticDriverInfo;
 import org.openmuc.framework.driver.spi.Connection;
 import org.openmuc.framework.driver.spi.ConnectionException;
 import org.openmuc.framework.driver.spi.DriverDeviceScanListener;
@@ -55,10 +56,12 @@ public class HomeMaticDriver implements DriverService {
 
 	private final static Logger logger = LoggerFactory.getLogger(HomeMaticDriver.class);
 
-	public final static DriverInfo DRIVER_INFO = new DriverInfo(HomeMaticDriver.class.getResourceAsStream("options.xml"));
+	public final static HomeMaticDriverInfo DRIVER_INFO = HomeMaticDriverInfo.getInfo();
 
 	public static final String USB_CONNECTION_TYPE_KEY = "usbConnectionType";
 	public static final String USB_CONNECTION_TYPE_SERIAL = "serial";
+	private static int SLEEP_TIME = 60000;
+
 
 	private final Map<String, LocalConnection> localConnectionsMap; // <interfaceId, connection>
 	private final Object connectionLock = new Object();
@@ -87,28 +90,20 @@ public class HomeMaticDriver implements DriverService {
 	public void scanForDevices(final String settingsStr, final DriverDeviceScanListener listener)
 			throws UnsupportedOperationException, ArgumentSyntaxException, ScanException, ScanInterruptedException {
 		
-//		scanForDevicesThread = new Thread() {
-//			@Override
-//			public void run() {
-				Preferences settings = null;
+				Boolean ignore = null;
 				try {
-					settings = DRIVER_INFO.parseDeviceScanSettings(settingsStr);
+					HomeMaticDeviceScanPreferences preferences = DRIVER_INFO.getDeviceScanPreferences(settingsStr);
+					ignore = preferences.getIgnoreExiting();
 				} catch (ArgumentSyntaxException e) {
-					logger.info("Can't parse Device Scan Settings: " + e.getMessage());
-					e.printStackTrace();
+					logger.debug("Can't parse Device Scan Settings: " + e.getMessage());
 				}
 				
 				LocalConnection localCon = findConnection(portname);			
 
 				boolean ignoreExisting = true;
-				if (settings != null) {
-					try {
-						ignoreExisting = settings.getBoolean(HomeMaticDeviceOptions.IGNORE_EXISTING_KEY);
-					}
-					catch (NullPointerException e) {
-						
-					}
-				}
+				if (ignore != null) {
+					ignoreExisting = ignore;
+				}				
 				enablePairing(portname, ignoreExisting, listener);		
 				
 				LocalDevice localDevice = localCon.getLocalDevice();
@@ -122,11 +117,7 @@ public class HomeMaticDriver implements DriverService {
 					}
 				}
 				
-//			}
-//		};
 		listener.scanProgressUpdate(0);
-//		scanForDevicesThread.setName("homematic-ll-scanForDevices");
-//		scanForDevicesThread.start();
 	}
 
 	@Override
@@ -141,7 +132,7 @@ public class HomeMaticDriver implements DriverService {
 	@Override
 	public Connection connect(String deviceAddressStr, String settingsStr) throws ArgumentSyntaxException, ConnectionException {
 		
-		logger.info("Connect HomeMatic device: ", deviceAddressStr);
+		logger.debug("Connect HomeMatic device: ", deviceAddressStr);
 		
 		HomeMaticConnection connection = connectionsMap.get(deviceAddressStr);
 		
@@ -152,11 +143,10 @@ public class HomeMaticDriver implements DriverService {
 			LocalDevice localDevice = localCon.getLocalDevice();
 			connection.setLocalDevice(localDevice);
 			if (localDevice.getDevices().get(deviceAddressStr) == null) {
-				Preferences settings = DRIVER_INFO.parseDeviceSettings(settingsStr);
+				HomeMaticDevicePreferences preferences = DRIVER_INFO.getDevicePreferences(settingsStr);
 				RemoteDevice remoteDevice = new RemoteDevice(localDevice, deviceAddressStr, 
-						settings.getString(HomeMaticDeviceOptions.DEVICE_TYPE_KEY), null); 
+						preferences.getType(), null); 
 				localDevice.getDevices().put(remoteDevice.getAddress(), remoteDevice);
-				remoteDevice.init();
 			}
 		}
 
@@ -171,28 +161,14 @@ public class HomeMaticDriver implements DriverService {
 			if (localCon != null) {
 				localCon.getLocalDevice().setIgnoreExisting(ignoreExisting);
 				localCon.getLocalDevice().setPairing("0000000000");
-				logger.info("enabled Pairing for 60 seconds");
+				logger.debug("enabled Pairing for 60 seconds");
 				Map<String, RemoteDevice> foundRemoteDevices = new HashMap<String, RemoteDevice>();
-//				for (int i = 0; i < 10; i++) {
-//					Thread.sleep(6000);
-//					HMLocalDevice localDevice = localCon.getLocalDevice();
-//					for (HMRemoteDevice rm: localDevice.getDevices().values()) {
-//						if (!rm.isIgnore() && !foundRemoteDevices.containsKey(rm.getAddress())) {
-//							foundRemoteDevices.put(rm.getAddress(), rm);
-//							String type = rm.getDeviceType();
-//							String description = localDevice.getDeviceDescriptor().getName(type) + ":" + 
-//									localDevice.getDeviceDescriptor().getSubType(type);
-//							DeviceScanInfo info = new DeviceScanInfo(rm.getAddress(), "deviceType=" + type, description);
-//							listener.deviceFound(info);
-//						}
-//					}
 
-					Thread.sleep(20000);
-					listener.scanProgressUpdate(100);
-//					listener.scanProgressUpdate((i+1)*10);
-//				}
+				Thread.sleep(SLEEP_TIME);
+				listener.scanProgressUpdate(100);
+
 				localCon.getLocalDevice().setPairing(null);
-				logger.info("Pairing disabled.");
+				logger.debug("Pairing disabled.");
 			}
 		} catch (Exception e) {
 			logger.error("Severe Error: " + e.getMessage());
@@ -235,7 +211,6 @@ public class HomeMaticDriver implements DriverService {
 				try {
 					connectionLock.wait();
 				} catch (InterruptedException ex) { // interrupt is used to terminate the thread
-					// ex.printStackTrace();
 				}
 			}
 		}

@@ -26,6 +26,7 @@ import org.ogema.driver.homematic.manager.MessageHandler;
 import org.ogema.driver.homematic.manager.RemoteDevice.InitStates;
 import org.ogema.driver.homematic.manager.asksin.messages.CmdMessage;
 import org.ogema.driver.homematic.manager.asksin.messages.Message;
+import org.slf4j.Logger;
 import org.ogema.driver.homematic.manager.StatusMessage;
 
 /**
@@ -34,6 +35,9 @@ import org.ogema.driver.homematic.manager.StatusMessage;
  * 
  */
 public class AsksinMessageHandler extends MessageHandler {
+
+	private final Logger logger = org.slf4j.LoggerFactory.getLogger("homematic-driver");
+	
 	private volatile List<String> sentMessageSerialAwaitingResponse = new ArrayList<String>(); // <Token>
 	
 	private int pairing = 0;
@@ -62,7 +66,7 @@ public class AsksinMessageHandler extends MessageHandler {
 				}
 			}
 			else {
-				logger.info("sentMessageSerialAwaitingResponse contains not the token " + token);
+				logger.debug("sentMessageSerialAwaitingResponse contains not the token " + token);
 			}
 		}
 		else {
@@ -77,7 +81,7 @@ public class AsksinMessageHandler extends MessageHandler {
 					logger.debug("Thread has been notified");
 				}
 				else {
-					logger.info("Send Thread for " + msg.source + " not found!");
+					logger.debug("Send Thread for " + msg.source + " not found!");
 				}
 			}
 			CmdMessage cmd;
@@ -118,7 +122,7 @@ public class AsksinMessageHandler extends MessageHandler {
 					logger.debug("Try: " + tries);
 					synchronized (unsentMessageQueue) {
 						// entry = this.unsentMessageQueue.remove(getSmallestKey());
-						entry = (Message) this.unsentMessageQueue.get();
+						entry = (org.ogema.driver.homematic.manager.messages.Message) this.unsentMessageQueue.get();
 						if (entry == null) {
 							try {
 								unsentMessageQueue.wait();
@@ -126,7 +130,7 @@ public class AsksinMessageHandler extends MessageHandler {
 								logger.debug("Waiting SendThread interrupted");
 							}
 							// entry = this.unsentMessageQueue.get(getSmallestKey());
-							entry = (Message) this.unsentMessageQueue.get();
+							entry = (org.ogema.driver.homematic.manager.messages.Message) this.unsentMessageQueue.get();
 							if (entry == null)
 								continue;
 						}
@@ -178,10 +182,10 @@ public class AsksinMessageHandler extends MessageHandler {
 						}
 					}
 					if (!sentMessageSerialAwaitingResponse.contains(token) && tries <= HM_SENT_RETRIES) {
-						logger.info("Message sent to device " + dest);
+						logger.debug("Message sent to device " + dest);
 						if (device.getInitState() == InitStates.PAIRING) {
 							device.setInitState(InitStates.PAIRED);
-							logger.info("Device " + dest + " paired");
+							logger.debug("Device " + dest + " paired");
 						}
 					}
 					else if (device.getPairing() > 0 && device.getPairing() <= 3) {

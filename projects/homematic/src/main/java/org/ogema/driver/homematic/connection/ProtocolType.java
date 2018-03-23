@@ -26,6 +26,6 @@ package org.ogema.driver.homematic.connection;
  * 
  */
 public enum ProtocolType {
-	asksin,
-	other;
+	ASKSIN,
+	OTHER;
 }

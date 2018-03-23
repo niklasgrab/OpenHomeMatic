@@ -45,6 +45,7 @@ import gnu.io.UnsupportedCommOperationException;
  * @author Godwin Burkhardt
  * 
  */
+@SuppressWarnings("deprecation")
 public class SerialConnection implements IUsbConnection {
 
 	private static final String APP_NAME = "org.openmuc.framework.driver.homematic.SERIAL";
@@ -86,7 +87,7 @@ public class SerialConnection implements IUsbConnection {
 	private SerialKeepAlive keepAlive;
 	private Thread keepAliveThread;
 	
-	private ProtocolType protocolType = ProtocolType.other;
+	private ProtocolType protocolType = ProtocolType.OTHER;
 	
 	
 	public SerialConnection(final ProtocolType type) {
@@ -150,7 +151,7 @@ public class SerialConnection implements IUsbConnection {
 				dataCRLF[dataCRLF.length-2]= 13; // CR appended
 				dataCRLF[dataCRLF.length-1]= 10; // LF appended
 				
-        		logger.info("write message: " + new String(dataCRLF, "UTF-8"));
+        		logger.debug("write message: " + new String(dataCRLF, "UTF-8"));
 
         		outputStream.write(dataCRLF);
 				outputStream.flush();
@@ -274,18 +275,12 @@ public class SerialConnection implements IUsbConnection {
                     case gnu.io.SerialPortEvent.DATA_AVAILABLE:
                     	logger.debug("Notified about received data");
                     	ByteArrayOutputStream puffer = new ByteArrayOutputStream(1);
-//                    	byte[] puffer = new byte[HMConstants.SIZE];
-//        				int i = 0;
-//        				BufferedReader input = new BufferedReader(new InputStreamReader(inputStream));
-//                		String msg = input.readLine();
-//                		logger.info("read message: " + msg);
         				
                     	while(inputStream.available() > 0) {
                     		puffer.write((byte) inputStream.read());
                     	}
-//                		logger.info("read message: " +HMConverter.dumpHexString(puffer.toByteArray()));
-//                		logger.info("read message: " + new String(puffer.toByteArray(), "UTF-8"));
-        				inputFifo.put(puffer.toByteArray());
+
+                    	inputFifo.put(puffer.toByteArray());
         				synchronized (inputEventLock) {
         					inputEventLock.notify();
         				}

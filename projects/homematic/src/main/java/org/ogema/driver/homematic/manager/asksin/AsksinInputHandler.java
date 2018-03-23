@@ -50,17 +50,17 @@ public class AsksinInputHandler extends InputHandler implements Runnable {
 		logger.debug("message tpye: " + (char) tempArray[0]);
 		switch (tempArray[0]) {
 		case 'V':
-			logger.info("V message: " + Converter.toHexString(tempArray));
+			logger.debug("V message: " + Converter.toHexString(tempArray));
 			if (!localDeviceInited)
 				parseSerialAdapterMsg(tempArray);
 			break;
 		case 'A':
 		case 'a':
 			if (tempArray[0] == 'A') {
-				logger.info("A message: " + Converter.toHexString(tempArray));
+				logger.debug("A message: " + Converter.toHexString(tempArray));
 			}
 			else {
-				logger.info("A message: " + Converter.dumpHexString(tempArray));
+				logger.debug("A message: " + Converter.dumpHexString(tempArray));
 			}
 			StatusMessage emsg = new AsksinStatusMessage(tempArray);
 			if (emsg.msg_type == 0x00 & localDevice.getPairing() != null) { // if pairing
@@ -91,11 +91,10 @@ public class AsksinInputHandler extends InputHandler implements Runnable {
 						|| emsg.partyMode) {
 					if (localDevice.getDevices().containsKey(emsg.source)) {
 						// 000000 = broadcast
-						logger.info("InputHandler has device");
 						((AsksinMessageHandler)messageHandler).messageReceived(emsg);
 					}
 					else {
-						logger.info("Unpaired Homematic device detected: " + emsg.source);
+						logger.debug("Unpaired Homematic device detected: " + emsg.source);
 					}
 				}
 			}
@@ -103,10 +102,10 @@ public class AsksinInputHandler extends InputHandler implements Runnable {
 			break;
 		default:
 			if (SerialConnection.BINARY_MODE) {
-				logger.info("Unknown message: " + Converter.toHexString(tempArray));
+				logger.debug("Unknown message: " + Converter.toHexString(tempArray));
 			}
 			else {
-				logger.info("Unknown message: " + Converter.dumpHexString(tempArray));
+				logger.debug("Unknown message: " + Converter.dumpHexString(tempArray));
 			}
 		}
 		

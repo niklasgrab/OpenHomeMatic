@@ -14,13 +14,13 @@ project.ext {
 
   distributionProjects = subprojects.findAll {
     it.getPath() == ":ogema" ||
-    it.getPath() == ":homematic" ||
+    it.getPath() == ":ogema-homematic" ||
     it.getPath() == ":openmuc-driver-homematic"
   }
 
   docProjects = distributionProjects.findAll {
     it.getPath() == ":ogema" ||
-    it.getPath() == ":homematic"
+    it.getPath() == ":ogema-homematic"
   }
 
 }

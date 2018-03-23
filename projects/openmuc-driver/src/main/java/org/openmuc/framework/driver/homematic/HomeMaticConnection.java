@@ -35,6 +35,7 @@ import org.openmuc.framework.data.Record;
 import org.openmuc.framework.data.ValueType;
 import org.ogema.core.channelmanager.driverspi.ChannelLocator;
 import org.ogema.core.channelmanager.driverspi.DeviceLocator;
+import org.ogema.core.channelmanager.measurements.SampledValue;
 import org.ogema.driver.homematic.Channel;
 import org.ogema.driver.homematic.manager.DeviceAttribute;
 import org.ogema.driver.homematic.manager.DeviceCommand;
@@ -42,6 +43,8 @@ import org.ogema.driver.homematic.manager.asksin.LocalDevice;
 import org.ogema.driver.homematic.manager.asksin.RemoteDevice;
 import org.ogema.port.OgemaSampledValue;
 import org.ogema.port.OgemaValue;
+import org.openmuc.framework.driver.homematic.options.HomeMaticChannelPreferences;
+import org.openmuc.framework.driver.homematic.options.HomeMaticDriverInfo;
 import org.openmuc.framework.driver.spi.ChannelRecordContainer;
 import org.openmuc.framework.driver.spi.ChannelValueContainer;
 import org.openmuc.framework.driver.spi.Connection;
@@ -70,7 +73,7 @@ public class HomeMaticConnection implements Connection {
 	public List<ChannelScanInfo> scanForChannels(String settingsStr)
 			throws UnsupportedOperationException, ArgumentSyntaxException, ScanException, ConnectionException {
 		
-        logger.info("#### scan for channels called. settings: " + settingsStr);
+        logger.debug("#### scan for channels called. settings: " + settingsStr);
 
         List<ChannelScanInfo> chanScanInf = new ArrayList<>();
         
@@ -86,7 +89,7 @@ public class HomeMaticConnection implements Connection {
 		    ChannelScanInfo channelInfo = new ChannelScanInfo(channel, 
 		    		"Device Type of Channel is: " + localDevice.getDevices().get(deviceAddress).getDeviceType(), 
 		        valType, null);
-	        logger.info("#### channel added : " + command.getChannelAddress());
+	        logger.debug("#### channel added : " + command.getChannelAddress());
 			chanScanInf.add(channelInfo);
 		}
 		
@@ -101,11 +104,11 @@ public class HomeMaticConnection implements Connection {
 		    ChannelScanInfo channelInfo = new ChannelScanInfo(channel, 
 		    		"Device Type of Channel is: " + localDevice.getDevices().get(deviceAddress).getDeviceType(), 
 		        valType, null);
-	        logger.info("#### channel added : " + attribute.getAttributeName());
+	        logger.debug("#### channel added : " + attribute.getAttributeName());
 			chanScanInf.add(channelInfo);
 		}
 		
-        logger.info("#### scan for channels finished.");
+        logger.debug("#### scan for channels finished.");
 				
 		return chanScanInf;
 	}
@@ -117,7 +120,12 @@ public class HomeMaticConnection implements Connection {
     	try {
 	        for (ChannelRecordContainer container : containers) {
 	        	try {
-	        		Channel channel = getChannel(container.getChannelAddress());
+					HomeMaticChannelPreferences preferences = HomeMaticDriverInfo.getInfo().getChannelPreferences(container);
+	        		Channel channel = getChannel(container.getChannelAddress(), preferences.getType());
+	        		SampledValue readValue = channel.readValue(null);
+	        		if (readValue.getValue() == null) {
+	        	        logger.debug("No Value received yet from: " + deviceAddress + " for " + channel.getChannelLocator().getChannelAddress());
+	        		}
 					container.setRecord(OgemaSampledValue.decode(channel.readValue(null)));
 	        	}
 	        	catch (NullPointerException | IllegalArgumentException e) {
@@ -138,7 +146,8 @@ public class HomeMaticConnection implements Connection {
     	try {
 	        for (ChannelRecordContainer container : containers) {
 	        	try {
-	        		Channel channel = getChannel(container.getChannelAddress());
+					HomeMaticChannelPreferences preferences = HomeMaticDriverInfo.getInfo().getChannelPreferences(container);
+	        		Channel channel = getChannel(container.getChannelAddress(), preferences.getType());
 		        	channel.setEventListener(OgemaSampledValue.encodeContainer(container), updListener);
 	        	}
 	        	catch (NullPointerException | IllegalArgumentException e) {
@@ -156,10 +165,11 @@ public class HomeMaticConnection implements Connection {
 		try {
 			for (ChannelValueContainer container : containers) {
 				try {
-					Channel channel = getChannel(container.getChannelAddress());
+					HomeMaticChannelPreferences preferences = HomeMaticDriverInfo.getInfo().getChannelPreferences(container);
+					Channel channel = getChannel(container.getChannelAddress(), preferences.getType());
 					channel.writeValue(null, OgemaValue.encode(container.getValue()));
 	        	}
-	        	catch (NullPointerException | IllegalArgumentException e) {
+	        	catch (NullPointerException | IllegalArgumentException | ArgumentSyntaxException e) {
 	        		throw new UnsupportedOperationException("Channel not found", e);	        		
 	        	}
 			}
@@ -191,12 +201,12 @@ public class HomeMaticConnection implements Connection {
 	}
 	
 	
-	private Channel getChannel(String channelAddress) {
+	private Channel getChannel(String channelAddress, String settings) {
 		Channel channel = channelMap.get(channelAddress);
     	if (channel == null) {
 			DeviceLocator deviceLocator = new DeviceLocator("blabla", "blabla", deviceAddress, null);
 			Device dev = new Device(deviceLocator, this);
-    		ChannelLocator channelLocator = new ChannelLocator(channelAddress, dev.getDeviceLocator());
+    		ChannelLocator channelLocator = new ChannelLocator(settings + ":" + channelAddress, dev.getDeviceLocator());
 			channel = Channel.createChannel(channelLocator, dev);
 			channelMap.put(channelAddress, channel);   		
     	}

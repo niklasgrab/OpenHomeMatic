@@ -24,35 +24,21 @@ import org.openmuc.framework.config.options.Preferences;
 
 public class HomeMaticChannelPreferences {
 
-	public static final String BAR_KEY = "bar";
-	public static final int BAR_DEFAULT = 1;
+	private static final String TYPE_KEY = "type";
 
-	private final String addressStr;
-	private final String settingsStr;
-	private final Preferences settings;
+	protected final Preferences settings;
+    private final String settingsStr;
 
-	public HomeMaticChannelPreferences(String addressStr, String settingsStr, Preferences settings) {
-		this.addressStr = addressStr;
-		this.settingsStr = settingsStr;
+	public HomeMaticChannelPreferences(String settingsStr, Preferences settings) {
+        this.settingsStr = settingsStr;
 		this.settings = settings;
 	}
 
-	public boolean equals(String addressStr, String settingsStr) {
-		return this.addressStr.equals(addressStr) && this.settingsStr.equals(settingsStr);
-	}
-
-	public String getFoo() {
-		if (addressStr != null && !addressStr.isEmpty()) {
-			return addressStr.toUpperCase();
+	public String getType() {
+		if(settings.contains(TYPE_KEY)) {
+			return settings.getString(TYPE_KEY);
 		}
 		return null;
-	}
-
-	public int getBar() {
-		if (settings.contains(BAR_KEY)) {
-			return settings.getInteger(BAR_KEY);
-		}
-		return BAR_DEFAULT;
 	}
 
 }

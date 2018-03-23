@@ -12,7 +12,10 @@ public class OgemaSampledValue {
 
 	public static Record decode(SampledValue in) {
 		Flag flag = Flag.VALID;
-		if (in.getQuality() == Quality.BAD) {
+		if (in.getValue() == null) {
+			flag = flag.NO_VALUE_RECEIVED_YET;
+		}
+		else if (in.getQuality() == Quality.BAD) {
 			flag = Flag.UNKNOWN_ERROR;
 		}
 		return new Record(OgemaValue.decode(in.getValue()), in.getTimestamp(), flag);

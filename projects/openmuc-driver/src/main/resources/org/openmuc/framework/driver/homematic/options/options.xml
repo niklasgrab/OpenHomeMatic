@@ -1,9 +1,185 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <configuration>
   <driver id="homematic">
-    <name>HomeMatic eQ-3</name>
+    <name>HomeMaticDriver</name>
     <description><![CDATA[
+    	The HomeMatic Driver implements a serial or usb connection to homematic devices as there are 
+    	CO2Detectors, MotionDetectors, PowerMeters, RemoteDevices, SmokeSensors, SwitchPlugs, Thermostats, 
+    	ThreeStateSensors, THSensors. The serial connection is based on the asksin protokol. The protocol 
+    	of the usb connection is unknown and not tested yet.
       ]]>
     </description>
+    
+    <deviceAddress>
+      <syntax>
+        <keyValue>false</keyValue>
+        <separator>;</separator>
+      </syntax>
+
+      <option id="addressOfHomematicDevice">
+        <name>Address of Homematic Device</name>
+        <description><![CDATA[
+        	
+          ]]>
+        </description>
+        <mandatory>false</mandatory>
+        <type>STRING</type>
+      </option>
+    </deviceAddress>
+    
+     <deviceSettings>
+      <syntax>
+        <keyValue assignment="=">true</keyValue>
+        <separator>;</separator>
+      </syntax>
+
+      <option id="type">
+        <name>Type of the Homematic Device</name>
+        <description><![CDATA[
+        	Hex Code for the device type.<br><br>
+            <b>Example:</b> 0019
+         ]]>
+        </description>
+        <mandatory>true</mandatory>
+        <type>String</type>
+        <!-- selection>
+          <item value="0050">HM-SEC-SFA-SM(switch)</item>
+          <item value="0078">HM-Dis-TD-T(switch)</item>
+          <item value="00E6">HM-LC-Sw1-Pl-DN-R2(switch)</item>
+          <item value="004E">HM-LC-DDC1-PCB(switch)</item>
+          <item value="0061">HM-LC-SW4-DR(switch)</item>
+          <item value="0004">HM-LC-SW1-FM(switch)</item>
+          <item value="008C">Schueco_263-131(switch)</item>
+          <item value="0014">HM-LC-SW1-SM-ATMEGA168(switch)</item>
+          <item value="0052">HM-LC-SW2-PB-FM(switch)</item>
+          <item value="00CE">HM-LC-Sw4-PCB-2(switch)</item>
+          <item value="00C8">HM-LC-Sw1-Pl-3(switch)</item>
+          <item value="00D0">HM-LC-Sw4-DR-2(switch)</item>
+Last
+          
+          <item value="00DE">HM-ES-TX-WM(powerSensor)</item>
+          <item value="00D7">HM-ES-PMSw1-Pl-DN-R1(powerMeter)</item>
+          
+          <item value="0068">HM-LC-Dim1TPBU-FM(dimmer)</item>
+          <item value="0088">Schueco_263-132(dimmer)</item>
+          <item value="002E">HM-LC-DIM2L-SM(dimmer)</item>
+          <item value="00B4">HM-LC-Dim1T-Pl-3(dimmer)</item>
+          <item value="0070">HM-LC-Dim2L-SM-644(dimmer)</item>
+          <item value="0059">HM-LC-DIM1T-FM(dimmer)</item>
+          <item value="00B6">HM-LC-Dim1TPBU-FM-2(dimmer)</item>
+          <item value="0071">HM-LC-Dim1T-Pl-644(dimmer)</item>
+          
+          
+          <item value="007D">ROTO_ZEL-STG-RM-WT-2(pushButton)</item>
+          <item value="00BF">HM-PB-2-FM(pushButton)</item>
+          <item value="00D3">HM-Dis-WM55(pushButton)</item>
+          <item value="006B">HM-PB-2-WM55(pushButton)</item>
+          <item value="0035">HM-PB-4-WM(pushButton)</item>
+
+          <item value="0038">HM-RC-19-B(remote)</item>
+          <item value="00D9">HM-MOD-Em-8(remote)</item>
+          <item value="0054">DORMA_RC-H(remote)</item>
+          <item value="001B">HM-RC-SEC3(remote)</item>
+          <item value="0080">ROTO_ZEL-STG-RM-HS-4(remote)</item>
+          <item value="0008">HM-RC-4(remote)</item>
+          <item value="00A6">HM-RC-Key4-2(remote)</item>
+          
+          <item value="0046">HM-SWI-3-FM(swi)</item>
+          
+          
+          <item value="005D">HM-Sen-MDIR-O(motionDetector)</item>
+          <item value="004A">HM-SEC-MDIR(motionDetector)</item>
+          <item value="00C1">HM-Sen-MDIR-O-2(motionDetector)</item>
+          <item value="004F">HM-SEN-MDIR-SM(motionDetector)</item>
+          
+          <item value="0091">Schueco_263-167(smokeDetector)</item>
+          
+          <item value="000B">HM-WS550(THSensor)</item>
+          <item value="0033">KS550LC(THSensor)</item>
+          <item value="002C">KS550TECH(THSensor)</item>
+          <item value="0040">HM-WDS100-C6-O(THSensor)</item>
+          <item value="002B">HM-WS550Tech(THSensor)</item>
+          <item value="00A8">HM-WDS30-OT2-SM(THSensor)</item>
+          <item value="0048">IS-WDS-TH-OD-S-R3(THSensor)</item>
+          <item value="003E">HM-WDS30-T-O(THSensor)</item>
+          <item value="003F">HM-WDS40-TH-I(THSensor)</item>
+          <item value="0094">IS-WDS-TH-OD-S-R3(THSensor)</item>
+          <item value="003C">HM-WDS20-TH-O(THSensor)</item>
+          
+          <item value="00BD">HM-CC-RT-DN-BoM(thermostat)</item>
+          <item value="007A">ROTO_ZEL-STG-RM-FSA(thermostat)</item>
+          <item value="003A">HM-CC-VD(thermostat)</item>
+
+          <item value="00B1">HM-SEC-SC-2(threeStateSensor)</item>
+          <item value="0045">HM-SEC-WDS(threeStateSensor)</item>
+          <item value="002F">HM-SEC-SC(threeStateSensor)</item>
+
+        </selection -->
+      </option>
+		
+    </deviceSettings>
+   
+    <deviceScanSettings>
+      <syntax>
+        <keyValue assignment="=">true</keyValue>
+        <separator>;</separator>
+      </syntax>
+
+      <option id="ignoreExisting">
+        <name>Ignore Existing</name>
+        <description><![CDATA[
+        	If Ignore Existing is true and the device is allready paired, 
+			the device will not connected for a second time. If it is false, the device could be 
+			connected for more than one time. This should only be used for testing purposes. 
+			It is recommended to remove devices which are more than one time connected.<br>
+         ]]>
+        </description>
+        <mandatory>false</mandatory>
+        <type>BOOLEAN</type>
+        <default>true</default>
+      </option>
+		
+    </deviceScanSettings>
+   
+    <channelAddress>
+      <syntax>
+        <keyValue>false</keyValue>
+        <separator>;</separator>
+      </syntax>
+      <option id="channelName">
+        <name>Name of the Channel</name>
+        <description><![CDATA[
+            The name of the channel as Id.<br><br>
+            <b>Example:</b> 0001
+         ]]>
+		</description>
+        <mandatory>true</mandatory>
+        <type>STRING</type>
+      </option>
+    </channelAddress>
+   
+    <channelSettings>
+       <syntax>
+        <keyValue assignment="=">true</keyValue>
+        <separator>;</separator>
+      </syntax>
+
+      <option id="tpye">
+        <name>Inverted state logic</name>
+        <description><![CDATA[
+            There are two types of channels. The Attribute Channels from which values can 
+            be read. And Command Channels to which values can be set.
+          ]]>
+        </description>
+        <mandatory>true</mandatory>
+        <type>STRING</type>
+        <selection>
+          <item value="ATTRIBUTE">Attribute Channel</item>
+          <item value="COMMAND">Command Channel</item>
+        </selection>
+        <default>ATTRIBUTE</default>
+      </option>
+    </channelSettings>
   </driver>
 </configuration>
+    

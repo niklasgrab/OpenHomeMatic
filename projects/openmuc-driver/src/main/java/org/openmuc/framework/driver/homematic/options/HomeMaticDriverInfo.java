@@ -20,9 +20,6 @@
  */
 package org.openmuc.framework.driver.homematic.options;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.DriverInfo;
 import org.openmuc.framework.config.options.Preferences;
@@ -33,8 +30,6 @@ public class HomeMaticDriverInfo extends DriverInfo {
 
 	private final static HomeMaticDriverInfo info = new HomeMaticDriverInfo();
 
-	private final Map<String, HomeMaticChannelPreferences> channels = new HashMap<String, HomeMaticChannelPreferences>();
-
 	private HomeMaticDriverInfo() {
 		super(HomeMaticDriverInfo.class.getResourceAsStream("options.xml"));
 	}
@@ -43,30 +38,27 @@ public class HomeMaticDriverInfo extends DriverInfo {
 		return info;
 	}
 
-	public HomeMaticDevicePreferences getDevicePreferences(String addressStr, String settingsStr) throws ArgumentSyntaxException {
-		Preferences address = parseDeviceAddress(addressStr);
+	public HomeMaticDevicePreferences getDevicePreferences(String settingsStr) throws ArgumentSyntaxException {
+		Preferences settings = parseDeviceSettings(settingsStr);
 		
-		return new HomeMaticDevicePreferences(address);
+		return new HomeMaticDevicePreferences(settings);
 	}
 
-	public HomeMaticChannelPreferences getChannelPreferences(ChannelValueContainer container) throws ArgumentSyntaxException {
-		String address = container.getChannelAddress();
-		String settings = container.getChannelSettings();
+	public HomeMaticDeviceScanPreferences getDeviceScanPreferences(String settingsStr) throws ArgumentSyntaxException {
+		Preferences settings = parseDeviceScanSettings(settingsStr);
 		
-		return new HomeMaticChannelPreferences(address, settings, parseChannelSettings(settings));
+		return new HomeMaticDeviceScanPreferences(settings);
 	}
 
-	public HomeMaticChannelPreferences getChannelPreferences(ChannelRecordContainer container) throws ArgumentSyntaxException {
-		String id = container.getChannel().getId();
-		String address = container.getChannelAddress();
-		String settings = container.getChannelSettings();
-		if (channels.containsKey(id)) {
-			HomeMaticChannelPreferences prefs = channels.get(id);
-			if (prefs.equals(address, settings)) {
-				return prefs;
-			}
-		}
-		return new HomeMaticChannelPreferences(address, settings, parseChannelSettings(settings));
-	}
+    public HomeMaticChannelPreferences getChannelPreferences(ChannelValueContainer container) throws ArgumentSyntaxException {
+        String settings = container.getChannelSettings();
+        
+        return new HomeMaticChannelPreferences(settings, parseChannelSettings(settings));
+    }
 
+    public HomeMaticChannelPreferences getChannelPreferences(ChannelRecordContainer container) throws ArgumentSyntaxException {
+        String settings = container.getChannelSettings();
+
+        return new HomeMaticChannelPreferences(settings, parseChannelSettings(settings));
+    }
 }
