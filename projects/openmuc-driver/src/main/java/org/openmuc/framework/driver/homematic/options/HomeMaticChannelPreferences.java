@@ -24,7 +24,7 @@ import org.openmuc.framework.config.options.Preferences;
 
 public class HomeMaticChannelPreferences {
 
-	private static final String TYPE_KEY = "type";
+	private static final String TYPE_KEY = "channelType";
 
 	protected final Preferences settings;
     private final String settingsStr;

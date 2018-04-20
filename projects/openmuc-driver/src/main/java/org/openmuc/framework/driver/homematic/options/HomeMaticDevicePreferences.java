@@ -24,7 +24,7 @@ import org.openmuc.framework.config.options.Preferences;
 
 public class HomeMaticDevicePreferences {
 
-	private static final String TYPE_KEY = "type";
+	private static final String TYPE_KEY = "deviceType";
 
 	protected final Preferences settings;
 
