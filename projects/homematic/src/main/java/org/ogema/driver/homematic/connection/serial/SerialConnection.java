@@ -73,7 +73,6 @@ public class SerialConnection implements IUsbConnection {
 	private int stopbits;
 	private int parity;
 
-    private int timeout = 5000;
 	private boolean closed = true;
 
 	protected volatile Fifo<byte[]> inputFifo;
@@ -102,14 +101,6 @@ public class SerialConnection implements IUsbConnection {
 		lsnr = new HMSerialPortEventListener();
 	}
 
-	public void setTimeout(int timeout) {
-		this.timeout = timeout;
-	}
-	
-	public int getTimeout() {
-		return timeout;
-	}
-	
 	public boolean isClosed() {
 		return this.closed;
 	}

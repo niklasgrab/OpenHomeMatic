@@ -1,18 +1,19 @@
+def ogemaversion = '2.1.2'
 def openmucversion = '1.0.0'
+def slf4jversion =  '1.7.25'
 
 repositories {
    flatDir {
        dirs '../openmuc-driver/dependencies/openmuc'
-       dirs '../../dependencies/ogema/core'
-       dirs '../../dependencies/ogema/drivers'
+       dirs '../../dependencies/ogema'
    }
 }
 
 dependencies {
-  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+  compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jversion
   
-  compile group: 'org.ogema.core', name: 'api', version: '2.1.2'
-  compile group: 'org.ogema.drivers', name: 'homematic', version: '2.1.2'
+  compile group: 'org.ogema.core', name: 'api', version: ogemaversion
+  compile group: 'org.ogema.drivers', name: 'homematic', version: ogemaversion
 
   compile group: 'org.openmuc.framework', name: 'openmuc-core-api', version: openmucversion
   compile group: 'org.openmuc.framework', name: 'openmuc-core-spi', version: openmucversion

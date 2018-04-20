@@ -1,37 +1,38 @@
 configurations.create('embed')
 
-def openmucversion = '1.0.0'
+def ogemaversion = '2.1.2'
+def pi4jversion = '1.2-SNAPSHOT'
+def jsonversion = '20170516'
 
 repositories {
    flatDir {
        dirs 'dependencies/openmuc'
-       dirs '../../dependencies/ogema/core'
-       dirs '../../dependencies/ogema/drivers'
+       dirs '../../dependencies/ogema'
+       dirs '../../dependencies/pi4j'
    }
 }
 
 dependencies {
-  //compile group: 'org.osgi', name: 'org.osgi.core', version: '6.0.0'
-  //compile group: 'org.osgi', name: 'org.osgi.compendium', version: '5.0.0'
-  //compile group: 'org.openmuc.framework', name: 'openmuc-core-api', version: openmucversion
-  //compile group: 'org.openmuc.framework', name: 'openmuc-core-spi', version: openmucversion
-  
   compile project(':ogema-homematic')
   embed project(':ogema-homematic')
 
   compile project(':ogema')
   embed project(':ogema')
 
-  embed group: 'org.json', name: 'json', version: '20170516'
-  embed group: 'org.ogema.core', name: 'api', version: '2.1.2'
-  embed group: 'org.ogema.drivers', name: 'homematic', version: '2.1.2'
+  embed group: 'org.json', name: 'json', version: jsonversion
+  embed group: 'org.ogema.core', name: 'api', version: ogemaversion
+  embed group: 'org.ogema.drivers', name: 'homematic', version: ogemaversion
+
+  embed group: 'com.pi4j', name: 'pi4j-core', version: pi4jversion
+  embed group: 'com.pi4j', name: 'pi4j-device', version: pi4jversion
+  embed group: 'com.pi4j', name: 'pi4j-gpio-extension', version: pi4jversion
 }
 
 jar {
   manifest {
     name = "OpenMUC Driver - HomeMatic"
-    instruction 'Bundle-ClassPath', '.,lib/ogema-homematic-' + cfgVersion + '.jar,lib/ogema-' + cfgVersion + '.jar,lib/api-2.1.2.jar,lib/homematic-2.1.2.jar,lib/json-20170516.jar,lib/jrxtx-1.0.0.jar'
-    instruction 'Import-Package', '!org.ogema.core*,!org.ogema.driver.homematic*,!org.ogema.port*,!org.json*,javax.xml.bind,javax.xml.datatype,*' + jarDefaultImportPackageVersion
+    instruction 'Bundle-ClassPath', '.,lib/ogema-homematic-' + cfgVersion + '.jar,lib/ogema-' + cfgVersion + '.jar,lib/api-' + ogemaversion + '.jar,lib/homematic-' + ogemaversion + '.jar,lib/json-' + jsonversion + '.jar,lib/pi4j-core.jar,lib/pi4j-device.jar,lib/pi4j-gpio-extension.jar,lib/jrxtx-1.0.0.jar'
+    instruction 'Import-Package', '!org.ogema.core*,!org.ogema.driver.homematic*,!org.ogema.port*,!org.json*,!com.pi4j.*,javax.xml.bind,javax.xml.datatype,*' + jarDefaultImportPackageVersion
     instruction 'Export-Package', ''
   }
 }

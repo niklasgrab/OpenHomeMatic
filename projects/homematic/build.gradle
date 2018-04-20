@@ -1,18 +1,26 @@
+def ogemaversion = '2.1.2'
+def pi4jversion = '1.2-SNAPSHOT'
+def jrxtxversion = '1.0.0'
+def jsonversion = '20170516'
+
 repositories {
    flatDir {
-       dirs '../../dependencies/ogema/core'
-       dirs '../../dependencies/ogema/drivers'
+       dirs '../../dependencies/ogema',
+            '../../dependencies/pi4j'
    }
 }
 
 dependencies {
-  compile group: 'org.ogema.core', name: 'api', version: '2.1.2'
-  compile group: 'org.ogema.drivers', name: 'homematic', version: '2.1.2'
+  compile group: 'org.ogema.core', name: 'api', version: ogemaversion
+  compile group: 'org.ogema.drivers', name: 'homematic', version: ogemaversion
+
+  compile group: 'com.pi4j', name: 'pi4j-core', version: pi4jversion
+  compile group: 'com.pi4j', name: 'pi4j-device', version: pi4jversion
 
   // https://mvnrepository.com/artifact/org.rxtx/rxtx
-  compile group: 'org.openmuc', name: 'jrxtx', version: '1.0.0' //2.1.7
+  compile group: 'org.openmuc', name: 'jrxtx', version: jrxtxversion
   
-  compile group: 'org.json', name: 'json', version: '20170516'
+  compile group: 'org.json', name: 'json', version: jsonversion
 }
 
 jar {

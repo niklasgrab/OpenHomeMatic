@@ -26,6 +26,7 @@ import java.util.Map;
 import org.ogema.driver.homematic.Activator;
 import org.ogema.driver.homematic.connection.LocalConnection;
 import org.ogema.driver.homematic.connection.LocalSerialConnection;
+import org.ogema.driver.homematic.connection.LocalSerialRaspiPinConnection;
 import org.ogema.driver.homematic.connection.LocalUsbConnection;
 import org.ogema.driver.homematic.manager.asksin.LocalDevice;
 import org.ogema.driver.homematic.manager.asksin.RemoteDevice;
@@ -58,8 +59,9 @@ public class HomeMaticDriver implements DriverService {
 
 	public final static HomeMaticDriverInfo DRIVER_INFO = HomeMaticDriverInfo.getInfo();
 
-	public static final String USB_CONNECTION_TYPE_KEY = "usbConnectionType";
-	public static final String USB_CONNECTION_TYPE_SERIAL = "serial";
+	public static final String CONNECTION_TYPE_KEY = "org.openmuc.framework.driver.homematic.connectionType";
+	public static final String CONNECTION_TYPE_SERIAL_USB = "serialUSB";
+	public static final String CONNECTION_TYPE_SERIAL_RASPIPIN = "serialRaspiPin";
 	private static int SLEEP_TIME = 60000;
 
 
@@ -73,7 +75,8 @@ public class HomeMaticDriver implements DriverService {
 		localConnectionsMap = new HashMap<String, LocalConnection>();
 		connectionsMap = new HashMap<String, HomeMaticConnection>();
 		
-		portname = System.getProperty(USB_CONNECTION_TYPE_KEY, USB_CONNECTION_TYPE_SERIAL);
+//		portname = System.getProperty(CONNECTION_TYPE_KEY, USB_CONNECTION_TYPE_SERIAL);
+		portname = System.getProperty(CONNECTION_TYPE_KEY, CONNECTION_TYPE_SERIAL_RASPIPIN);
 		Activator.bundleIsRunning = true;
 		
 		establishConnection();
@@ -181,7 +184,10 @@ public class HomeMaticDriver implements DriverService {
 		LocalConnection localCon = localConnectionsMap.get(portname);
 		if (localCon == null) {
 			try {
-				if (portname.equals(USB_CONNECTION_TYPE_SERIAL)) {
+				if (portname.equals(CONNECTION_TYPE_SERIAL_RASPIPIN)) {
+					localCon = new LocalSerialRaspiPinConnection(connectionLock, portname, parameter);
+				}
+				else if (portname.equals(CONNECTION_TYPE_SERIAL_USB)) {
 					localCon = new LocalSerialConnection(connectionLock, portname, parameter);
 				}
 				else {
