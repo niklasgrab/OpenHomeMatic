@@ -53,8 +53,22 @@ import org.openmuc.framework.driver.spi.RecordsReceivedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class HomeMaticConnection implements Connection {
+	
+    /**
+     * Interface used by {@link HomeMaticConnection} to notify the {@link HomeMaticDriver} about events
+     */
+    public interface HomeMaticConnectionCallbacks {
+        
+        public void onDisconnect(String deviceAddress);
+    }
+
+    /**
+     * The Connections current callback object, which is used to notify of connection events
+     */
+    private HomeMaticConnectionCallbacks callbacks;
+
+	
 
 	private final static Logger logger = LoggerFactory.getLogger(HomeMaticConnection.class);
 	
@@ -64,7 +78,8 @@ public class HomeMaticConnection implements Connection {
 
 	private LocalDevice localDevice;
 
-	public HomeMaticConnection(String deviceAddress) {
+	public HomeMaticConnection(String deviceAddress, HomeMaticConnectionCallbacks callbacks) {
+        this.callbacks = callbacks;
 		this.deviceAddress = deviceAddress;
 		channelMap = new HashMap<String, Channel>();
  	}
@@ -189,7 +204,11 @@ public class HomeMaticConnection implements Connection {
 	public void close() {
 		if (localDevice!=null) {
 		  localDevice.getDevices().remove(this.deviceAddress);
+		  localDevice = null;
 		}
+		channelMap.clear();
+        callbacks.onDisconnect(deviceAddress);
+        callbacks = null;
 	}
 
 	public LocalDevice getLocalDevice() {

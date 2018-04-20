@@ -35,6 +35,7 @@ import org.openmuc.framework.config.DeviceScanInfo;
 import org.openmuc.framework.config.DriverInfo;
 import org.openmuc.framework.config.ScanException;
 import org.openmuc.framework.config.ScanInterruptedException;
+import org.openmuc.framework.driver.homematic.HomeMaticConnection.HomeMaticConnectionCallbacks;
 import org.openmuc.framework.driver.homematic.options.HomeMaticDevicePreferences;
 import org.openmuc.framework.driver.homematic.options.HomeMaticDeviceScanPreferences;
 import org.openmuc.framework.driver.homematic.options.HomeMaticDriverInfo;
@@ -53,7 +54,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 @Component
-public class HomeMaticDriver implements DriverService {
+public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallbacks {
 
 	private final static Logger logger = LoggerFactory.getLogger(HomeMaticDriver.class);
 
@@ -141,7 +142,7 @@ public class HomeMaticDriver implements DriverService {
 		
 		if (connection == null) {
 			LocalConnection localCon = findConnection(portname);			
-			connection = new HomeMaticConnection(deviceAddressStr);
+			connection = new HomeMaticConnection(deviceAddressStr, this);
 			connectionsMap.put(deviceAddressStr, connection);
 			LocalDevice localDevice = localCon.getLocalDevice();
 			connection.setLocalDevice(localDevice);
@@ -205,6 +206,8 @@ public class HomeMaticDriver implements DriverService {
 	protected void removeConnection(String interfaceId) {
 		localConnectionsMap.remove(interfaceId);
 	}
+	
+	
 
 	protected void addConnection(LocalConnection con) {
 		localConnectionsMap.put(con.getInterfaceId(), con);
@@ -221,6 +224,11 @@ public class HomeMaticDriver implements DriverService {
 			}
 		}
 		return localCon;
+	}
+
+	@Override
+	public void onDisconnect(String deviceAddress) {
+		removeConnection(deviceAddress);
 	}
 
 }
