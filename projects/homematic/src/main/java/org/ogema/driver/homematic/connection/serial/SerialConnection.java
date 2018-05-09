@@ -20,9 +20,9 @@
  */
 package org.ogema.driver.homematic.connection.serial;
 
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.TooManyListenersException;
 
@@ -78,7 +78,7 @@ public class SerialConnection implements IUsbConnection {
 	protected volatile Fifo<byte[]> inputFifo;
 	protected volatile Object inputEventLock;
 
-    private InputStream inputStream;
+    private BufferedReader input;
     private OutputStream outputStream;
 	
 	private SerialPortEventListener lsnr;
@@ -109,7 +109,7 @@ public class SerialConnection implements IUsbConnection {
 		if (isClosed()) {
 			try {
 				serialPort = acquireSerialPort(portName);
-	            inputStream = serialPort.getInputStream();
+	            input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
 	            outputStream = serialPort.getOutputStream();
 				serialPort.addEventListener(lsnr);
 				serialPort.notifyOnDataAvailable(true);
@@ -265,16 +265,17 @@ public class SerialConnection implements IUsbConnection {
                 switch (event.getEventType()) {
                     case gnu.io.SerialPortEvent.DATA_AVAILABLE:
                     	logger.debug("Notified about received data");
-                    	ByteArrayOutputStream puffer = new ByteArrayOutputStream(1);
-        				
-                    	while(inputStream.available() > 0) {
-                    		puffer.write((byte) inputStream.read());
-                    	}
-
-                    	inputFifo.put(puffer.toByteArray());
-        				synchronized (inputEventLock) {
-        					inputEventLock.notify();
-        				}
+                    	String line = null;
+                        if (input.ready()) {
+                        	
+                            line = input.readLine();
+                            if (!line.isEmpty()) {
+                            	inputFifo.put(line.getBytes());
+                				synchronized (inputEventLock) {
+                					inputEventLock.notify();
+                				}
+                            }
+                        }
         				break;
                     	
                     case gnu.io.SerialPortEvent.BI:
