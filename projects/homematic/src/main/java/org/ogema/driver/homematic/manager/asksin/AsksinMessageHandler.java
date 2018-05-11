@@ -53,12 +53,14 @@ public class AsksinMessageHandler extends MessageHandler {
 		RemoteDevice device = (RemoteDevice) localDevice.getDevices().get(msg.source);
 		String token = msg.source + msg.msg_num;
 		logger.debug("Received ?-token: " + token);
-		// msg_type 0x02 is receive from pairing requests
+		// msg_type 0x02 is receive from pairing requests or command
 		if (msg.msg_type == 0x02) {
 			if (sentMessageSerialAwaitingResponse.contains(token)) {
 				if (runningThreads.containsKey(msg.source) && pairing == device.getPairing() ) {
 					SendThreadSerial sendThread = (SendThreadSerial) runningThreads.get(msg.source);
-					device.augmentPairing();
+					if (device.getInitState() != InitStates.PAIRED) {
+						device.augmentPairing();
+					}
 					sentMessageSerialAwaitingResponse.remove(token);
 					logger.debug("sentMessageAwaitingResponse removed " + msg.rtoken);
 					sendThread.interrupt();
@@ -154,6 +156,7 @@ public class AsksinMessageHandler extends MessageHandler {
 						logger.debug("message is not instance of HMCmdMessage, but " + entry.getClass());						
 					}
 					RemoteDevice device = (RemoteDevice) localDevice.getDevices().get(dest);
+					if (device !=  null) {
 					pairing = device.getPairing();
 					while (tries < HM_SENT_RETRIES) {
 						if (sentMessageSerialAwaitingResponse.contains(token)) {
@@ -184,8 +187,11 @@ public class AsksinMessageHandler extends MessageHandler {
 					if (!sentMessageSerialAwaitingResponse.contains(token) && tries <= HM_SENT_RETRIES) {
 						logger.debug("Message sent to device " + dest);
 						if (device.getInitState() == InitStates.PAIRING) {
-							device.setInitState(InitStates.PAIRED);
-							logger.debug("Device " + dest + " paired");
+							if (device.getPairing() == 4) {
+								device.setInitState(InitStates.PAIRED);
+								logger.debug("Device " + dest + " paired");
+								device.setPairing(0);
+							}
 						}
 					}
 					else if (device.getPairing() > 0 && device.getPairing() <= 3) {
@@ -200,6 +206,7 @@ public class AsksinMessageHandler extends MessageHandler {
 					}
 					if (device.getPairing() == 4) {
 						device.setPairing(0);
+					}
 					}
 					tries = 0;
 					errorCounter = 0;
