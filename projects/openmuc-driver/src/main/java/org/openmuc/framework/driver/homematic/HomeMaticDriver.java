@@ -28,6 +28,7 @@ import org.ogema.driver.homematic.connection.LocalConnection;
 import org.ogema.driver.homematic.connection.LocalSerialConnection;
 import org.ogema.driver.homematic.connection.LocalSerialRaspiPinConnection;
 import org.ogema.driver.homematic.connection.LocalUsbConnection;
+import org.ogema.driver.homematic.manager.RemoteDevice.InitStates;
 import org.ogema.driver.homematic.manager.asksin.LocalDevice;
 import org.ogema.driver.homematic.manager.asksin.RemoteDevice;
 import org.openmuc.framework.config.ArgumentSyntaxException;
@@ -63,8 +64,9 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 	public static final String CONNECTION_TYPE_KEY = "org.openmuc.framework.driver.homematic.connectionType";
 	public static final String CONNECTION_TYPE_SERIAL_USB = "serialUSB";
 	public static final String CONNECTION_TYPE_SERIAL_RASPIPIN = "serialRaspiPin";
-	private static int SLEEP_TIME = 60000;
+	private static int SLEEP_TIME = 1000;
 
+    private volatile boolean isDeviceScanInterrupted = false;
 
 	private final Map<String, LocalConnection> localConnectionsMap; // <interfaceId, connection>
 	private final Object connectionLock = new Object();
@@ -93,26 +95,43 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 	@Override
 	public void scanForDevices(final String settingsStr, final DriverDeviceScanListener listener)
 			throws UnsupportedOperationException, ArgumentSyntaxException, ScanException, ScanInterruptedException {
+
+		listener.scanProgressUpdate(0);
 		
-				Boolean ignore = null;
+		Boolean ignore = null;
+		try {
+			HomeMaticDeviceScanPreferences preferences = DRIVER_INFO.getDeviceScanPreferences(settingsStr);
+			ignore = preferences.getIgnoreExiting();
+		} catch (ArgumentSyntaxException e) {
+			logger.debug("Can't parse Device Scan Settings: " + e.getMessage());
+		}
+		
+		LocalConnection localCon = findConnection(portname);			
+
+		boolean ignoreExisting = true;
+		if (ignore != null) {
+			ignoreExisting = ignore;
+		}
+		
+		if (localCon != null) {
+			LocalDevice localDevice = localCon.getLocalDevice();
+			localDevice.setIgnoreExisting(ignoreExisting);
+			localDevice.setPairing("0000000000");
+			logger.info("enabled Pairing for 100 seconds");
+
+			for (int i = 0; i < 100; i++) {
+                if (isDeviceScanInterrupted) {
+                    break;
+                }
 				try {
-					HomeMaticDeviceScanPreferences preferences = DRIVER_INFO.getDeviceScanPreferences(settingsStr);
-					ignore = preferences.getIgnoreExiting();
-				} catch (ArgumentSyntaxException e) {
-					logger.debug("Can't parse Device Scan Settings: " + e.getMessage());
+					Thread.sleep(SLEEP_TIME);
+				} catch (InterruptedException e) {
+					logger.error("Severe Error: " + e.getMessage());
+					 e.printStackTrace();
 				}
 				
-				LocalConnection localCon = findConnection(portname);			
-
-				boolean ignoreExisting = true;
-				if (ignore != null) {
-					ignoreExisting = ignore;
-				}				
-				enablePairing(portname, ignoreExisting, listener);		
-				
-				LocalDevice localDevice = localCon.getLocalDevice();
 				for (org.ogema.driver.homematic.manager.RemoteDevice rm: localDevice.getDevices().values()) {
-					if (!((RemoteDevice)rm).isIgnore()) {
+					if (!((RemoteDevice)rm).isIgnore() && ((RemoteDevice)rm).getInitState() == InitStates.PAIRED) {
 						String type = rm.getDeviceType();
 						String description = localDevice.getDeviceDescriptor().getName(type) + ":" + 
 								localDevice.getDeviceDescriptor().getSubType(type);
@@ -120,17 +139,17 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 						listener.deviceFound(info);
 					}
 				}
-				
-		listener.scanProgressUpdate(0);
+		
+				listener.scanProgressUpdate(i);
+			}
+			localDevice.setPairing(null);
+			logger.info("Pairing disabled.");
+		}
 	}
 
 	@Override
 	public void interruptDeviceScan() throws UnsupportedOperationException {
-		
-		// TODO Auto-generated method stub
-		
-		// If the driver cannot scan for devices, indicate it with an Exception
-		throw new UnsupportedOperationException();
+        isDeviceScanInterrupted = true;
 	}
 
 	@Override
@@ -156,28 +175,6 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 
 		return connection;
 
-	}
-
-	public void enablePairing(final String iface, boolean ignoreExisting, DriverDeviceScanListener listener) {
-		try {
-			// TODO: dirty connection
-			LocalConnection localCon = findConnection(iface);
-			if (localCon != null) {
-				localCon.getLocalDevice().setIgnoreExisting(ignoreExisting);
-				localCon.getLocalDevice().setPairing("0000000000");
-				logger.debug("enabled Pairing for 60 seconds");
-				Map<String, RemoteDevice> foundRemoteDevices = new HashMap<String, RemoteDevice>();
-
-				Thread.sleep(SLEEP_TIME);
-				listener.scanProgressUpdate(100);
-
-				localCon.getLocalDevice().setPairing(null);
-				logger.debug("Pairing disabled.");
-			}
-		} catch (Exception e) {
-			logger.error("Severe Error: " + e.getMessage());
-			 e.printStackTrace();
-		}
 	}
 
 	private void establishConnection() {
