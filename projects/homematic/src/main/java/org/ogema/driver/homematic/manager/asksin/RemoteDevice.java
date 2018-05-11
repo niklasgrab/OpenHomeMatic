@@ -21,6 +21,16 @@
 package org.ogema.driver.homematic.manager.asksin;
 
 import org.ogema.driver.homematic.manager.StatusMessage;
+import org.ogema.driver.homematic.manager.SubDevice;
+import org.ogema.driver.homematic.manager.asksin.devices.PowerMeter;
+import org.ogema.driver.homematic.manager.devices.CO2Detector;
+import org.ogema.driver.homematic.manager.devices.MotionDetector;
+import org.ogema.driver.homematic.manager.devices.Remote;
+import org.ogema.driver.homematic.manager.devices.SmokeSensor;
+import org.ogema.driver.homematic.manager.asksin.devices.SwitchPlug;
+import org.ogema.driver.homematic.manager.devices.THSensor;
+import org.ogema.driver.homematic.manager.devices.Thermostat;
+import org.ogema.driver.homematic.manager.devices.ThreeStateSensor;
 
 /**
  * 
@@ -49,7 +59,51 @@ public class RemoteDevice extends org.ogema.driver.homematic.manager.RemoteDevic
 		super.init();
 	}
 
-    public int getPairing() {
+	public void initWithoutAddMandatoryChannels() {
+		setPairing(1);
+		String configs = "0201";
+		String owner = localdevice.getOwnerid();
+		configs += "0A" + owner.charAt(0) + owner.charAt(1) + "0B" + owner.charAt(2) + owner.charAt(3) + "0C"
+				+ owner.charAt(4) + owner.charAt(5);
+		setInitState(InitStates.PAIRING);
+		pushConfig("00", "00", configs);
+		// AES aktivieren
+		// pushConfig("01", "01", "0801");
+		pushCommand((byte) 0xA0, (byte) 0x01, "010E");
+	}
+
+	@Override
+	protected SubDevice createSubDevice() {
+		String s = localdevice.getDeviceDescriptor().getSubType(type);
+		switch (s) {
+		case "THSensor":
+			return new THSensor(this);
+		case "threeStateSensor":
+			boolean isDoorWindowSensor = type.equals("00B1");
+			return new ThreeStateSensor(this, isDoorWindowSensor);
+		case "thermostat":
+			return new Thermostat(this);
+		case "powerMeter":
+			return new PowerMeter(this);
+		case "smokeDetector":
+			return new SmokeSensor(this);
+		case "CO2Detector":
+			return new CO2Detector(this);
+		case "motionDetector":
+			return new MotionDetector(this);
+		case "switch":
+			return new SwitchPlug(this);
+		case "remote":
+		case "pushbutton":
+		case "swi":
+			return new Remote(this);
+		default:
+			throw new RuntimeException("Type not supported: " + s);
+		}
+	}
+
+
+	public int getPairing() {
         return pairing;
     }
     
