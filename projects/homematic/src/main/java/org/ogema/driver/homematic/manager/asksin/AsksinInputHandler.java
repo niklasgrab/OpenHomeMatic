@@ -83,6 +83,10 @@ public class AsksinInputHandler extends InputHandler implements Runnable {
 							temp_device = (RemoteDevice)localDevice.getDevices().get(found_device.getAddress());
 							temp_device.init();
 						}
+						else if (found_device.getInitState().equals(InitStates.PAIRED)) {
+								temp_device = (RemoteDevice)localDevice.getDevices().get(found_device.getAddress());
+								temp_device.initWithoutAddMandatoryChannels();
+							}
 					}
 				}
 			}
