@@ -40,7 +40,8 @@ public class AsksinStatusMessage extends StatusMessage {
 	}
 	
 	public AsksinStatusMessage(byte[] data) {
-		super(data);
+		super();
+		isEmpty = false;
 		type = data[0];
 		switch (type) {
 		case 'A':
