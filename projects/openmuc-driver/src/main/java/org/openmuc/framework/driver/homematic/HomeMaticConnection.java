@@ -27,12 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.openmuc.framework.config.ArgumentSyntaxException;
-import org.openmuc.framework.config.ChannelScanInfo;
-import org.openmuc.framework.config.ScanException;
-import org.openmuc.framework.data.Flag;
-import org.openmuc.framework.data.Record;
-import org.openmuc.framework.data.ValueType;
 import org.ogema.core.channelmanager.driverspi.ChannelLocator;
 import org.ogema.core.channelmanager.driverspi.DeviceLocator;
 import org.ogema.core.channelmanager.measurements.SampledValue;
@@ -43,6 +37,12 @@ import org.ogema.driver.homematic.manager.asksin.LocalDevice;
 import org.ogema.driver.homematic.manager.asksin.RemoteDevice;
 import org.ogema.port.OgemaSampledValue;
 import org.ogema.port.OgemaValue;
+import org.openmuc.framework.config.ArgumentSyntaxException;
+import org.openmuc.framework.config.ChannelScanInfo;
+import org.openmuc.framework.config.ScanException;
+import org.openmuc.framework.data.Flag;
+import org.openmuc.framework.data.Record;
+import org.openmuc.framework.data.ValueType;
 import org.openmuc.framework.driver.homematic.options.HomeMaticChannelPreferences;
 import org.openmuc.framework.driver.homematic.options.HomeMaticDriverInfo;
 import org.openmuc.framework.driver.spi.ChannelRecordContainer;
@@ -136,12 +136,17 @@ public class HomeMaticConnection implements Connection {
 	        for (ChannelRecordContainer container : containers) {
 	        	try {
 					HomeMaticChannelPreferences preferences = HomeMaticDriverInfo.getInfo().getChannelPreferences(container);
-	        		Channel channel = getChannel(container.getChannelAddress(), preferences.getType());
-	        		SampledValue readValue = channel.readValue(null);
-	        		if (readValue.getValue() == null) {
-	        	        logger.debug("No Value received yet from: " + deviceAddress + " for " + channel.getChannelLocator().getChannelAddress());
-	        		}
-					container.setRecord(OgemaSampledValue.decode(channel.readValue(null)));
+					if (isRemoteDeviceAvailable(container.getChannelAddress())) {
+		        		Channel channel = getChannel(container.getChannelAddress(), preferences.getType());
+		        		SampledValue readValue = channel.readValue(null);
+		        		if (readValue.getValue() == null) {
+		        	        logger.debug("No Value received yet from: " + deviceAddress + " for " + channel.getChannelLocator().getChannelAddress());
+		        		}
+						container.setRecord(OgemaSampledValue.decode(channel.readValue(null)));
+					}
+					else {
+						container.setRecord(new Record(Flag.CHANNEL_DELETED));	 
+					}
 	        	}
 	        	catch (NullPointerException | IllegalArgumentException e) {
 	        		container.setRecord(new Record(Flag.DRIVER_ERROR_CHANNEL_ADDRESS_SYNTAX_INVALID));	        		
@@ -163,7 +168,13 @@ public class HomeMaticConnection implements Connection {
 	        	try {
 					HomeMaticChannelPreferences preferences = HomeMaticDriverInfo.getInfo().getChannelPreferences(container);
 	        		Channel channel = getChannel(container.getChannelAddress(), preferences.getType());
-		        	channel.setEventListener(OgemaSampledValue.encodeContainer(container), updListener);
+					if (isRemoteDeviceAvailable(container.getChannelAddress())) {
+		        		channel = getChannel(container.getChannelAddress(), preferences.getType());
+			        	channel.setEventListener(OgemaSampledValue.encodeContainer(container), updListener);
+					} 
+					else {
+						channel.removeUpdateListener();
+					}
 	        	}
 	        	catch (NullPointerException | IllegalArgumentException e) {
 	        		throw new UnsupportedOperationException("Channel not found", e);	        		
@@ -180,9 +191,11 @@ public class HomeMaticConnection implements Connection {
 		try {
 			for (ChannelValueContainer container : containers) {
 				try {
-					HomeMaticChannelPreferences preferences = HomeMaticDriverInfo.getInfo().getChannelPreferences(container);
-					Channel channel = getChannel(container.getChannelAddress(), preferences.getType());
-					channel.writeValue(null, OgemaValue.encode(container.getValue()));
+					if (isRemoteDeviceAvailable(container.getChannelAddress())) {
+						HomeMaticChannelPreferences preferences = HomeMaticDriverInfo.getInfo().getChannelPreferences(container);
+						Channel channel = getChannel(container.getChannelAddress(), preferences.getType());
+						channel.writeValue(null, OgemaValue.encode(container.getValue()));
+					}
 	        	}
 	        	catch (NullPointerException | IllegalArgumentException | ArgumentSyntaxException e) {
 	        		throw new UnsupportedOperationException("Channel not found", e);	        		
@@ -202,13 +215,15 @@ public class HomeMaticConnection implements Connection {
 	}
 
 	public void close() {
-		if (localDevice!=null) {
+		if (localDevice != null) {
 		  localDevice.getDevices().remove(this.deviceAddress);
 		  localDevice = null;
 		}
 		channelMap.clear();
-        callbacks.onDisconnect(deviceAddress);
-        callbacks = null;
+		if (callbacks != null) {
+		  callbacks.onDisconnect(deviceAddress);
+          callbacks = null;
+		}
 	}
 
 	public LocalDevice getLocalDevice() {
@@ -218,7 +233,19 @@ public class HomeMaticConnection implements Connection {
 	public void setLocalDevice(LocalDevice localDevice) {
 		this.localDevice = localDevice;
 	}
-	
+
+	/*
+	 * Check if RemoteDevice of the channel is removed in localDevice.
+	 * In case of true remove the channel from the channelMap to allow 
+	 * repairing the device, because in this case we have to recreate 
+	 * the channel. Then the channel holds the deviceAttribute and this is
+	 * changed.
+	 */
+	private boolean isRemoteDeviceAvailable(String channelAddress) {
+		boolean retVal = localDevice.getDevices().containsKey(deviceAddress);
+		if (!retVal) channelMap.remove(channelAddress);
+		return retVal;
+	}
 	
 	private Channel getChannel(String channelAddress, String settings) {
 		Channel channel = channelMap.get(channelAddress);
