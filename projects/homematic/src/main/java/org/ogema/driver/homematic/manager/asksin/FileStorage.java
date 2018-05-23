@@ -85,12 +85,10 @@ public class FileStorage {
 			devices = jdata.getJSONArray("devices");
 			for (int i = 0; i < devices.length(); i++) {
 				JSONObject dev = devices.getJSONObject(i);
-				RemoteDevice temp_device = new RemoteDevice(localDevice, dev.getString("address"), dev
+				new RemoteDevice(localDevice, dev.getString("address"), dev
 						.getString("type"), dev.getString("serial"));
-				if ((localDevice.getDevices().get(temp_device.getAddress())) == null) {
-					localDevice.getDevices().put(temp_device.getAddress(), temp_device);
-					logger.debug("Device added: " + temp_device.getAddress());
-				}
+				RemoteDevice temp_device = localDevice.getDevices().get(dev.getString("address"));
+				logger.debug("Device added: " + temp_device.getAddress());
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();

@@ -51,6 +51,12 @@ public class RemoteDevice extends org.ogema.driver.homematic.manager.RemoteDevic
 	// Used if device file is loading device
 	public RemoteDevice(LocalDevice localdevice, String address, String type, String serial) {
 		super(localdevice, address, type, serial);
+		if ((localdevice.getDevices().get(address)) == null) {
+			localdevice.getDevices().put(address, this);
+		}
+		else {
+			return;
+		}
 	}
 
 	@Override
