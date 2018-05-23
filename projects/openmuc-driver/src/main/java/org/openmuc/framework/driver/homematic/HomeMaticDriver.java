@@ -23,14 +23,18 @@ package org.openmuc.framework.driver.homematic;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.ogema.core.channelmanager.measurements.BooleanValue;
 import org.ogema.driver.homematic.Activator;
 import org.ogema.driver.homematic.connection.LocalConnection;
 import org.ogema.driver.homematic.connection.LocalSerialConnection;
 import org.ogema.driver.homematic.connection.LocalSerialRaspiPinConnection;
 import org.ogema.driver.homematic.connection.LocalUsbConnection;
 import org.ogema.driver.homematic.manager.RemoteDevice.InitStates;
+import org.ogema.driver.homematic.manager.SubDevice;
 import org.ogema.driver.homematic.manager.asksin.LocalDevice;
 import org.ogema.driver.homematic.manager.asksin.RemoteDevice;
+import org.ogema.driver.homematic.manager.devices.PowerMeter;
+import org.ogema.driver.homematic.manager.devices.SwitchPlug;
 import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.DeviceScanInfo;
 import org.openmuc.framework.config.DriverInfo;
@@ -65,6 +69,7 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 	public static final String CONNECTION_TYPE_SERIAL_USB = "serialUSB";
 	public static final String CONNECTION_TYPE_SERIAL_RASPIPIN = "serialRaspiPin";
 	private static int SLEEP_TIME = 1000;
+	private static int CONNECTION_TRY_TIMEOUT = 41; // in Seconds
 
     private volatile boolean isDeviceScanInterrupted = false;
 
@@ -157,6 +162,10 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 		
 		logger.debug("Connect HomeMatic device: ", deviceAddressStr);
 		
+		if (deviceAddressStr.length() != 6) {
+			throw new ArgumentSyntaxException("Device Address has wrong length. The length has to be 6 Characters.");
+		}
+		
 		HomeMaticConnection connection = connectionsMap.get(deviceAddressStr);
 		
 		if (connection == null) {
@@ -167,16 +176,79 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 			connection.setLocalDevice(localDevice);
 			if (localDevice.getDevices().get(deviceAddressStr) == null) {
 				HomeMaticDevicePreferences preferences = DRIVER_INFO.getDevicePreferences(settingsStr);
-				RemoteDevice remoteDevice = new RemoteDevice(localDevice, deviceAddressStr, 
+				new RemoteDevice(localDevice, deviceAddressStr, 
 						preferences.getType(), null); 
-				localDevice.getDevices().put(remoteDevice.getAddress(), remoteDevice);
+				RemoteDevice remoteDevice = (RemoteDevice) localDevice.getDevices().get(deviceAddressStr);
+				SubDevice subDevice = remoteDevice.getSubDevice();
+				
+				if (subDevice instanceof PowerMeter || subDevice instanceof SwitchPlug) {
+					BooleanValue defaultState = new BooleanValue(preferences.getDefaultState());
+					if (! defaultState.equals(subDevice.deviceAttributes.get((short) 0x0001).getValue())) {
+						subDevice.channelChanged((byte) 0x01, defaultState);
+						if (! isRemoteDeviceConnected(remoteDevice, defaultState, deviceAddressStr)) {
+							connection.close();
+							throw new ConnectionException("Device is not paired");
+						}
+					}
+					else if (! isRemoteDeviceConnected(remoteDevice, null, deviceAddressStr)) {
+						connection.close();
+						throw new ConnectionException("Device is not paired, because no value is sent");
+					}
+				}
 			}
 		}
 
 		return connection;
 
 	}
+	
+	private boolean isRemoteDeviceConnected(RemoteDevice remoteDevice, BooleanValue defaultState, 
+			String deviceAddressStr) {
+		int connectionTime = 0;
+		SubDevice subDevice = remoteDevice.getSubDevice();
+		boolean retry = true;
+		while (true) {
+			try  {
+				if (defaultState == null) {
+					if (subDevice.deviceAttributes.get((short) 0x0001).getValue() != null) {
+						logger.debug("Device " + deviceAddressStr + " is connected, Value is sent");
+						return true;
+					}	
+				}
 
+				Thread.sleep(1000);
+
+				if (defaultState != null) {
+					if (defaultState.equals(subDevice.deviceAttributes.get((short) 0x0001).getValue())) {
+						logger.debug("Device " + deviceAddressStr + " is connected");
+						return true;
+					}
+					else if (subDevice.deviceAttributes.get((short) 0x0001).getValue() != null) {
+						if (retry) {
+							remoteDevice.getMsgNum();
+							remoteDevice.getMsgNum();
+							subDevice.channelChanged((byte) 0x01, defaultState);
+							retry = false;
+						}
+						else {
+							logger.debug("Device " + deviceAddressStr + " is not connected (wrong state)");					
+							return false;
+						}
+					}
+				}
+				connectionTime++;
+				if (connectionTime >= CONNECTION_TRY_TIMEOUT) {
+					logger.debug("Device " + deviceAddressStr + " is not connected (timedout)");					
+					return false;
+				}
+			} catch (InterruptedException e) {
+				break;
+			}
+		}
+		logger.debug("Device " + deviceAddressStr + " is not connected(interrupted)");					
+		return false;
+	}
+	
 	private void establishConnection() {
 		final String parameter = "HMUSB";
 		LocalConnection localCon = localConnectionsMap.get(portname);
@@ -200,12 +272,6 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 		}
 	}
 
-	protected void removeConnection(String interfaceId) {
-		localConnectionsMap.remove(interfaceId);
-	}
-	
-	
-
 	protected void addConnection(LocalConnection con) {
 		localConnectionsMap.put(con.getInterfaceId(), con);
 	}
@@ -225,7 +291,7 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 
 	@Override
 	public void onDisconnect(String deviceAddress) {
-		removeConnection(deviceAddress);
+		connectionsMap.remove(deviceAddress);
 	}
 
 }
