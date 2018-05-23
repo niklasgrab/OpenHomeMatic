@@ -25,6 +25,7 @@ import org.openmuc.framework.config.options.Preferences;
 public class HomeMaticDevicePreferences {
 
 	private static final String TYPE_KEY = "deviceType";
+	private static final String DEFAULT_STATE_KEY = "defaultState";
 
 	protected final Preferences settings;
 
@@ -37,6 +38,13 @@ public class HomeMaticDevicePreferences {
 			return settings.getString(TYPE_KEY);
 		}
 		return null;
+	}
+
+	public boolean getDefaultState() {
+		if(settings.contains(DEFAULT_STATE_KEY)) {
+			return settings.getBoolean(DEFAULT_STATE_KEY);
+		}
+		return false;
 	}
 
 }

@@ -184,6 +184,21 @@
         </selection>
       </option>
 		
+      <option id="defaultState">
+        <name>Default State of the Homematic Device</name>
+        <description><![CDATA[
+        	Default State of the Homematic Device.<br><br>
+            <b>Example:</b> On
+         ]]>
+        </description>
+        <mandatory>false</mandatory>
+        <selection>
+			<item value="true">On</item>-->
+			<item value="false">Off</item>-->
+        </selection>
+        <type>BOOLEAN</type>
+        <default>false</default>
+      </option>
     </deviceSettings>
    
     <deviceScanSettings>
