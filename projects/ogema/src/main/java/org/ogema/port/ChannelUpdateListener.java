@@ -18,7 +18,7 @@
  * along with OpenSkeleton.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.openmuc.framework.driver.homematic;
+package org.ogema.port;
 
 import java.util.HashMap;
 import java.util.List;
