@@ -22,7 +22,6 @@ package org.openmuc.framework.driver.homematic;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,10 +30,12 @@ import org.ogema.core.channelmanager.driverspi.ChannelLocator;
 import org.ogema.core.channelmanager.driverspi.DeviceLocator;
 import org.ogema.core.channelmanager.measurements.SampledValue;
 import org.ogema.driver.homematic.Channel;
+import org.ogema.driver.homematic.Device;
 import org.ogema.driver.homematic.manager.DeviceAttribute;
 import org.ogema.driver.homematic.manager.DeviceCommand;
 import org.ogema.driver.homematic.manager.asksin.LocalDevice;
 import org.ogema.driver.homematic.manager.asksin.RemoteDevice;
+import org.ogema.port.ChannelUpdateListener;
 import org.ogema.port.OgemaSampledValue;
 import org.ogema.port.OgemaValue;
 import org.openmuc.framework.config.ArgumentSyntaxException;
@@ -53,7 +54,7 @@ import org.openmuc.framework.driver.spi.RecordsReceivedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HomeMaticConnection implements Connection {
+public class HomeMaticConnection extends Device implements Connection {
 	
     /**
      * Interface used by {@link HomeMaticConnection} to notify the {@link HomeMaticDriver} about events
@@ -68,20 +69,15 @@ public class HomeMaticConnection implements Connection {
      */
     private HomeMaticConnectionCallbacks callbacks;
 
-	
 
 	private final static Logger logger = LoggerFactory.getLogger(HomeMaticConnection.class);
-	
-	private final String deviceAddress;
-	
-	private final Map<String, Channel> channelMap;
-
+		
 	private LocalDevice localDevice;
 
 	public HomeMaticConnection(String deviceAddress, HomeMaticConnectionCallbacks callbacks) {
+		super(new DeviceLocator("null", "null", deviceAddress, null), null);
+		
         this.callbacks = callbacks;
-		this.deviceAddress = deviceAddress;
-		channelMap = new HashMap<String, Channel>();
  	}
 
 	@Override
@@ -93,8 +89,8 @@ public class HomeMaticConnection implements Connection {
         List<ChannelScanInfo> chanScanInf = new ArrayList<>();
         
         Map<Byte, DeviceCommand> deviceCommands =
-				localDevice.getDevices().get(deviceAddress).getSubDevice().deviceCommands;	
-        RemoteDevice remoteDevice =  (RemoteDevice)localDevice.getDevices().get(deviceAddress);
+				localDevice.getDevices().get(getDeviceAddress()).getSubDevice().deviceCommands;	
+        RemoteDevice remoteDevice =  (RemoteDevice)localDevice.getDevices().get(getDeviceAddress());
 		Iterator<DeviceCommand> it = deviceCommands.values().iterator();
 		while (it.hasNext()) {
 			DeviceCommand command = it.next();
@@ -102,14 +98,14 @@ public class HomeMaticConnection implements Connection {
 			ValueType valType = OgemaValue.encodeValueType(remoteDevice.getSubDevice().deviceCommands.get(
 					command.getIdentifier()).getValueType());
 		    ChannelScanInfo channelInfo = new ChannelScanInfo(channel, 
-		    		"Device Type of Channel is: " + localDevice.getDevices().get(deviceAddress).getDeviceType(), 
+		    		"Device Type of Channel is: " + localDevice.getDevices().get(getDeviceAddress()).getDeviceType(), 
 		        valType, null);
 	        logger.debug("#### channel added : " + command.getChannelAddress());
 			chanScanInf.add(channelInfo);
 		}
 		
 		Map<Short, DeviceAttribute> deviceAttributes =
-				localDevice.getDevices().get(deviceAddress).getSubDevice().deviceAttributes;
+				localDevice.getDevices().get(getDeviceAddress()).getSubDevice().deviceAttributes;
 		Iterator<DeviceAttribute> itAttr = deviceAttributes.values().iterator();
 		while (itAttr.hasNext()) {
 			DeviceAttribute attribute = itAttr.next();
@@ -117,7 +113,7 @@ public class HomeMaticConnection implements Connection {
 			ValueType valType = OgemaValue.encodeValueType(remoteDevice.getSubDevice().deviceAttributes.get(
 					attribute.getIdentifier()).getValueType());
 		    ChannelScanInfo channelInfo = new ChannelScanInfo(channel, 
-		    		"Device Type of Channel is: " + localDevice.getDevices().get(deviceAddress).getDeviceType(), 
+		    		"Device Type of Channel is: " + localDevice.getDevices().get(getDeviceAddress()).getDeviceType(), 
 		        valType, null);
 	        logger.debug("#### channel added : " + attribute.getAttributeName());
 			chanScanInf.add(channelInfo);
@@ -140,12 +136,12 @@ public class HomeMaticConnection implements Connection {
 		        		Channel channel = getChannel(container.getChannelAddress(), preferences.getType());
 		        		SampledValue readValue = channel.readValue(null);
 		        		if (readValue.getValue() == null) {
-		        	        logger.debug("No Value received yet from: " + deviceAddress + " for " + channel.getChannelLocator().getChannelAddress());
+		        	        logger.debug("No Value received yet from: " + getDeviceAddress() + " for " + channel.getChannelLocator().getChannelAddress());
 		        		}
 						container.setRecord(OgemaSampledValue.decode(channel.readValue(null)));
 					}
 					else {
-						container.setRecord(new Record(Flag.CHANNEL_DELETED));	 
+						throw new ConnectionException("Device deleted by pairing failure");
 					}
 	        	}
 	        	catch (NullPointerException | IllegalArgumentException e) {
@@ -174,6 +170,7 @@ public class HomeMaticConnection implements Connection {
 					} 
 					else {
 						channel.removeUpdateListener();
+						throw new ConnectionException("Device deleted by pairing failure");
 					}
 	        	}
 	        	catch (NullPointerException | IllegalArgumentException e) {
@@ -196,6 +193,9 @@ public class HomeMaticConnection implements Connection {
 						Channel channel = getChannel(container.getChannelAddress(), preferences.getType());
 						channel.writeValue(null, OgemaValue.encode(container.getValue()));
 					}
+					else {
+						throw new ConnectionException("Device deleted by pairing failure");
+					}
 	        	}
 	        	catch (NullPointerException | IllegalArgumentException | ArgumentSyntaxException e) {
 	        		throw new UnsupportedOperationException("Channel not found", e);	        		
@@ -206,7 +206,7 @@ public class HomeMaticConnection implements Connection {
 		}
 		return null;
 	}
-
+	
 	@Override
 	public void disconnect() {
 		
@@ -216,14 +216,19 @@ public class HomeMaticConnection implements Connection {
 
 	public void close() {
 		if (localDevice != null) {
-		  localDevice.getDevices().remove(this.deviceAddress);
+		  localDevice.getDevices().remove(this.getDeviceAddress());
 		  localDevice = null;
 		}
-		channelMap.clear();
+		getChannels().clear();
 		if (callbacks != null) {
-		  callbacks.onDisconnect(deviceAddress);
+		  callbacks.onDisconnect(getDeviceAddress());
           callbacks = null;
 		}
+	}
+
+	@Override
+	public RemoteDevice getRemoteDevice() {
+		return (RemoteDevice) getLocalDevice().getDevices().get(getDeviceAddress());
 	}
 
 	public LocalDevice getLocalDevice() {
@@ -242,19 +247,17 @@ public class HomeMaticConnection implements Connection {
 	 * changed.
 	 */
 	private boolean isRemoteDeviceAvailable(String channelAddress) {
-		boolean retVal = localDevice.getDevices().containsKey(deviceAddress);
-		if (!retVal) channelMap.remove(channelAddress);
+		boolean retVal = localDevice.getDevices().containsKey(getDeviceAddress());
+		if (!retVal) getChannels().remove(channelAddress);
 		return retVal;
 	}
 	
 	private Channel getChannel(String channelAddress, String settings) {
-		Channel channel = channelMap.get(channelAddress);
+		Channel channel = getChannels().get(channelAddress);
     	if (channel == null) {
-			DeviceLocator deviceLocator = new DeviceLocator("blabla", "blabla", deviceAddress, null);
-			Device dev = new Device(deviceLocator, this);
-    		ChannelLocator channelLocator = new ChannelLocator(settings + ":" + channelAddress, dev.getDeviceLocator());
-			channel = Channel.createChannel(channelLocator, dev);
-			channelMap.put(channelAddress, channel);   		
+    		ChannelLocator channelLocator = new ChannelLocator(settings + ":" + channelAddress, getDeviceLocator());
+			channel = Channel.createChannel(channelLocator, this);
+			getChannels().put(channelAddress, channel);   		
     	}
     	return channel;
 	}
