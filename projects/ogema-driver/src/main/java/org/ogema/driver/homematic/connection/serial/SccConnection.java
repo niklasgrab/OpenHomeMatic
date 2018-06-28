@@ -79,11 +79,12 @@ public class SccConnection implements IUsbConnection {
 				
 				try {
 					Thread.sleep(1000);
+					
 				} catch (InterruptedException e) {
 					closeConnection();
-					throw new SerialPortException("Unable to open Pi port: " + e.getMessage());
+					throw new IOException("Unable to open Pi port: " + e.getMessage());
 				}
-
+				
 				// Register the serial data listener
 				port = SerialFactory.createInstance();
 				port.addListener(lsnr);
@@ -96,8 +97,8 @@ public class SccConnection implements IUsbConnection {
 				write("Ar".getBytes());
 				
 			} catch (IOException | RuntimeException e) {
+				logger.warn("Error while opening connection: {}", e.getMessage());
 				closeConnection();
-				throw e;
 			}
 		}
 		closed = false;		
@@ -147,13 +148,16 @@ public class SccConnection implements IUsbConnection {
 	public void closeConnection() {
 		try {
 			if (port != null) port.close();
+			
 		} catch (IllegalStateException | IOException e) {
 			logger.warn("Error while closing Pi port: {}", e.getMessage());
 		}
 		
-		// turn pin #17 off
-		pin.low();
-		pin.unexport();
+		// Unprovision pin #17
+		if (pin != null) {
+			pin.low();
+			pin.unexport();
+		}
 		closed = true;
 	}
 

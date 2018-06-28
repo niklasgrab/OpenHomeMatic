@@ -37,7 +37,7 @@ public class LocalSccConnection extends LocalConnection {
 		connection = new SccConnection(ProtocolType.ASKSIN);
 		startConnectThread();
 	}
-	
+
 	private void startConnectThread() {
 		Thread connectScc = new Thread() {
 			@Override
@@ -61,6 +61,7 @@ public class LocalSccConnection extends LocalConnection {
 					} catch (IOException | TooManyListenersException e) {
 						try {
 							Thread.sleep(Constants.CONNECT_WAIT_TIME);
+							
 						} catch (InterruptedException ie) {
 							ie.printStackTrace();
 						}

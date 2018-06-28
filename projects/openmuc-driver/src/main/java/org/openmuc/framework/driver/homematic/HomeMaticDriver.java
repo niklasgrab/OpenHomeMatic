@@ -57,9 +57,9 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 
 	private final DriverInfo info = DriverInfoFactory.getPreferences(HomeMaticDriver.class);
 
-	public static final String CONNECTION_TYPE_KEY = "org.openmuc.framework.driver.homematic.type";
-	public static final String CONNECTION_TYPE_CUL = "CUL";
-	public static final String CONNECTION_TYPE_SCC = "SCC";
+	public static final String CONNECTION_INTERFACE = "org.openmuc.framework.driver.homematic.interface";
+	public static final String CONNECTION_INTERFACE_CUL = "CUL";
+	public static final String CONNECTION_INTERFACE_SCC = "SCC";
 
 	private static int SLEEP_TIME = 1000;
 	private static int CONNECT_TIMEOUT = 41; // in Seconds
@@ -70,13 +70,13 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 	private final Map<String, HomeMaticConnection> connectionsMap;
 	private final Object connectionLock = new Object();
 
-	private final String port;
+	private final String connectionInterface;
 
 	public HomeMaticDriver() {
 		localConnectionsMap = new HashMap<String, LocalConnection>();
 		connectionsMap = new HashMap<String, HomeMaticConnection>();
 		
-		port = System.getProperty(CONNECTION_TYPE_KEY, CONNECTION_TYPE_SCC).toUpperCase();
+		connectionInterface = System.getProperty(CONNECTION_INTERFACE, CONNECTION_INTERFACE_SCC).toUpperCase();
 		
 		establishConnection();
 	}
@@ -100,7 +100,7 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 		// TODO: implement as deviceScanSettings option
 		int duration = 60;
 		
-		LocalConnection localCon = findConnection(port);
+		LocalConnection localCon = findConnection(connectionInterface);
 		if (localCon != null) {
 			LocalDevice localDevice = localCon.getLocalDevice();
 			localDevice.setIgnoreExisting(ignore);
@@ -149,7 +149,7 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 		
 		HomeMaticConnection connection = connectionsMap.get(addressStr);
 		if (connection == null) {
-			LocalConnection localCon = findConnection(port);
+			LocalConnection localCon = findConnection(connectionInterface);
 			LocalDevice localDevice = localCon.getLocalDevice();		
 			
 			connection = new HomeMaticConnection(addressStr, this);
@@ -232,17 +232,17 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 	}
 
 	private void establishConnection() {
-		LocalConnection localCon = localConnectionsMap.get(port);
+		LocalConnection localCon = localConnectionsMap.get(connectionInterface);
 		if (localCon == null) {
 			try {
-				if (port.equals(CONNECTION_TYPE_SCC)) {
-					localCon = new LocalSccConnection(connectionLock, port, "HMSCC");
+				if (connectionInterface.equals(CONNECTION_INTERFACE_SCC)) {
+					localCon = new LocalSccConnection(connectionLock, connectionInterface, "HMSCC");
 				}
-				else if (port.equals(CONNECTION_TYPE_CUL)) {
-					localCon = new LocalCulConnection(connectionLock, port, "HMCUL");
+				else if (connectionInterface.equals(CONNECTION_INTERFACE_CUL)) {
+					localCon = new LocalCulConnection(connectionLock, connectionInterface, "HMCUL");
 				}
 				else {
-					localCon = new LocalUsbConnection(connectionLock, port, "HMUSB");
+					localCon = new LocalUsbConnection(connectionLock, connectionInterface, "HMUSB");
 				}
 				addConnection(localCon);
 			}
