@@ -1,17 +1,19 @@
+
+def projectName = "OGEMA Driver - Porting"
+
 def ogemaversion = '2.1.2'
 def openmucversion = '1.0.0'
-def slf4jversion =  '1.7.25'
 
 repositories {
    flatDir {
-       dirs '../openmuc-driver/dependencies/openmuc'
-       dirs '../../dependencies/ogema'
+       dirs rootDir.getPath() + '/dependencies/ogema', 
+	        rootDir.getPath() + '/dependencies/openmuc'
    }
 }
 
 dependencies {
-  compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jversion
-  
+  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+
   compile group: 'org.ogema.core', name: 'api', version: ogemaversion
   compile group: 'org.ogema.drivers', name: 'homematic', version: ogemaversion
 
@@ -21,7 +23,7 @@ dependencies {
 
 jar {
   manifest {
-    name = "OGEMA"
-    instruction 'Export-Package', '!*.internal.*,*'
+    name = projectName
+    instruction 'Export-Package', '*'
   }
 }

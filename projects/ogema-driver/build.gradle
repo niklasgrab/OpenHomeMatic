@@ -1,31 +1,36 @@
+
+def projectName = "OGEMA Driver - HomeMatic"
+
 def ogemaversion = '2.1.2'
 def pi4jversion = '1.2-SNAPSHOT'
-def jrxtxversion = '1.0.0'
+def jrxtxversion = '1.0.1'
 def jsonversion = '20170516'
 
 repositories {
    flatDir {
-       dirs '../../dependencies/ogema',
-            '../../dependencies/pi4j'
+       dirs rootDir.getPath() + '/dependencies/ogema', 
+	        rootDir.getPath() + '/dependencies/pi4j'
    }
 }
 
 dependencies {
+  compile project(':ogema')
+
   compile group: 'org.ogema.core', name: 'api', version: ogemaversion
   compile group: 'org.ogema.drivers', name: 'homematic', version: ogemaversion
 
   compile group: 'com.pi4j', name: 'pi4j-core', version: pi4jversion
   compile group: 'com.pi4j', name: 'pi4j-device', version: pi4jversion
+  compile group: 'com.pi4j', name: 'pi4j-gpio-extension', version: pi4jversion
 
-  // https://mvnrepository.com/artifact/org.rxtx/rxtx
   compile group: 'org.openmuc', name: 'jrxtx', version: jrxtxversion
-  
+
   compile group: 'org.json', name: 'json', version: jsonversion
 }
 
 jar {
   manifest {
-    name = "HomeMatic"
+    name = projectName
     instruction 'Export-Package', '!*.internal.*,*'
   }
 }

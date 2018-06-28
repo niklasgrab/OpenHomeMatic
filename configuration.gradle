@@ -6,21 +6,21 @@ project.ext {
 
   cfgCopyDependencies = false
 
-  cfgCopyToRoot = true
+  cfgCopyToRoot = false
 
   javaProjects = subprojects
 
-  jarDefaultImportPackageVersion=";version=0"
+  jarDefaultImportPackageVersion = ";version=0"
 
   distributionProjects = subprojects.findAll {
     it.getPath() == ":ogema" ||
-    it.getPath() == ":ogema-homematic" ||
+    it.getPath() == ":ogema-driver-homematic" ||
     it.getPath() == ":openmuc-driver-homematic"
   }
 
   docProjects = distributionProjects.findAll {
     it.getPath() == ":ogema" ||
-    it.getPath() == ":ogema-homematic"
+    it.getPath() == ":ogema-driver-homematic"
   }
 
 }
