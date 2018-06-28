@@ -23,11 +23,6 @@ package org.ogema.driver.homematic.connection.serial;
 import org.ogema.driver.homematic.Constants;
 import org.ogema.driver.homematic.usbconnection.IUsbConnection;
 
-/**
- * 
- * @author Godwin Burkhardt
- * 
- */
 public class SerialKeepAlive implements Runnable {
 
 	private static final byte[] GET_VERSION_KEY = "V".getBytes();
@@ -43,6 +38,10 @@ public class SerialKeepAlive implements Runnable {
 
 	public void stop() {
 		running = false;
+	}
+
+	public String getConnectionAddress() {
+		return address;
 	}
 
 	public void setConnectionAddress(String address) {

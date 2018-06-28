@@ -1,10 +1,10 @@
 
 def projectName = "OGEMA Driver - HomeMatic"
 
-def ogemaversion = '2.1.2'
-def pi4jversion = '1.2-SNAPSHOT'
-def jrxtxversion = '1.0.1'
-def jsonversion = '20170516'
+def ogemaVersion = '2.1.2'
+def pi4jVersion = '1.2-SNAPSHOT'
+def jrxtxVersion = '1.0.1'
+def jsonVersion = '20170516'
 
 repositories {
    flatDir {
@@ -14,18 +14,18 @@ repositories {
 }
 
 dependencies {
-  compile project(':ogema')
+  compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
 
-  compile group: 'org.ogema.core', name: 'api', version: ogemaversion
-  compile group: 'org.ogema.drivers', name: 'homematic', version: ogemaversion
+  compile group: 'org.ogema.core', name: 'api', version: ogemaVersion
+  compile group: 'org.ogema.drivers', name: 'homematic', version: ogemaVersion
 
-  compile group: 'com.pi4j', name: 'pi4j-core', version: pi4jversion
-  compile group: 'com.pi4j', name: 'pi4j-device', version: pi4jversion
-  compile group: 'com.pi4j', name: 'pi4j-gpio-extension', version: pi4jversion
+  compile group: 'com.pi4j', name: 'pi4j-core', version: pi4jVersion
+  compile group: 'com.pi4j', name: 'pi4j-device', version: pi4jVersion
+  compile group: 'com.pi4j', name: 'pi4j-gpio-extension', version: pi4jVersion
 
-  compile group: 'org.openmuc', name: 'jrxtx', version: jrxtxversion
+  compile group: 'org.openmuc', name: 'jrxtx', version: jrxtxVersion
 
-  compile group: 'org.json', name: 'json', version: jsonversion
+  compile group: 'org.json', name: 'json', version: jsonVersion
 }
 
 jar {

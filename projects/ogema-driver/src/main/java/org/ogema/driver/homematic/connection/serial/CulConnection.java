@@ -30,6 +30,7 @@ import org.ogema.driver.homematic.connection.ProtocolType;
 import org.ogema.driver.homematic.usbconnection.Fifo;
 import org.ogema.driver.homematic.usbconnection.IUsbConnection;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;
@@ -40,38 +41,20 @@ import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
 import gnu.io.UnsupportedCommOperationException;
 
-/**
- * 
- * @author Godwin Burkhardt
- * 
- */
 @SuppressWarnings("deprecation")
-public class SerialConnection implements IUsbConnection {
-
-	private static final String APP_NAME = "org.openmuc.framework.driver.homematic.SERIAL";
-	private static final String PORT_KEY = "serialPort";
-	private static final String PORT_DEFAULT = "/dev/ttyACM0";
-	private static final String BAUDRATE_KEY = "baudrate";
-	private static final String BAUDRATE_DEFAULT = "9600";
-	private static final String DATABITS_KEY = "databits";
-	private static final String DATABITS_DEFAULT = "7";
-	private static final String STOPBITS_KEY = "stopbits";
-	private static final String STOPBITS_DEFAULT = "1";
-	private static final String PARITY_KEY = "parity";
-	private static final String PARITY_DEFAULT = "2";
+public class CulConnection implements IUsbConnection {
+	private final Logger logger = LoggerFactory.getLogger(CulConnection.class);
 
 	public static boolean BINARY_MODE = false;
-	
-	
-	private final Logger logger = org.slf4j.LoggerFactory.getLogger("homematic-driver");
 
+	private static final String SERIAL_NAME = "org.openmuc.framework.driver.homematic.cul";
+	private static final int SERIAL_BAUDRATE = 9600;
+	private static final int SERIAL_DATA_BITS = 7;
+	private static final int SERIAL_STOP_BITS = 1;
+	private static final int SERIAL_PARITY = 2;
 
 	private SerialPort serialPort;
-	private String portName;
-	private int baudrate;
-	private int databits;
-	private int stopbits;
-	private int parity;
+	private String serialPortName;
 
 	private boolean closed = true;
 
@@ -80,25 +63,19 @@ public class SerialConnection implements IUsbConnection {
 
     private BufferedReader input;
     private OutputStream outputStream;
-	
+
 	private SerialPortEventListener lsnr;
-	
-	private SerialKeepAlive keepAlive;
-	private Thread keepAliveThread;
-	
-	private ProtocolType protocolType = ProtocolType.OTHER;
-	
-	
-	public SerialConnection(final ProtocolType type) {
-		this.portName = System.getProperty(APP_NAME + "." + PORT_KEY, PORT_DEFAULT);
-		this.baudrate = Integer.parseInt(System.getProperty(APP_NAME + "." + BAUDRATE_KEY, BAUDRATE_DEFAULT));
-		this.databits = Integer.parseInt(System.getProperty(APP_NAME + "." + DATABITS_KEY, DATABITS_DEFAULT));
-		this.stopbits = Integer.parseInt(System.getProperty(APP_NAME + "." + STOPBITS_KEY, STOPBITS_DEFAULT));
-		this.parity = Integer.parseInt(System.getProperty(APP_NAME + "." + PARITY_KEY, PARITY_DEFAULT));
-		protocolType = type;
-		inputFifo = new Fifo<byte[]>(6);
-		inputEventLock = new Object();
-		lsnr = new HMSerialPortEventListener();
+
+//	private SerialKeepAlive keepAlive;
+//	private Thread keepAliveThread;
+
+	private ProtocolType protocolType = ProtocolType.BYTE;
+
+	public CulConnection(final ProtocolType type) {
+		this.protocolType = type;
+		this.inputFifo = new Fifo<byte[]>(6);
+		this.inputEventLock = new Object();
+		this.lsnr = new CulEventListener();
 	}
 
 	public boolean isClosed() {
@@ -108,19 +85,19 @@ public class SerialConnection implements IUsbConnection {
 	public void open() throws IOException, TooManyListenersException {
 		if (isClosed()) {
 			try {
-				serialPort = acquireSerialPort(portName);
+				serialPort = acquireSerialPort(serialPortName);
 	            input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
 	            outputStream = serialPort.getOutputStream();
 				serialPort.addEventListener(lsnr);
 				serialPort.notifyOnDataAvailable(true);
-				write("V".getBytes());
+//				write("V".getBytes());
 //				write("X71".getBytes());
 //				BINARY_MODE = true;
 				write("Ar".getBytes());
 				
 //				keepAlive = new SerialKeepAlive(this);
 //				keepAliveThread = new Thread(keepAlive);
-//				keepAliveThread.setName("homematic-lld-keepAlive");
+//				keepAliveThread.setName("OGEMA-HomeMatic-CC1101-USB-keepAlive");
 //				keepAliveThread.start();
 			} catch (IOException |TooManyListenersException | RuntimeException e) {
 				if (serialPort != null) { 
@@ -134,7 +111,7 @@ public class SerialConnection implements IUsbConnection {
 
 	public void write(final byte[] data) throws IOException {
 			try {
-				// We have always to send CR and LF at the end of the data  //TODO Fix it in Interface ?
+				// We have always to send CR and LF at the end of the data  //TODO Fix it in interface ?
 				byte[] dataCRLF = new byte[data.length+2];
 				for (int i = 0; i < data.length; i++) {
 					dataCRLF[i] = data[i];
@@ -165,21 +142,22 @@ public class SerialConnection implements IUsbConnection {
 			if (portIdentifier.isCurrentlyOwned()) {
 				System.out.println("Port is currently owned by: " + portIdentifier.getCurrentOwner());
 			}
-			commPort = portIdentifier.open(APP_NAME, 2000);
+			commPort = portIdentifier.open(SERIAL_NAME, 2000);
 			
 		} catch (PortInUseException e) {
 			throw new IOException("The specified port is already in use", e);
 		}
-
+		
 		if (!(commPort instanceof SerialPort)) {
 			// may never be the case
 			commPort.close();
 			throw new IOException("The specified CommPort is not a serial port");
 		}
-
+		
 		try {
 			SerialPort serialPort = (SerialPort) commPort;
-			serialPort.setSerialPortParams(baudrate, databits, stopbits, parity);
+			
+			serialPort.setSerialPortParams(SERIAL_BAUDRATE, SERIAL_DATA_BITS, SERIAL_STOP_BITS, SERIAL_PARITY);
 			serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
 			serialPort.disableReceiveTimeout();
 			serialPort.enableReceiveThreshold(1);
@@ -207,12 +185,8 @@ public class SerialConnection implements IUsbConnection {
 		}
 	}
 
-	public void setParameters(int baudrate) throws IOException {
-		setParameters(baudrate, databits, stopbits, parity);
-	}
-
-	public void resetParameters() throws IOException {
-		setParameters(baudrate, databits, stopbits, parity);
+	public ProtocolType getProtocolType() {
+		return protocolType;
 	}
 
 	@Override
@@ -231,10 +205,10 @@ public class SerialConnection implements IUsbConnection {
 
 	@Override
 	public void closeConnection() {
-		if (keepAlive != null) {
-			keepAlive.stop();
-			keepAliveThread.interrupt();
-		}
+//		if (keepAlive != null) {
+//			keepAlive.stop();
+//			keepAliveThread.interrupt();
+//		}
 		
 		if (serialPort != null) {
 			serialPort.close();
@@ -257,7 +231,7 @@ public class SerialConnection implements IUsbConnection {
 //		this.keepAlive.setConnectionAddress(address);
 	}
 	
-	class HMSerialPortEventListener implements gnu.io.SerialPortEventListener {
+	class CulEventListener implements gnu.io.SerialPortEventListener {
 
 		@Override
 		public void serialEvent(SerialPortEvent event) {
@@ -287,6 +261,7 @@ public class SerialConnection implements IUsbConnection {
                     case gnu.io.SerialPortEvent.PE:
                     case gnu.io.SerialPortEvent.RI:
                     default:
+                    	break;
                 }
             }
             catch (IOException ex) {

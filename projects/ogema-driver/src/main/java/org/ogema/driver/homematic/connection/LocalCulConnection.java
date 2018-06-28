@@ -24,31 +24,31 @@ import java.io.IOException;
 import java.util.TooManyListenersException;
 
 import org.ogema.driver.homematic.Constants;
-import org.ogema.driver.homematic.connection.serial.SerialConnection;
+import org.ogema.driver.homematic.connection.serial.CulConnection;
 import org.ogema.driver.homematic.manager.asksin.LocalDevice;
 
-public class LocalSerialConnection  extends LocalConnection {
+public class LocalCulConnection extends LocalConnection {
 	
-	private final SerialConnection serialConnection;
+	private final CulConnection connection;
 
-	public LocalSerialConnection(Object lock, String iface, String parameter) {
+	public LocalCulConnection(Object lock, String iface, String parameter) {
 		super(lock, iface, parameter);
 		
-		serialConnection = new SerialConnection(ProtocolType.ASKSIN);
+		connection = new CulConnection(ProtocolType.ASKSIN);
 		startConnectThread();
 	}
 	
 	private void startConnectThread() {
-		Thread connectSerial = new Thread() {
+		Thread connectCul = new Thread() {
 			@Override
 			public void run() {
 				while (!hasConnection) {
 					try {
-						serialConnection.open();
+						connection.open();
 //						serialConnection.setAskSinMode(true);
 						synchronized (connectionLock) {
 							hasConnection = true;
-							localDevice = new LocalDevice(parameterString, serialConnection,ProtocolType.ASKSIN);
+							localDevice = new LocalDevice(parameterString, connection,ProtocolType.ASKSIN);
 							while (!localDevice.getIsReady()) {
 								try {
 									Thread.sleep(Constants.CONNECT_WAIT_TIME/10);
@@ -68,7 +68,7 @@ public class LocalSerialConnection  extends LocalConnection {
 				}
 			}
 		};
-		connectSerial.setName("homematic-ll-connectSerial");
-		connectSerial.start();
+		connectCul.setName("OGEMA-HomeMatic-CC1101-CUL-connect");
+		connectCul.start();
 	}
 }

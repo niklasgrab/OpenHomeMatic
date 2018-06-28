@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configuration>
+  <driver id="homematic-cc1101">
+    <name>HomeMatic CC1101</name>
+    <description><![CDATA[
+        The HomeMatic CC1101 Driver implements the communication with 
+        <a href='https://www.eq-3.de/produkte/homematic.html'>Smart Home devices by eQ-3</a> 
+        over CC1101 transceivers.
+      ]]>
+    </description>
+    
+    <deviceAddress>
+      <syntax>
+        <keyValue>false</keyValue>
+      </syntax>
+      <option id="address">
+        <name>Identifier</name>
+        <description>The unique identifier of the HomeMatic device</description>
+        <mandatory>false</mandatory>
+        <type>STRING</type>
+      </option>
+    </deviceAddress>
+    
+    <deviceSettings>
+      <option id="type">
+        <name>Type</name>
+        <description>The hex code identifier of the HomeMatic device type</description>
+        <mandatory>true</mandatory>
+        <type>String</type>
+        <selection>
+          <validate>false</validate>
+          <item value="0056">HM-CC-SCD (CO2 detector)</item>
+          <item value="005D">HM-Sen-MDIR-O (Motion detector)</item>
+          <item value="004A">HM-SEC-MDIR (Motion detector)</item>
+          <item value="00C1">HM-Sen-MDIR-O-2 (Motion detector)</item>
+          <item value="004F">HM-SEN-MDIR-SM (Motion detector)</item>
+          <item value="0090">Schueco_263-162 (Motion detector)</item>
+          <item value="00C0">HM-SEC-MDIR-2 (Motion detector)</item>
+          <item value="00AC">HM-ES-PMSw1-Pl (Smart Plug)</item>
+          <item value="00D7">HM-ES-PMSw1-Pl-DN-R1 (Smart Plug)</item>
+          <item value="00E3">HM-ES-PMSw1-Pl-DN-R3 (Smart Plug)</item>
+          <item value="00E4">HM-ES-PMSw1-Pl-DN-R4 (Smart Plug)</item>
+          <item value="00E5">HM-ES-PMSw1-Pl-DN-R5 (Smart Plug)</item>
+          <item value="007D">ROTO_ZEL-STG-RM-WT-2 (Push button)</item>
+          <item value="00D3">HM-Dis-WM55 (Push button)</item>
+          <item value="00BF">HM-PB-2-FM (Push button)</item>
+          <item value="006B">HM-PB-2-WM55 (Push button)</item>
+          <item value="0035">HM-PB-4-WM (Push button)</item>
+          <item value="00C2">HM-PB-2-WM55-2 (Push button)</item>
+          <item value="007F">ROTO_ZEL-STG-RM-FST-UP4 (Push button)</item>
+          <item value="008D">Schueco_263-135 (Push button)</item>
+          <item value="0034">HM-PBI-4-FM (Push button)</item>
+          <item value="00DD">HM-PB-4DIS-WM-2 (Push button)</item>
+          <item value="00DC">HM-Sen-DB-PCB (Push button)</item>
+          <item value="008F">Schueco_263-145 (Push button)</item>
+          <item value="0060">HM-PB-4DIS-WM (Push button)</item>
+          <item value="0036">HM-PB-2-WM (Push button)</item>
+          <item value="0038">HM-RC-19-B (Remote)</item>
+          <item value="00D9">HM-MOD-Em-8 (Remote)</item>
+          <item value="0054">DORMA_RC-H (Remote)</item>
+          <item value="0080">ROTO_ZEL-STG-RM-HS-4 (Remote)</item>
+          <item value="001B">HM-RC-SEC3 (Remote)</item>
+          <item value="0008">HM-RC-4 (Remote)</item>
+          <item value="00A6">HM-RC-Key4-2 (Remote)</item>
+          <item value="00A9">HM-PB-6-WM55 (Remote)</item>
+          <item value="008E">Schueco_263-155 (Remote)</item>
+          <item value="0037">HM-RC-19 (Remote)</item>
+          <item value="001D">HM-RC-KEY3 (Remote)</item>
+          <item value="004C">HM-RC-12-SW (Remote)</item>
+          <item value="001A">HM-RC-P1 (Remote)</item>
+          <item value="00A5">HM-RC-Sec4-2 (Remote)</item>
+          <item value="00A0">HM-RC-4-2 (Remote)</item>
+          <item value="003B">HM-RC-4-B (Remote)</item>
+          <item value="001C">HM-RC-SEC3-B (Remote)</item>
+          <item value="0029">HM-RC-12 (Remote)</item>
+          <item value="002A">HM-RC-12-B (Remote)</item>
+          <item value="007E">ROTO_ZEL-STG-RM-DWT-10 (Remote)</item>
+          <item value="00DA">HM-RC-8 (Remote)</item>
+          <item value="004D">HM-RC-19-SW (Remote)</item>
+          <item value="0018">CMM (Remote)</item>
+          <item value="001E">HM-RC-KEY3-B (Remote)</item>
+          <item value="0091">Schueco_263-167 (Smoke detector)</item>
+          <item value="0042">HM-SEC-SD (Smoke detector)</item>
+          <item value="0084">Schueco_263-160 (Smoke detector)</item>
+          <item value="0046">HM-SWI-3-FM (Switch)</item>
+          <item value="0083">Roto_ZEL-STG-RM-FSS-UP3 (Switch)</item>
+          <item value="0078">HM-Dis-TD-T (Switch)</item>
+          <item value="0050">HM-SEC-SFA-SM (Switch)</item>
+          <item value="00E6">HM-LC-Sw1-Pl-DN-R2 (Switch)</item>
+          <item value="004E">HM-LC-DDC1-PCB (Switch)</item>
+          <item value="0061">HM-LC-SW4-DR (Switch)</item>
+          <item value="0004">HM-LC-SW1-FM (Switch)</item>
+          <item value="008C">Schueco_263-131 (Switch)</item>
+          <item value="0014">HM-LC-SW1-SM-ATMEGA168 (Switch)</item>
+          <item value="0052">HM-LC-SW2-PB-FM (Switch)</item>
+          <item value="00CE">HM-LC-Sw4-PCB-2 (Switch)</item>
+          <item value="00C8">HM-LC-Sw1-Pl-3 (Switch)</item>
+          <item value="00D0">HM-LC-Sw4-DR-2 (Switch)</item>
+          <item value="008B">Schueco_263-130 (Switch)</item>
+          <item value="00A1">HM-LC-SW1-PL2 (Switch)</item>
+          <item value="0015">HM-LC-SW4-SM-ATMEGA168 (Switch)</item>
+          <item value="00CC">HM-LC-Sw2-DR-2 (Switch)</item>
+          <item value="00E8">HM-LC-Sw1-Pl-DN-R4 (Switch)</item>
+          <item value="0011">HM-LC-SW1-PL (Switch)</item>
+          <item value="0002">HM-LC-SW1-SM (Switch)</item>
+          <item value="00CF">HM-LC-Sw4-WM-2 (Switch)</item>
+          <item value="0009">HM-LC-SW2-FM (Switch)</item>
+          <item value="0062">HM-LC-SW2-DR (Switch)</item>
+          <item value="0069">HM-LC-Sw1PBU-FM (Switch)</item>
+          <item value="0003">HM-LC-SW4-SM (Switch)</item>
+          <item value="00C9">HM-LC-Sw1-SM-2 (Switch)</item>
+          <item value="0066">HM-LC-SW4-WM (Switch)</item>
+          <item value="0092">Schueco_263-144 (Switch)</item>
+          <item value="006C">HM-LC-SW1-BA-PCB (Switch)</item>
+          <item value="00CB">HM-LC-Sw2-FM-2 (Switch)</item>
+          <item value="00CD">HM-LC-Sw4-SM-2 (Switch)</item>
+          <item value="8001">PS-Switch (Switch)</item>
+          <item value="007C">ROTO_ZEL-STG-RM-FZS (Switch)</item>
+          <item value="002D">HM-LC-SW4-PCB (Switch)</item>
+          <item value="00BE">HM-MOD-Re-8 (Switch)</item>
+          <item value="0001">HM-LC-SW1-PL-OM54 (Switch)</item>
+          <item value="00E9">HM-LC-Sw1-Pl-DN-R5 (Switch)</item>
+          <item value="0051">HM-LC-SW1-PB-FM (Switch)</item>
+          <item value="00CA">HM-LC-Sw1-FM-2 (Switch)</item>
+          <item value="000A">HM-LC-SW2-SM (Switch)</item>
+          <item value="00AB">HM-LC-SW4-BA-PCB (Switch)</item>
+          <item value="00A2">ROTO_ZEL-STG-RM-FZS-2 (Switch)</item>
+          <item value="00D8">HM-LC-Sw1-Pl-DN-R1 (Switch)</item>
+          <item value="00E7">HM-LC-Sw1-Pl-DN-R3 (Switch)</item>
+          <item value="00BD">HM-CC-RT-DN-BoM (Thermostat)</item>
+          <item value="007A">ROTO_ZEL-STG-RM-FSA (Thermostat)</item>
+          <item value="003A">HM-CC-VD (Thermostat)</item>
+          <item value="0095">HM-CC-RT-DN (Thermostat)</item>
+          <item value="0039">HM-CC-TC (Thermostat)</item>
+          <item value="0079">ROTO_ZEL-STG-RM-FWT (Thermostat)</item>
+          <item value="00AD">HM-TC-IT-WM-W-EU (Thermostat)</item>
+          <item value="00B1">HM-SEC-SC-2 (Three state sensor)</item>
+          <item value="0045">HM-SEC-WDS (Three state sensor)</item>
+          <item value="002F">HM-SEC-SC (Three state sensor)</item>
+          <item value="0030">HM-SEC-RHS (Three state sensor)</item>
+          <item value="0081">ROTO_ZEL-STG-RM-FDK (Three state sensor)</item>
+          <item value="0082">Roto_ZEL-STG-RM-FFK (Three state sensor)</item>
+          <item value="0043">HM-SEC-TIS (Three state sensor)</item>
+          <item value="00B2">HM-SEC-WDS-2 (Three state sensor)</item>
+          <item value="005F">HM-SCI-3-FM (Three state sensor)</item>
+          <item value="00C7">HM-SEC-SCo (Three state sensor)</item>
+          <item value="00A8">HM-WDS30-OT2-SM (Temperature/Humidity sensor)</item>
+          <item value="002B">HM-WS550Tech (Temperature/Humidity sensor)</item>
+          <item value="0040">HM-WDS100-C6-O (Temperature/Humidity sensor)</item>
+          <item value="0033">KS550LC (Temperature/Humidity sensor)</item>
+          <item value="002C">KS550TECH (Temperature/Humidity sensor)</item>
+          <item value="0048">IS-WDS-TH-OD-S-R3 (Temperature/Humidity sensor)</item>
+          <item value="003E">HM-WDS30-T-O (Temperature/Humidity sensor)</item>
+          <item value="000B">HM-WS550 (Temperature/Humidity sensor)</item>
+          <item value="003F">HM-WDS40-TH-I (Temperature/Humidity sensor)</item>
+          <item value="0094">IS-WDS-TH-OD-S-R3 (Temperature/Humidity sensor)</item>
+          <item value="003C">HM-WDS20-TH-O (Temperature/Humidity sensor)</item>
+          <item value="0007">KS550 (Temperature/Humidity sensor)</item>
+          <item value="000D">ASH550 (Temperature/Humidity sensor)</item>
+          <item value="0093">Schueco_263-158 (Temperature/Humidity sensor)</item>
+          <item value="003D">HM-WDS10-TH-O (Temperature/Humidity sensor)</item>
+          <item value="0041">HM-WDC7000 (Temperature/Humidity sensor)</item>
+          <item value="001F">KS888 (Temperature/Humidity sensor)</item>
+          <item value="000F">S550IA (Temperature/Humidity sensor)</item>
+          <item value="0032">HM-WS550LCW (Temperature/Humidity sensor)</item>
+          <item value="000E">ASH550I (Temperature/Humidity sensor)</item>
+          <item value="8002">PS-Th-Sens (Temperature/Humidity sensor)</item>
+          <item value="0031">HM-WS550LCB (Temperature/Humidity sensor)</item>
+          <item value="00BC">HM-WDS40-TH-I-2 (Temperature/Humidity sensor)</item>
+        </selection>
+      </option>
+      <option id="defaultState">
+        <name>Default State</name>
+        <description><![CDATA[
+            The default state of the HomeMatic device, the driver will attempt to set when starting up.<br>
+            This may be applicable e.g. for some Smart Plugs or Switches after a blackout.
+          ]]>
+        </description>
+        <selection>
+            <item value="true">On</item>
+            <item value="false">Off</item>
+        </selection>
+        <type>BOOLEAN</type>
+        <default>false</default>
+      </option>
+    </deviceSettings>
+    
+    <deviceScanSettings>
+      <option id="ignoreExisting">
+        <name>Ignore Existing</name>
+        <description><![CDATA[
+            Ignore already configured HomeMatic devices when scanning.<br>
+            If disabled, all already paired and registered devices will be returned as well.
+          ]]>
+        </description>
+        <type>BOOLEAN</type>
+        <default>true</default>
+      </option>
+    </deviceScanSettings>
+    
+    <channelAddress>
+      <syntax>
+        <keyValue>false</keyValue>
+      </syntax>
+      <option id="address">
+        <name>Identifier</name>
+        <description>The unique identifier of the data channel</description>
+        <mandatory>true</mandatory>
+        <type>STRING</type>
+      </option>
+    </channelAddress>
+    
+    <channelSettings>
+      <option id="type">
+        <name>Type</name>
+        <description><![CDATA[
+            The type of the data channel:<br>
+            <ol>
+              <li>Attribute channels from which can be read.</li>
+              <li>Command channels which can be set</li>
+            </ol>
+          ]]>
+        </description>
+        <mandatory>true</mandatory>
+        <type>STRING</type>
+        <selection>
+          <item value="ATTRIBUTE">Attribute</item>
+          <item value="COMMAND">Command</item>
+        </selection>
+        <default>ATTRIBUTE</default>
+      </option>
+    </channelSettings>
+  </driver>
+</configuration>
+    

@@ -22,7 +22,7 @@ package org.ogema.driver.homematic.manager.asksin;
 
 import java.util.Arrays;
 
-import org.ogema.driver.homematic.connection.serial.SerialConnection;
+import org.ogema.driver.homematic.connection.serial.CulConnection;
 import org.ogema.driver.homematic.manager.InputHandler;
 import org.ogema.driver.homematic.manager.StatusMessage;
 import org.ogema.driver.homematic.manager.RemoteDevice.InitStates;
@@ -105,7 +105,7 @@ public class AsksinInputHandler extends InputHandler implements Runnable {
 			lastMsg = emsg;
 			break;
 		default:
-			if (SerialConnection.BINARY_MODE) {
+			if (CulConnection.BINARY_MODE) {
 				logger.debug("Unknown message: " + Converter.toHexString(tempArray));
 			}
 			else {

@@ -20,12 +20,7 @@
  */
 package org.ogema.driver.homematic.connection;
 
-/**
- * 
- * @author Godwin Burkhardt
- * 
- */
 public enum ProtocolType {
 	ASKSIN,
-	OTHER;
+	BYTE;
 }

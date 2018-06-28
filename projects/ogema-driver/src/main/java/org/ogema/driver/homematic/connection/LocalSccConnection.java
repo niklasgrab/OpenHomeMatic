@@ -4,31 +4,31 @@ import java.io.IOException;
 import java.util.TooManyListenersException;
 
 import org.ogema.driver.homematic.Constants;
-import org.ogema.driver.homematic.connection.serial.SerialRaspiPinConnection;
+import org.ogema.driver.homematic.connection.serial.SccConnection;
 import org.ogema.driver.homematic.manager.asksin.LocalDevice;
 
-public class LocalSerialRaspiPinConnection extends LocalConnection {
+public class LocalSccConnection extends LocalConnection {
 
-	private final SerialRaspiPinConnection serialConnection;
+	private final SccConnection connection;
 
-	public LocalSerialRaspiPinConnection(Object lock, String iface, String parameter) {
+	public LocalSccConnection(Object lock, String iface, String parameter) {
 		super(lock, iface, parameter);
 		
-		serialConnection = new SerialRaspiPinConnection(ProtocolType.ASKSIN);
+		connection = new SccConnection(ProtocolType.ASKSIN);
 		startConnectThread();
 	}
 	
 	private void startConnectThread() {
-		Thread connectSerial = new Thread() {
+		Thread connectScc = new Thread() {
 			@Override
 			public void run() {
 				while (!hasConnection) {
 					try {
-						serialConnection.open();
+						connection.open();
 //						serialConnection.setAskSinMode(true);
 						synchronized (connectionLock) {
 							hasConnection = true;
-							localDevice = new LocalDevice(parameterString, serialConnection,ProtocolType.ASKSIN);
+							localDevice = new LocalDevice(parameterString, connection, ProtocolType.ASKSIN);
 							while (!localDevice.getIsReady()) {
 								try {
 									Thread.sleep(Constants.CONNECT_WAIT_TIME/10);
@@ -48,7 +48,7 @@ public class LocalSerialRaspiPinConnection extends LocalConnection {
 				}
 			}
 		};
-		connectSerial.setName("homematic-ll-connectSerial");
-		connectSerial.start();
+		connectScc.setName("OGEMA-HomeMatic-CC1101-SCC-connect");
+		connectScc.start();
 	}
 }

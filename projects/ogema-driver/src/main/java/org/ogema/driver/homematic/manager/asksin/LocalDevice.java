@@ -38,8 +38,8 @@ public class LocalDevice extends org.ogema.driver.homematic.manager.LocalDevice 
 	private FileStorage fileStorage;
 	private boolean ignoreExisting;
 
-	private ProtocolType protocolType = ProtocolType.OTHER;
-	
+	private ProtocolType protocolType = ProtocolType.BYTE;
+
 	public LocalDevice(String port, IUsbConnection con, ProtocolType type) {
 		super(port, con);
 		this.protocolType = type;
@@ -49,7 +49,7 @@ public class LocalDevice extends org.ogema.driver.homematic.manager.LocalDevice 
 	@Override
 	protected void initialize() {
 		if (protocolType == null) return;
-		if (protocolType.equals(ProtocolType.OTHER)) {
+		if (protocolType.equals(ProtocolType.BYTE)) {
 			messageHandler = new MessageHandler(this);
 			inputHandler = new InputHandler(this);
 		}

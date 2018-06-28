@@ -29,17 +29,16 @@ public class LocalUsbConnection extends LocalConnection {
 	public LocalUsbConnection(Object lock, String iface, String parameter) {
 		super(lock, iface, parameter);
 
-		final UsbConnection usbConnection = new UsbConnection();
+		final UsbConnection connection = new UsbConnection();
 		
-
 		Thread connectUsb = new Thread() {
 			@Override
 			public void run() {
 				while (!hasConnection) {
-					if (usbConnection.connect()) {
+					if (connection.connect()) {
 						synchronized (connectionLock) {
 							hasConnection = true;
-							localDevice = new LocalDevice(parameterString, usbConnection, ProtocolType.OTHER);
+							localDevice = new LocalDevice(parameterString, connection, ProtocolType.BYTE);
 							connectionLock.notify();
 						}
 					}
@@ -51,7 +50,7 @@ public class LocalUsbConnection extends LocalConnection {
 				}
 			}
 		};
-		connectUsb.setName("homematic-ll-connectUSB");
+		connectUsb.setName("OGEMA-HomeMatic-CC1101-USB-connect");
 		connectUsb.start();
 	}
 }

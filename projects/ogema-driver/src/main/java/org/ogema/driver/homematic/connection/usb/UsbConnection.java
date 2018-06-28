@@ -22,18 +22,17 @@ package org.ogema.driver.homematic.connection.usb;
 
 import org.ogema.driver.homematic.connection.ProtocolType;
 
-/**
- * 
- * @author Godwin Burkhardt
- * 
- */
 public class UsbConnection extends org.ogema.driver.homematic.usbconnection.UsbConnection {
 
-	private ProtocolType protocolType = ProtocolType.OTHER;
-	
+	private ProtocolType protocolType = ProtocolType.BYTE;
+
 	public UsbConnection(final ProtocolType type) {
 		super();
 		protocolType = type;
+	}
+
+	public ProtocolType getProtocolType() {
+		return protocolType;
 	}
 
 }

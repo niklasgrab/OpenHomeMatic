@@ -40,12 +40,13 @@ import org.ogema.port.OgemaSampledValue;
 import org.ogema.port.OgemaValue;
 import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.ChannelScanInfo;
+import org.openmuc.framework.config.DriverInfoFactory;
+import org.openmuc.framework.config.DriverPreferences;
 import org.openmuc.framework.config.ScanException;
 import org.openmuc.framework.data.Flag;
 import org.openmuc.framework.data.Record;
 import org.openmuc.framework.data.ValueType;
-import org.openmuc.framework.driver.homematic.options.HomeMaticChannelPreferences;
-import org.openmuc.framework.driver.homematic.options.HomeMaticDriverInfo;
+import org.openmuc.framework.driver.homematic.settings.ChannelSettings;
 import org.openmuc.framework.driver.spi.ChannelRecordContainer;
 import org.openmuc.framework.driver.spi.ChannelValueContainer;
 import org.openmuc.framework.driver.spi.Connection;
@@ -55,7 +56,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HomeMaticConnection extends Device implements Connection {
-	
+	private final static Logger logger = LoggerFactory.getLogger(HomeMaticConnection.class);
+
+	private final DriverPreferences prefs = DriverInfoFactory.getPreferences(HomeMaticDriver.class);
+
     /**
      * Interface used by {@link HomeMaticConnection} to notify the {@link HomeMaticDriver} about events
      */
@@ -69,9 +73,6 @@ public class HomeMaticConnection extends Device implements Connection {
      */
     private HomeMaticConnectionCallbacks callbacks;
 
-
-	private final static Logger logger = LoggerFactory.getLogger(HomeMaticConnection.class);
-		
 	private LocalDevice localDevice;
 
 	public HomeMaticConnection(String deviceAddress, HomeMaticConnectionCallbacks callbacks) {
@@ -84,9 +85,8 @@ public class HomeMaticConnection extends Device implements Connection {
 	public List<ChannelScanInfo> scanForChannels(String settingsStr)
 			throws UnsupportedOperationException, ArgumentSyntaxException, ScanException, ConnectionException {
 		
-        logger.debug("#### scan for channels called. settings: " + settingsStr);
-
-        List<ChannelScanInfo> chanScanInf = new ArrayList<>();
+        logger.debug("Scanning for channels started");
+        List<ChannelScanInfo> channels = new ArrayList<>();
         
         Map<Byte, DeviceCommand> deviceCommands =
 				localDevice.getDevices().get(getDeviceAddress()).getSubDevice().deviceCommands;	
@@ -99,9 +99,9 @@ public class HomeMaticConnection extends Device implements Connection {
 					command.getIdentifier()).getValueType());
 		    ChannelScanInfo channelInfo = new ChannelScanInfo(channel, 
 		    		"Device Type of Channel is: " + localDevice.getDevices().get(getDeviceAddress()).getDeviceType(), 
-		        valType, null);
-	        logger.debug("#### channel added : " + command.getChannelAddress());
-			chanScanInf.add(channelInfo);
+		    		valType, null);
+		    
+			channels.add(channelInfo);
 		}
 		
 		Map<Short, DeviceAttribute> deviceAttributes =
@@ -114,14 +114,12 @@ public class HomeMaticConnection extends Device implements Connection {
 					attribute.getIdentifier()).getValueType());
 		    ChannelScanInfo channelInfo = new ChannelScanInfo(channel, 
 		    		"Device Type of Channel is: " + localDevice.getDevices().get(getDeviceAddress()).getDeviceType(), 
-		        valType, null);
-	        logger.debug("#### channel added : " + attribute.getAttributeName());
-			chanScanInf.add(channelInfo);
+		    		valType, null);
+		    
+			channels.add(channelInfo);
 		}
 		
-        logger.debug("#### scan for channels finished.");
-				
-		return chanScanInf;
+		return channels;
 	}
 
 	@Override
@@ -131,25 +129,27 @@ public class HomeMaticConnection extends Device implements Connection {
     	try {
 	        for (ChannelRecordContainer container : containers) {
 	        	try {
-					HomeMaticChannelPreferences preferences = HomeMaticDriverInfo.getInfo().getChannelPreferences(container);
+					ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
+					
 					if (isRemoteDeviceAvailable(container.getChannelAddress())) {
-		        		Channel channel = getChannel(container.getChannelAddress(), preferences.getType());
+		        		Channel channel = getChannel(container.getChannelAddress(), settings.getType());
 		        		SampledValue readValue = channel.readValue(null);
 		        		if (readValue.getValue() == null) {
-		        	        logger.debug("No Value received yet from: " + getDeviceAddress() + " for " + channel.getChannelLocator().getChannelAddress());
+		        	        logger.debug("No value received yet from device \"{}\" for channel: {}", getDeviceAddress(), channel.getChannelLocator().getChannelAddress());
 		        		}
 						container.setRecord(OgemaSampledValue.decode(channel.readValue(null)));
 					}
 					else {
-						throw new ConnectionException("Device deleted by pairing failure");
+						throw new ConnectionException("Corresponding device was deleted due to a pairing failure");
 					}
 	        	}
-	        	catch (NullPointerException | IllegalArgumentException e) {
+	        	catch (NullPointerException | ArgumentSyntaxException e) {
 	        		container.setRecord(new Record(Flag.DRIVER_ERROR_CHANNEL_ADDRESS_SYNTAX_INVALID));	        		
+	                logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
 	        	}
 	        }
 		} catch (Exception e) {
-            throw new ConnectionException("channel not found");
+            throw new ConnectionException(e);
 		}
 		
 		return null;
@@ -162,10 +162,11 @@ public class HomeMaticConnection extends Device implements Connection {
     	try {
 	        for (ChannelRecordContainer container : containers) {
 	        	try {
-					HomeMaticChannelPreferences preferences = HomeMaticDriverInfo.getInfo().getChannelPreferences(container);
-	        		Channel channel = getChannel(container.getChannelAddress(), preferences.getType());
+	        		ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
+	        		
+	        		Channel channel = getChannel(container.getChannelAddress(), settings.getType());
 					if (isRemoteDeviceAvailable(container.getChannelAddress())) {
-		        		channel = getChannel(container.getChannelAddress(), preferences.getType());
+		        		channel = getChannel(container.getChannelAddress(), settings.getType());
 			        	channel.setEventListener(OgemaSampledValue.encodeContainer(container), updListener);
 					} 
 					else {
@@ -173,8 +174,8 @@ public class HomeMaticConnection extends Device implements Connection {
 						throw new ConnectionException("Device deleted by pairing failure");
 					}
 	        	}
-	        	catch (NullPointerException | IllegalArgumentException e) {
-	        		throw new UnsupportedOperationException("Channel not found", e);	        		
+	        	catch (NullPointerException | ArgumentSyntaxException e) {
+	                logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
 	        	}
 	        }
 		} catch (Exception e) {
@@ -185,20 +186,21 @@ public class HomeMaticConnection extends Device implements Connection {
 	@Override
 	public Object write(List<ChannelValueContainer> containers, Object containerListHandle)
 			throws UnsupportedOperationException, ConnectionException {
+		
 		try {
 			for (ChannelValueContainer container : containers) {
 				try {
 					if (isRemoteDeviceAvailable(container.getChannelAddress())) {
-						HomeMaticChannelPreferences preferences = HomeMaticDriverInfo.getInfo().getChannelPreferences(container);
-						Channel channel = getChannel(container.getChannelAddress(), preferences.getType());
+		        		ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
+		        		Channel channel = getChannel(container.getChannelAddress(), settings.getType());
 						channel.writeValue(null, OgemaValue.encode(container.getValue()));
 					}
 					else {
-						throw new ConnectionException("Device deleted by pairing failure");
+						throw new ConnectionException("Device deleted due to pairing failure");
 					}
 	        	}
-	        	catch (NullPointerException | IllegalArgumentException | ArgumentSyntaxException e) {
-	        		throw new UnsupportedOperationException("Channel not found", e);	        		
+	        	catch (NullPointerException | ArgumentSyntaxException e) {
+	                logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
 	        	}
 			}
 		} catch (IOException e) {
@@ -209,9 +211,7 @@ public class HomeMaticConnection extends Device implements Connection {
 	
 	@Override
 	public void disconnect() {
-		
 		close();
-		
 	}
 
 	public void close() {
