@@ -1,4 +1,5 @@
 /*
+ * Copyright 2016-18 ISC Konstanz
  *
  * This file is part of OpenHomeMatic.
  * For more information visit https://github.com/isc-konstanz/OpenHomeMatic.
