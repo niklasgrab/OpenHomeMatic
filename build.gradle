@@ -159,7 +159,7 @@ configure(javaProjects) {
         //includes all the dependencies:
         from configurations.default
       }
-      into "build/libs"
+      into "build/libs-all"
     }
   }
 

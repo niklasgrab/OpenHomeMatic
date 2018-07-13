@@ -9,7 +9,8 @@ configurations.create('embed')
 
 repositories {
    flatDir {
-       dirs rootDir.getPath() + '/dependencies/ogema', 
+       dirs rootDir.getPath() + '/dependencies/ogema',
+	        rootDir.getPath() + '/dependencies/openmuc',
 	        rootDir.getPath() + '/dependencies/pi4j'
    }
 }
