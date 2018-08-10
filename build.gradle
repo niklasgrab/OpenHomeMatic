@@ -58,23 +58,23 @@ configure(javaProjects) {
     jacoco group: 'org.jacoco', name: 'org.jacoco.ant', version: '0.7.9', classifier: 'nodeps'
     jacocoRuntime group: 'org.jacoco', name: 'org.jacoco.agent', version: '0.7.9', classifier: 'runtime'
   }
-
+  
   jar {
     manifest {
       version = project.version.replace("-",".");
     }
   }
-
+  
   task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = "sources"
     from sourceSets.main.allSource
   }
-
+  
   task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = "javadoc"
     from javadoc.destinationDir
   }
-
+  
   task instrument {
     ext.outputDir = buildDir.path + '/classes-instrumented'
     doLast {
@@ -96,9 +96,9 @@ configure(javaProjects) {
       }
     }
   }
-
+  
   instrument.dependsOn classes
-
+  
   gradle.taskGraph.whenReady { graph ->
     if (graph.hasTask(instrument)) {
       tasks.withType(Test) {
@@ -109,7 +109,7 @@ configure(javaProjects) {
       }
     }
   }
-
+  
   task report {
     doLast {
       if (!file(buildDir.path + '/jacoco/tests.exec').exists()) {
@@ -134,10 +134,10 @@ configure(javaProjects) {
     }
     }
   }
-
+  
   report.dependsOn instrument
   report.dependsOn test
-
+  
   task jarAll(type: Copy) {
     dependsOn(configurations.default.getAllArtifacts().getBuildDependencies())
 
@@ -198,6 +198,7 @@ task javadocAll(type: Javadoc) {
     project.sourceSets.main.output })
 }
 
+
 task writeSettings {
   doLast {
     Writer out = new OutputStreamWriter(new FileOutputStream("build/settings.gradle"));
@@ -250,4 +251,8 @@ task (tar, type: Tar) {
 task (tarFull, type: Tar) {
   dependsOn(tar)
   archiveName = project.name + "-" + project.version + "_full.tgz"
+}
+
+subprojects {
+    task allDeps(type: DependencyReportTask) {}
 }
