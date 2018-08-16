@@ -28,11 +28,6 @@ import org.ogema.driver.homematic.manager.asksin.LocalDevice;
 import org.ogema.driver.homematic.manager.asksin.RemoteDevice;
 import org.ogema.driver.homematic.tools.Converter;
 
-/**
- * 
- * @author Godwin Burkhardt
- * 
- */
 public class CmdMessage extends org.ogema.driver.homematic.manager.messages.CmdMessage {
 
 	private byte flag;

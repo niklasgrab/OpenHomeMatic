@@ -28,19 +28,14 @@ import org.ogema.driver.homematic.manager.RemoteDevice.InitStates;
 import org.ogema.driver.homematic.manager.asksin.messages.CmdMessage;
 import org.ogema.driver.homematic.manager.asksin.messages.Message;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.ogema.driver.homematic.manager.StatusMessage;
 
-/**
- * 
- * @author Godwin Burkhardt
- * 
- */
 public class AsksinMessageHandler extends MessageHandler {
+	private final Logger logger = LoggerFactory.getLogger(AsksinMessageHandler.class);
 
-	private final Logger logger = org.slf4j.LoggerFactory.getLogger("homematic-driver");
-	
 	private volatile List<String> sentMessageSerialAwaitingResponse = new ArrayList<String>(); // <Token>
-	
+
 	private int pairing = 0;
 
 	public AsksinMessageHandler(LocalDevice device) {

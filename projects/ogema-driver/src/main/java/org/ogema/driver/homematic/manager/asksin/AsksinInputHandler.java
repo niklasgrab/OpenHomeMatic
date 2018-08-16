@@ -28,29 +28,22 @@ import org.ogema.driver.homematic.manager.StatusMessage;
 import org.ogema.driver.homematic.manager.RemoteDevice.InitStates;
 import org.ogema.driver.homematic.tools.Converter;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Handles incoming messages and responds accordingly.
- * 
- * @author Godwin Burkhardt
- * 
- */
 public class AsksinInputHandler extends InputHandler implements Runnable {
-	
+	private final Logger logger = LoggerFactory.getLogger(AsksinInputHandler.class);
+
 	private static final String OWNER_ID_KEY = "onwerId";
 	private static final String OWNER_ID_DEFAULT = "F11034";
-	
-	private final Logger logger = org.slf4j.LoggerFactory.getLogger("homematic-driver");
 
 	public AsksinInputHandler(LocalDevice localDevice) {
 		super(localDevice);
 	}
 	
 	public void handleMessage(byte[] tempArray) {
-		logger.debug("message tpye: " + (char) tempArray[0]);
+		logger.debug("message type: " + (char) tempArray[0]);
 		switch (tempArray[0]) {
 		case 'V':
-			logger.debug("V message: " + Converter.toHexString(tempArray));
 			if (!localDeviceInited)
 				parseSerialAdapterMsg(tempArray);
 			break;
@@ -84,9 +77,9 @@ public class AsksinInputHandler extends InputHandler implements Runnable {
 							temp_device.init();
 						}
 						else if (found_device.getInitState().equals(InitStates.PAIRED)) {
-								temp_device = (RemoteDevice)localDevice.getDevices().get(found_device.getAddress());
-								temp_device.initWithoutAddMandatoryChannels();
-							}
+							temp_device = (RemoteDevice)localDevice.getDevices().get(found_device.getAddress());
+							temp_device.initWithoutAddMandatoryChannels();
+						}
 					}
 				}
 			}
@@ -118,14 +111,16 @@ public class AsksinInputHandler extends InputHandler implements Runnable {
 	private void parseSerialAdapterMsg(byte[] data) {
 		// remove \r\n
 		data = Arrays.copyOfRange(data, 0, 13);
-				
+		
 		localDevice.setName("SerialLocalDevice");
 		localDevice.setFirmware(new String(data));
 		localDevice.setSerial("");
+		
 		// Used in here, HMRemoteDevice and HMCmdMessage
 		String ownerid = System.getProperty(OWNER_ID_KEY, OWNER_ID_DEFAULT);
 		localDevice.setOwnerid(ownerid);
 		// Used in HMCmdMessage only
+		
 		localDevice.setUptime(0);
 		localDeviceInited = true;
 	}	

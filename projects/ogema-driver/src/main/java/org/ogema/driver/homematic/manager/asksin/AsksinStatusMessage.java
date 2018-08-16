@@ -26,11 +26,6 @@ import org.ogema.driver.homematic.manager.StatusMessage;
 import org.ogema.driver.homematic.tools.Converter;
 import org.slf4j.Logger;
 
-/**
- * 
- * @author Godwin Burkhardt
- * 
- */
 public class AsksinStatusMessage extends StatusMessage {
 
 	private final Logger logger = org.slf4j.LoggerFactory.getLogger("homematic-driver");
@@ -83,7 +78,7 @@ public class AsksinStatusMessage extends StatusMessage {
 		byte[] retVal = new byte[data.length/2];
 		for (int i = 0; i < data.length; i+=2) {
 			retVal[i/2] = (byte) ((Character.digit(data[i], 16) << 4)
-                    + Character.digit(data[i+1], 16));
+					+ Character.digit(data[i+1], 16));
 		}
 		
 		return retVal;

@@ -70,31 +70,22 @@ public class SccConnection implements IUsbConnection {
 	public void open() throws IOException, TooManyListenersException {
 		if (isClosed()) {
 			try {
-				logger.debug("Opening connection to Pi serial port");
+				logger.debug("Opening connection to Raspberry Pi serial port");
 				
 				// Provision gpio pin #17 as an output pin and turn on
 				gpio = GpioFactory.getInstance();
 				pin = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00, "SSC", PinState.HIGH);
 				pin.setShutdownOptions(true, PinState.LOW);
 				
-				try {
-					Thread.sleep(1000);
-					
-				} catch (InterruptedException e) {
-					closeConnection();
-					throw new IOException("Unable to open Pi port: " + e.getMessage());
-				}
-				
 				// Register the serial data listener
 				port = SerialFactory.createInstance();
 				port.addListener(lsnr);
-				
 				port.open(Serial.DEFAULT_COM_PORT, 38400);
 				
-//				write("V".getBytes());
 //				write("X71".getBytes());
 //				BINARY_MODE = true;
 				write("Ar".getBytes());
+				write("V".getBytes());
 				
 			} catch (IOException | RuntimeException e) {
 				logger.warn("Error while opening connection: {}", e.getMessage());
@@ -150,7 +141,7 @@ public class SccConnection implements IUsbConnection {
 			if (port != null) port.close();
 			
 		} catch (IllegalStateException | IOException e) {
-			logger.warn("Error while closing Pi port: {}", e.getMessage());
+			logger.warn("Error while closing Raspberry Pi serial port: {}", e.getMessage());
 		}
 		
 		// Unprovision pin #17

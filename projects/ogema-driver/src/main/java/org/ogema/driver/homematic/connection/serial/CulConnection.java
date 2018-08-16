@@ -61,8 +61,8 @@ public class CulConnection implements IUsbConnection {
 	protected volatile Fifo<byte[]> inputFifo;
 	protected volatile Object inputEventLock;
 
-    private BufferedReader input;
-    private OutputStream outputStream;
+	private BufferedReader input;
+	private OutputStream outputStream;
 
 	private SerialPortEventListener lsnr;
 
@@ -86,19 +86,16 @@ public class CulConnection implements IUsbConnection {
 		if (isClosed()) {
 			try {
 				serialPort = acquireSerialPort(serialPortName);
-	            input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
-	            outputStream = serialPort.getOutputStream();
+				input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
+				outputStream = serialPort.getOutputStream();
 				serialPort.addEventListener(lsnr);
 				serialPort.notifyOnDataAvailable(true);
-//				write("V".getBytes());
+				
 //				write("X71".getBytes());
 //				BINARY_MODE = true;
 				write("Ar".getBytes());
+				write("V".getBytes());
 				
-//				keepAlive = new SerialKeepAlive(this);
-//				keepAliveThread = new Thread(keepAlive);
-//				keepAliveThread.setName("OGEMA-HomeMatic-CC1101-USB-keepAlive");
-//				keepAliveThread.start();
 			} catch (IOException |TooManyListenersException | RuntimeException e) {
 				if (serialPort != null) { 
 					serialPort.close();
@@ -119,9 +116,9 @@ public class CulConnection implements IUsbConnection {
 				dataCRLF[dataCRLF.length-2]= 13; // CR appended
 				dataCRLF[dataCRLF.length-1]= 10; // LF appended
 				
-        		logger.debug("write message: " + new String(dataCRLF, "UTF-8"));
+				logger.debug("write message: " + new String(dataCRLF, "UTF-8"));
 
-        		outputStream.write(dataCRLF);
+				outputStream.write(dataCRLF);
 				outputStream.flush();
 			} catch (IOException e) {
 				throw e;
@@ -235,38 +232,38 @@ public class CulConnection implements IUsbConnection {
 
 		@Override
 		public void serialEvent(SerialPortEvent event) {
-            try {
-                switch (event.getEventType()) {
-                    case gnu.io.SerialPortEvent.DATA_AVAILABLE:
-                    	logger.debug("Notified about received data");
-                    	String line = null;
-                        if (input.ready()) {
-                        	
-                            line = input.readLine();
-                            if (!line.isEmpty()) {
-                            	inputFifo.put(line.getBytes());
-                				synchronized (inputEventLock) {
-                					inputEventLock.notify();
-                				}
-                            }
-                        }
-        				break;
-                    	
-                    case gnu.io.SerialPortEvent.BI:
-                    case gnu.io.SerialPortEvent.CD:
-                    case gnu.io.SerialPortEvent.CTS:
-                    case gnu.io.SerialPortEvent.DSR:
-                    case gnu.io.SerialPortEvent.FE:
-                    case gnu.io.SerialPortEvent.OUTPUT_BUFFER_EMPTY:
-                    case gnu.io.SerialPortEvent.PE:
-                    case gnu.io.SerialPortEvent.RI:
-                    default:
-                    	break;
-                }
-            }
-            catch (IOException ex) {
-            	logger.warn("Error while receiving data: {}", ex.getMessage());
-            }
+			try {
+				switch (event.getEventType()) {
+					case gnu.io.SerialPortEvent.DATA_AVAILABLE:
+						logger.debug("Notified about received data");
+						String line = null;
+						if (input.ready()) {
+							
+							line = input.readLine();
+							if (!line.isEmpty()) {
+								inputFifo.put(line.getBytes());
+								synchronized (inputEventLock) {
+									inputEventLock.notify();
+								}
+							}
+						}
+						break;
+						
+					case gnu.io.SerialPortEvent.BI:
+					case gnu.io.SerialPortEvent.CD:
+					case gnu.io.SerialPortEvent.CTS:
+					case gnu.io.SerialPortEvent.DSR:
+					case gnu.io.SerialPortEvent.FE:
+					case gnu.io.SerialPortEvent.OUTPUT_BUFFER_EMPTY:
+					case gnu.io.SerialPortEvent.PE:
+					case gnu.io.SerialPortEvent.RI:
+					default:
+						break;
+				}
+			}
+			catch (IOException ex) {
+				logger.warn("Error while receiving data: {}", ex.getMessage());
+			}
 		}
 	}
 

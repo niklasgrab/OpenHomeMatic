@@ -27,7 +27,6 @@ public abstract class LocalConnection {
 	final String interfaceId;
 	final String parameterString;
 	protected LocalDevice localDevice;
-//	private final Logger logger = org.slf4j.LoggerFactory.getLogger("homematic-driver");
 	boolean hasConnection = false;
 	final Object connectionLock;
 

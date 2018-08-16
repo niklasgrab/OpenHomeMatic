@@ -42,11 +42,11 @@ public class LocalSccConnection extends LocalConnection {
 		Thread connectScc = new Thread() {
 			@Override
 			public void run() {
-				while (!hasConnection) {
-					try {
-						connection.open();
-//						serialConnection.setAskSinMode(true);
-						synchronized (connectionLock) {
+				synchronized (connectionLock) {
+					while (!hasConnection) {
+						try {
+							connection.open();
+	//						serialConnection.setAskSinMode(true);
 							hasConnection = true;
 							localDevice = new LocalDevice(parameterString, connection, ProtocolType.ASKSIN);
 							while (!localDevice.getIsReady()) {
@@ -57,13 +57,14 @@ public class LocalSccConnection extends LocalConnection {
 								}
 							}
 							connectionLock.notify();
-						}
-					} catch (IOException | TooManyListenersException e) {
-						try {
-							Thread.sleep(Constants.CONNECT_WAIT_TIME);
-							
-						} catch (InterruptedException ie) {
-							ie.printStackTrace();
+						
+						} catch (IOException | TooManyListenersException e) {
+							try {
+								Thread.sleep(Constants.CONNECT_WAIT_TIME);
+								
+							} catch (InterruptedException ie) {
+								ie.printStackTrace();
+							}
 						}
 					}
 				}

@@ -22,11 +22,6 @@ package org.ogema.driver.homematic.manager.asksin.messages;
 
 import org.ogema.driver.homematic.manager.asksin.RemoteDevice;
 
-/**
- * 
- * @author Godwin Burkhardt
- * 
- */
 public abstract class  Message extends org.ogema.driver.homematic.manager.messages.Message {
 
 	protected Message(RemoteDevice rd) {

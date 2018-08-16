@@ -21,21 +21,14 @@
 package org.ogema.driver.homematic.manager.asksin;
 
 
-import org.ogema.driver.homematic.Activator;
 import org.ogema.driver.homematic.connection.ProtocolType;
 import org.ogema.driver.homematic.manager.InputHandler;
 import org.ogema.driver.homematic.manager.MessageHandler;
 import org.ogema.driver.homematic.manager.asksin.messages.CmdMessage;
 import org.ogema.driver.homematic.usbconnection.IUsbConnection;
 
-/**
- * 
- * @author Godwin Burkhardt
- * 
- */
 public class LocalDevice extends org.ogema.driver.homematic.manager.LocalDevice {
 
-	private FileStorage fileStorage;
 	private boolean ignoreExisting;
 
 	private ProtocolType protocolType = ProtocolType.BYTE;
@@ -58,25 +51,8 @@ public class LocalDevice extends org.ogema.driver.homematic.manager.LocalDevice 
 			inputHandler = new AsksinInputHandler(this);
 		}
 		inputHandlerThread = new Thread(inputHandler);
-		inputHandlerThread.setName("homematic-lld-inputHandler");
+		inputHandlerThread.setName("OGEMA-HomeMatic-CC1101-inputHandler");
 		inputHandlerThread.start();
-		final LocalDevice loc = this;
-
-		Thread loadDevicesThread = new Thread() {
-			@Override
-			public void run() {
-				while (!isReady && Activator.bundleIsRunning) {
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException ex) {
-						ex.printStackTrace();
-					}
-				}
-				fileStorage = new FileStorage(loc);
-			}
-		};
-		loadDevicesThread.setName("homematic-ll-loadDevices");
-		loadDevicesThread.start();
 	}
 	
 	@Override
@@ -91,14 +67,9 @@ public class LocalDevice extends org.ogema.driver.homematic.manager.LocalDevice 
 		messageHandler.sendMessage(cmdMessage);
 	}
 
-	public FileStorage getHMFileStorage() {
-		return fileStorage;
-	}
-
 	@Override
 	public void saveDeviceConfig() {
-		if (isReady)
-			fileStorage.saveDeviceConfig();
+		// Do nothing as local file storage will be handled somewhere else
 	}
 
 	public boolean getIsReady() {

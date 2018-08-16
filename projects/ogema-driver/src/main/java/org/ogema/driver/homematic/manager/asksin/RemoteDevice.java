@@ -32,16 +32,11 @@ import org.ogema.driver.homematic.manager.devices.THSensor;
 import org.ogema.driver.homematic.manager.devices.Thermostat;
 import org.ogema.driver.homematic.manager.devices.ThreeStateSensor;
 
-/**
- * 
- * @author Godwin Burkhardt
- * 
- */
 public class RemoteDevice extends org.ogema.driver.homematic.manager.RemoteDevice {
 
-    private  int pairing = 0;
-    
-    private boolean ignore = false;
+	private  int pairing = 0;
+	
+	private boolean ignore = false;
 	
 	// Used from inputhandler for new devices
 	public RemoteDevice(LocalDevice localdevice, StatusMessage msg) {
@@ -110,17 +105,17 @@ public class RemoteDevice extends org.ogema.driver.homematic.manager.RemoteDevic
 
 
 	public int getPairing() {
-        return pairing;
-    }
-    
-    public final void setPairing(int pairing) {
-        this.pairing = pairing;
-    }
-    	
-    public final void augmentPairing() {
-        this.pairing++;
-    }
-    	
+		return pairing;
+	}
+	
+	public final void setPairing(int pairing) {
+		this.pairing = pairing;
+	}
+		
+	public final void augmentPairing() {
+		this.pairing++;
+	}
+		
 	public boolean isIgnore() {
 		return ignore;
 	}
