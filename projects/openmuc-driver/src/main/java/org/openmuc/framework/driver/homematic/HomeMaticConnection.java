@@ -60,47 +60,47 @@ public class HomeMaticConnection extends Device implements Connection {
 
 	private final DriverPreferences prefs = DriverInfoFactory.getPreferences(HomeMaticDriver.class);
 
-    /**
-     * Interface used by {@link HomeMaticConnection} to notify the {@link HomeMaticDriver} about events
-     */
-    public interface HomeMaticConnectionCallbacks {
-        
-        public void onDisconnect(String deviceAddress);
-    }
+	/**
+	 * Interface used by {@link HomeMaticConnection} to notify the {@link HomeMaticDriver} about events
+	 */
+	public interface HomeMaticConnectionCallbacks {
+		
+		public void onDisconnect(String deviceAddress);
+	}
 
-    /**
-     * The Connections current callback object, which is used to notify of connection events
-     */
-    private HomeMaticConnectionCallbacks callbacks;
+	/**
+	 * The Connections current callback object, which is used to notify of connection events
+	 */
+	private HomeMaticConnectionCallbacks callbacks;
 
 	private LocalDevice localDevice;
 
 	public HomeMaticConnection(String deviceAddress, HomeMaticConnectionCallbacks callbacks) {
 		super(new DeviceLocator("null", "null", deviceAddress, null), null);
 		
-        this.callbacks = callbacks;
- 	}
+		this.callbacks = callbacks;
+	 }
 
 	@Override
 	public List<ChannelScanInfo> scanForChannels(String settingsStr)
 			throws UnsupportedOperationException, ArgumentSyntaxException, ScanException, ConnectionException {
 		
-        logger.debug("Scanning for channels started");
-        List<ChannelScanInfo> channels = new ArrayList<>();
-        
-        Map<Byte, DeviceCommand> deviceCommands =
+		logger.debug("Scanning for channels started");
+		List<ChannelScanInfo> channels = new ArrayList<>();
+		
+		Map<Byte, DeviceCommand> deviceCommands =
 				localDevice.getDevices().get(getDeviceAddress()).getSubDevice().deviceCommands;	
-        RemoteDevice remoteDevice =  (RemoteDevice)localDevice.getDevices().get(getDeviceAddress());
+		RemoteDevice remoteDevice =  (RemoteDevice)localDevice.getDevices().get(getDeviceAddress());
 		Iterator<DeviceCommand> it = deviceCommands.values().iterator();
 		while (it.hasNext()) {
 			DeviceCommand command = it.next();
 			String channel = command.generateChannelAddress();
 			ValueType valType = OgemaValue.encodeValueType(remoteDevice.getSubDevice().deviceCommands.get(
 					command.getIdentifier()).getValueType());
-		    ChannelScanInfo channelInfo = new ChannelScanInfo(channel, 
-		    		"Device Type of Channel is: " + localDevice.getDevices().get(getDeviceAddress()).getDeviceType(), 
-		    		valType, null);
-		    
+			ChannelScanInfo channelInfo = new ChannelScanInfo(channel, 
+					"Device Type of Channel is: " + localDevice.getDevices().get(getDeviceAddress()).getDeviceType(), 
+					valType, null);
+			
 			channels.add(channelInfo);
 		}
 		
@@ -112,10 +112,10 @@ public class HomeMaticConnection extends Device implements Connection {
 			String channel = attribute.generateChannelAddress();
 			ValueType valType = OgemaValue.encodeValueType(remoteDevice.getSubDevice().deviceAttributes.get(
 					attribute.getIdentifier()).getValueType());
-		    ChannelScanInfo channelInfo = new ChannelScanInfo(channel, 
-		    		"Device Type of Channel is: " + localDevice.getDevices().get(getDeviceAddress()).getDeviceType(), 
-		    		valType, null);
-		    
+			ChannelScanInfo channelInfo = new ChannelScanInfo(channel, 
+					"Device Type of Channel is: " + localDevice.getDevices().get(getDeviceAddress()).getDeviceType(), 
+					valType, null);
+			
 			channels.add(channelInfo);
 		}
 		
@@ -126,30 +126,30 @@ public class HomeMaticConnection extends Device implements Connection {
 	public Object read(List<ChannelRecordContainer> containers, Object containerListHandle, String samplingGroup)
 			throws UnsupportedOperationException, ConnectionException {
 		
-    	try {
-	        for (ChannelRecordContainer container : containers) {
-	        	try {
+		try {
+			for (ChannelRecordContainer container : containers) {
+				try {
 					ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
 					
 					if (isRemoteDeviceAvailable(container.getChannelAddress())) {
-		        		Channel channel = getChannel(container.getChannelAddress(), settings.getType());
-		        		SampledValue readValue = channel.readValue(null);
-		        		if (readValue.getValue() == null) {
-		        	        logger.debug("No value received yet from device \"{}\" for channel: {}", getDeviceAddress(), channel.getChannelLocator().getChannelAddress());
-		        		}
+						Channel channel = getChannel(container.getChannelAddress(), settings.getType());
+						SampledValue readValue = channel.readValue(null);
+						if (readValue.getValue() == null) {
+							logger.debug("No value received yet from device \"{}\" for channel: {}", getDeviceAddress(), channel.getChannelLocator().getChannelAddress());
+						}
 						container.setRecord(OgemaSampledValue.decode(channel.readValue(null)));
 					}
 					else {
 						throw new ConnectionException("Corresponding device was deleted due to a pairing failure");
 					}
-	        	}
-	        	catch (NullPointerException | ArgumentSyntaxException e) {
-	        		container.setRecord(new Record(Flag.DRIVER_ERROR_CHANNEL_ADDRESS_SYNTAX_INVALID));	        		
-	                logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
-	        	}
-	        }
+				}
+				catch (NullPointerException | ArgumentSyntaxException e) {
+					container.setRecord(new Record(Flag.DRIVER_ERROR_CHANNEL_ADDRESS_SYNTAX_INVALID));					
+					logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
+				}
+			}
 		} catch (Exception e) {
-            throw new ConnectionException(e);
+			throw new ConnectionException(e);
 		}
 		
 		return null;
@@ -159,27 +159,27 @@ public class HomeMaticConnection extends Device implements Connection {
 	public void startListening(List<ChannelRecordContainer> containers, RecordsReceivedListener listener)
 			throws UnsupportedOperationException, ConnectionException {
 		ChannelUpdateListener updListener = new ChannelUpdateListener(containers, listener);
-    	try {
-	        for (ChannelRecordContainer container : containers) {
-	        	try {
-	        		ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
-	        		
-	        		Channel channel = getChannel(container.getChannelAddress(), settings.getType());
+		try {
+			for (ChannelRecordContainer container : containers) {
+				try {
+					ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
+					
+					Channel channel = getChannel(container.getChannelAddress(), settings.getType());
 					if (isRemoteDeviceAvailable(container.getChannelAddress())) {
-		        		channel = getChannel(container.getChannelAddress(), settings.getType());
-			        	channel.setEventListener(OgemaSampledValue.encodeContainer(container), updListener);
-					} 
+						channel = getChannel(container.getChannelAddress(), settings.getType());
+						channel.setEventListener(OgemaSampledValue.encodeContainer(container), updListener);
+					}
 					else {
 						channel.removeUpdateListener();
 						throw new ConnectionException("Device deleted by pairing failure");
 					}
-	        	}
-	        	catch (NullPointerException | ArgumentSyntaxException e) {
-	                logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
-	        	}
-	        }
+				}
+				catch (NullPointerException | ArgumentSyntaxException e) {
+					logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
+				}
+			}
 		} catch (Exception e) {
-            throw new ConnectionException(e);
+			throw new ConnectionException(e);
 		}
 	}
 
@@ -191,17 +191,17 @@ public class HomeMaticConnection extends Device implements Connection {
 			for (ChannelValueContainer container : containers) {
 				try {
 					if (isRemoteDeviceAvailable(container.getChannelAddress())) {
-		        		ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
-		        		Channel channel = getChannel(container.getChannelAddress(), settings.getType());
+						ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
+						Channel channel = getChannel(container.getChannelAddress(), settings.getType());
 						channel.writeValue(null, OgemaValue.encode(container.getValue()));
 					}
 					else {
 						throw new ConnectionException("Device deleted due to pairing failure");
 					}
-	        	}
-	        	catch (NullPointerException | ArgumentSyntaxException e) {
-	                logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
-	        	}
+				}
+				catch (NullPointerException | ArgumentSyntaxException e) {
+					logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
+				}
 			}
 		} catch (IOException e) {
 			throw new ConnectionException(e);
@@ -222,7 +222,7 @@ public class HomeMaticConnection extends Device implements Connection {
 		getChannels().clear();
 		if (callbacks != null) {
 		  callbacks.onDisconnect(getDeviceAddress());
-          callbacks = null;
+		  callbacks = null;
 		}
 	}
 
@@ -254,12 +254,12 @@ public class HomeMaticConnection extends Device implements Connection {
 	
 	private Channel getChannel(String channelAddress, String settings) {
 		Channel channel = getChannels().get(channelAddress);
-    	if (channel == null) {
-    		ChannelLocator channelLocator = new ChannelLocator(settings + ":" + channelAddress, getDeviceLocator());
+		if (channel == null) {
+			ChannelLocator channelLocator = new ChannelLocator(settings + ":" + channelAddress, getDeviceLocator());
 			channel = Channel.createChannel(channelLocator, this);
-			getChannels().put(channelAddress, channel);   		
-    	}
-    	return channel;
+			getChannels().put(channelAddress, channel);		   
+		}
+		return channel;
 	}
 
 }

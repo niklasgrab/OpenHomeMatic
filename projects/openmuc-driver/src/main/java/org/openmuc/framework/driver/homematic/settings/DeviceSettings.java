@@ -25,25 +25,25 @@ import org.openmuc.framework.config.Preferences;
 
 public class DeviceSettings extends Preferences {
 
-    public static final PreferenceType TYPE = PreferenceType.SETTINGS_DEVICE;
+	public static final PreferenceType TYPE = PreferenceType.SETTINGS_DEVICE;
 
-    @Option
-    private String type;
+	@Option
+	private String type;
 
-    @Option
-    private boolean defaultState = false;
+	@Option
+	private boolean defaultState = false;
 
-    @Override
-    public PreferenceType getPreferenceType() {
-        return TYPE;
-    }
+	@Override
+	public PreferenceType getPreferenceType() {
+		return TYPE;
+	}
 
-    public String getType() {
-    	return type;
-    }
+	public String getType() {
+		return type;
+	}
 
-    public boolean getDefaultState() {
-    	return defaultState;
-    }
+	public boolean getDefaultState() {
+		return defaultState;
+	}
 
 }

@@ -25,18 +25,18 @@ import org.openmuc.framework.config.Preferences;
 
 public class ChannelSettings extends Preferences {
 
-    public static final PreferenceType TYPE = PreferenceType.SETTINGS_CHANNEL;
+	public static final PreferenceType TYPE = PreferenceType.SETTINGS_CHANNEL;
 
-    @Option
-    private String type;
+	@Option
+	private String type;
 
-    @Override
-    public PreferenceType getPreferenceType() {
-        return TYPE;
-    }
+	@Override
+	public PreferenceType getPreferenceType() {
+		return TYPE;
+	}
 
-    public String getType() {
-    	return type;
-    }
+	public String getType() {
+		return type;
+	}
 
 }

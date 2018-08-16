@@ -25,18 +25,18 @@ import org.openmuc.framework.config.Preferences;
 
 public class DeviceScanSettings extends Preferences {
 
-    public static final PreferenceType TYPE = PreferenceType.SETTINGS_SCAN_DEVICE;
+	public static final PreferenceType TYPE = PreferenceType.SETTINGS_SCAN_DEVICE;
 
-    @Option
-    private boolean ignoreExisting = true;
+	@Option
+	private boolean ignoreExisting = true;
 
-    @Override
-    public PreferenceType getPreferenceType() {
-        return TYPE;
-    }
+	@Override
+	public PreferenceType getPreferenceType() {
+		return TYPE;
+	}
 
-    public boolean ignoreExisting() {
-    	return ignoreExisting;
-    }
+	public boolean ignoreExisting() {
+		return ignoreExisting;
+	}
 
 }

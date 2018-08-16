@@ -64,7 +64,7 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 	private static int SLEEP_TIME = 1000;
 	private static int CONNECT_TIMEOUT = 41; // in Seconds
 
-    private volatile boolean isDeviceScanInterrupted = false;
+	private volatile boolean isDeviceScanInterrupted = false;
 
 	private final Map<String, LocalConnection> localConnectionsMap; // <interfaceId, connection>
 	private final Map<String, HomeMaticConnection> connectionsMap;
@@ -89,11 +89,9 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 	volatile Thread scanForDevicesThread = null;
 
 	@Override
-	public void scanForDevices(final String settingsStr, final DriverDeviceScanListener listener)
+	public void scanForDevices(String settingsStr, DriverDeviceScanListener listener)
 			throws UnsupportedOperationException, ArgumentSyntaxException, ScanException, ScanInterruptedException {
-		
-		listener.scanProgressUpdate(0);
-		
+
 		DeviceScanSettings settings = info.parse(settingsStr, DeviceScanSettings.class);
 		boolean ignore = settings.ignoreExisting();
 		
@@ -107,17 +105,10 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 			localDevice.setPairing("0000000000");
 			
 			logger.info("Enabled Pairing for {} seconds", duration);
-			for (int i = 0; i < duration; i++) {
-                if (isDeviceScanInterrupted) {
-                    break;
-                }
-				try {
-					Thread.sleep(SLEEP_TIME);
-					
-				} catch (InterruptedException e) {
-					throw new ScanInterruptedException("Unexpected interruption during device scan");
+			for (int i = 0; i <= duration; i++) {
+				if (isDeviceScanInterrupted) {
+					break;
 				}
-				
 				for (org.ogema.driver.homematic.manager.RemoteDevice rm: localDevice.getDevices().values()) {
 					if (!((RemoteDevice)rm).isIgnore() && ((RemoteDevice)rm).getInitState() == InitStates.PAIRED) {
 						String type = rm.getDeviceType();
@@ -127,7 +118,14 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 						listener.deviceFound(info);
 					}
 				}
-				listener.scanProgressUpdate(i);
+				listener.scanProgressUpdate((int) Math.round(i/(double) duration*100));
+
+				try {
+					Thread.sleep(SLEEP_TIME);
+					
+				} catch (InterruptedException e) {
+					throw new ScanInterruptedException("Unexpected interruption during device scan");
+				}
 			}
 			localDevice.setPairing(null);
 			logger.info("Pairing disabled.");
@@ -136,7 +134,7 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 
 	@Override
 	public void interruptDeviceScan() throws UnsupportedOperationException {
-        isDeviceScanInterrupted = true;
+		isDeviceScanInterrupted = true;
 	}
 
 	@Override
@@ -259,12 +257,11 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 
 	protected LocalConnection findConnection(String interfaceId) {
 		LocalConnection localCon = localConnectionsMap.get(interfaceId);
-		synchronized (connectionLock) {
-			while (!localCon.hasConnection()) {
-				try {
-					connectionLock.wait();
-				} catch (InterruptedException ex) { // interrupt is used to terminate the thread
-				}
+		while (!localCon.hasConnection()) {
+			try {
+				connectionLock.wait();
+			} catch (InterruptedException ex) {
+				// interrupt is used to terminate the thread
 			}
 		}
 		return localCon;
