@@ -40,6 +40,31 @@ public class AsksinInputHandler extends InputHandler implements Runnable {
 		super(localDevice);
 	}
 	
+	@Override
+	public void run() {
+		while (running) {
+			synchronized (inputEventLock) {
+				while (!localDevice.connectionHasFrames()) {
+					try {
+						inputEventLock.wait();
+					} catch (InterruptedException e1) {
+						// e1.printStackTrace();
+					}
+				}
+				// long timeStamp = System.currentTimeMillis();
+				// System.out.print("receive: ");
+				// System.out.println(timeStamp);
+
+				try {
+					handleMessage(localDevice.getReceivedFrame());
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+			}
+		}
+	}
+
+	@Override
 	public void handleMessage(byte[] tempArray) {
 		logger.debug("message type: " + (char) tempArray[0]);
 		switch (tempArray[0]) {

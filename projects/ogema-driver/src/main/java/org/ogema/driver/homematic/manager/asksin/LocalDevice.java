@@ -51,7 +51,7 @@ public class LocalDevice extends org.ogema.driver.homematic.manager.LocalDevice 
 			inputHandler = new AsksinInputHandler(this);
 		}
 		inputHandlerThread = new Thread(inputHandler);
-		inputHandlerThread.setName("OGEMA-HomeMatic-CC1101-inputHandler");
+		inputHandlerThread.setName("OGEMA-HomeMatic-CC1101-Asksin-inputHandler");
 		inputHandlerThread.start();
 	}
 	
