@@ -44,17 +44,18 @@ import com.pi4j.io.serial.SerialPortException;
 public class SccConnection implements IUsbConnection {
 	private final Logger logger = LoggerFactory.getLogger(SccConnection.class);
 
-	protected volatile Fifo<byte[]> inputFifo;
-	protected volatile Object inputEventLock;
+	private final ProtocolType protocolType;
 
-	private boolean closed = true;
 	private GpioController gpio;
 	private GpioPinDigitalOutput pin;
 	private Serial port;
 
-	private SerialDataEventListener lsnr;
+	private boolean closed = true;
 
-	private ProtocolType protocolType = ProtocolType.BYTE;
+	private volatile Fifo<byte[]> inputFifo;
+	private volatile Object inputEventLock;
+
+	private SerialDataEventListener lsnr;
 
 	public SccConnection(final ProtocolType type) {
 		this.protocolType = type;
@@ -83,7 +84,6 @@ public class SccConnection implements IUsbConnection {
 				port.open(Serial.DEFAULT_COM_PORT, 38400);
 				
 //				write("X71".getBytes());
-//				BINARY_MODE = true;
 				write("Ar".getBytes());
 				write("V".getBytes());
 				

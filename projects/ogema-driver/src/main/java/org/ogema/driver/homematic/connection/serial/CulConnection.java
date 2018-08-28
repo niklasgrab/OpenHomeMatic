@@ -45,7 +45,8 @@ import gnu.io.UnsupportedCommOperationException;
 public class CulConnection implements IUsbConnection {
 	private final Logger logger = LoggerFactory.getLogger(CulConnection.class);
 
-	public static boolean BINARY_MODE = false;
+	private static final String SERIAL_PORT_KEY = "org.openmuc.framework.driver.homematic.serial.port";
+	private static final String SERIAL_PORT_DEFAULT = "/dev/ttyUSB0";
 
 	private static final String SERIAL_NAME = "org.openmuc.framework.driver.homematic.cul";
 	private static final int SERIAL_BAUDRATE = 9600;
@@ -53,8 +54,10 @@ public class CulConnection implements IUsbConnection {
 	private static final int SERIAL_STOP_BITS = 1;
 	private static final int SERIAL_PARITY = 2;
 
-	private SerialPort serialPort;
+	private final ProtocolType protocolType;
+
 	private String serialPortName;
+	private SerialPort serialPort;
 
 	private boolean closed = true;
 
@@ -65,11 +68,6 @@ public class CulConnection implements IUsbConnection {
 	private OutputStream outputStream;
 
 	private SerialPortEventListener lsnr;
-
-//	private SerialKeepAlive keepAlive;
-//	private Thread keepAliveThread;
-
-	private ProtocolType protocolType = ProtocolType.BYTE;
 
 	public CulConnection(final ProtocolType type) {
 		this.protocolType = type;
@@ -85,6 +83,7 @@ public class CulConnection implements IUsbConnection {
 	public void open() throws IOException, TooManyListenersException {
 		if (isClosed()) {
 			try {
+				serialPortName = System.getProperty(SERIAL_PORT_KEY, SERIAL_PORT_DEFAULT);
 				serialPort = acquireSerialPort(serialPortName);
 				input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
 				outputStream = serialPort.getOutputStream();
@@ -92,7 +91,6 @@ public class CulConnection implements IUsbConnection {
 				serialPort.notifyOnDataAvailable(true);
 				
 //				write("X71".getBytes());
-//				BINARY_MODE = true;
 				write("Ar".getBytes());
 				write("V".getBytes());
 				

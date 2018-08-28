@@ -66,27 +66,14 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 
 	private volatile boolean isDeviceScanInterrupted = false;
 
-	private final Map<String, LocalConnection> localConnectionsMap; // <interfaceId, connection>
-	private final Map<String, HomeMaticConnection> connectionsMap;
+	private final Map<String, HomeMaticConnection> connectionsMap = new HashMap<String, HomeMaticConnection>();
 	private final Object connectionLock = new Object();
-
-	private final String connectionInterface;
-
-	public HomeMaticDriver() {
-		localConnectionsMap = new HashMap<String, LocalConnection>();
-		connectionsMap = new HashMap<String, HomeMaticConnection>();
-		
-		connectionInterface = System.getProperty(CONNECTION_INTERFACE, CONNECTION_INTERFACE_SCC).toUpperCase();
-		
-		establishConnection();
-	}
+	private LocalConnection connection;
 
 	@Override
 	public DriverInfo getInfo() {
 		return info;
 	}
-
-	volatile Thread scanForDevicesThread = null;
 
 	@Override
 	public void scanForDevices(String settingsStr, DriverDeviceScanListener listener)
@@ -98,7 +85,7 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 		// TODO: implement as deviceScanSettings option
 		int duration = 60;
 		
-		LocalConnection localCon = findConnection(connectionInterface);
+		LocalConnection localCon = getConnection();
 		if (localCon != null) {
 			LocalDevice localDevice = localCon.getLocalDevice();
 			localDevice.setIgnoreExisting(ignore);
@@ -147,7 +134,7 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 		
 		HomeMaticConnection connection = connectionsMap.get(addressStr);
 		if (connection == null) {
-			LocalConnection localCon = findConnection(connectionInterface);
+			LocalConnection localCon = getConnection();
 			LocalDevice localDevice = localCon.getLocalDevice();		
 			
 			connection = new HomeMaticConnection(addressStr, this);
@@ -230,19 +217,19 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 	}
 
 	private void establishConnection() {
-		LocalConnection localCon = localConnectionsMap.get(connectionInterface);
-		if (localCon == null) {
+		if (connection == null) {
 			try {
-				if (connectionInterface.equals(CONNECTION_INTERFACE_SCC)) {
-					localCon = new LocalSccConnection(connectionLock, connectionInterface, "HMSCC");
+				String type = System.getProperty(CONNECTION_INTERFACE, CONNECTION_INTERFACE_SCC).toUpperCase();
+				
+				if (type.equals(CONNECTION_INTERFACE_SCC)) {
+					connection = new LocalSccConnection(connectionLock, type, "HMSCC");
 				}
-				else if (connectionInterface.equals(CONNECTION_INTERFACE_CUL)) {
-					localCon = new LocalCulConnection(connectionLock, connectionInterface, "HMCUL");
+				else if (type.equals(CONNECTION_INTERFACE_CUL)) {
+					connection = new LocalCulConnection(connectionLock, type, "HMCUL");
 				}
 				else {
-					localCon = new LocalUsbConnection(connectionLock, connectionInterface, "HMUSB");
+					connection = new LocalUsbConnection(connectionLock, type, "HMUSB");
 				}
-				addConnection(localCon);
 			}
 			catch (Exception e) {
 				logger.error("Severe Error: " + e.getMessage());
@@ -251,20 +238,18 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 		}
 	}
 
-	protected void addConnection(LocalConnection con) {
-		localConnectionsMap.put(con.getInterfaceId(), con);
-	}
-
-	protected LocalConnection findConnection(String interfaceId) {
-		LocalConnection localCon = localConnectionsMap.get(interfaceId);
-		while (!localCon.hasConnection()) {
+	protected LocalConnection getConnection() {
+		if (connection == null) {
+			establishConnection();
+		}
+		while (!connection.hasConnection()) {
 			try {
 				connectionLock.wait();
 			} catch (InterruptedException ex) {
 				// interrupt is used to terminate the thread
 			}
 		}
-		return localCon;
+		return connection;
 	}
 
 	@Override

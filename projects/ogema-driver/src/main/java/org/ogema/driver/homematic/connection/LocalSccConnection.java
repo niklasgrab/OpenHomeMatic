@@ -42,29 +42,27 @@ public class LocalSccConnection extends LocalConnection {
 		Thread connectScc = new Thread() {
 			@Override
 			public void run() {
-				synchronized (connectionLock) {
-					while (!hasConnection) {
-						try {
-							connection.open();
-	//						serialConnection.setAskSinMode(true);
+				while (!hasConnection) {
+					try {
+						connection.open();
+//						serialConnection.setAskSinMode(true);
+						synchronized (connectionLock) {
 							hasConnection = true;
 							localDevice = new LocalDevice(parameterString, connection, ProtocolType.ASKSIN);
 							while (!localDevice.getIsReady()) {
 								try {
-									Thread.sleep(Constants.CONNECT_WAIT_TIME/10);
+									Thread.sleep(Constants.CONNECT_WAIT_TIME);
 								} catch (InterruptedException ie) {
 									ie.printStackTrace();
 								}
 							}
 							connectionLock.notify();
-						
-						} catch (IOException | TooManyListenersException e) {
-							try {
-								Thread.sleep(Constants.CONNECT_WAIT_TIME);
-								
-							} catch (InterruptedException ie) {
-								ie.printStackTrace();
-							}
+						}
+					} catch (IOException | TooManyListenersException e) {
+						try {
+							Thread.sleep(Constants.CONNECT_WAIT_TIME);
+						} catch (InterruptedException ie) {
+							ie.printStackTrace();
 						}
 					}
 				}

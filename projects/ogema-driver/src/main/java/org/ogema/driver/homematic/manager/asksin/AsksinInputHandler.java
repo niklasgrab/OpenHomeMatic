@@ -22,10 +22,9 @@ package org.ogema.driver.homematic.manager.asksin;
 
 import java.util.Arrays;
 
-import org.ogema.driver.homematic.connection.serial.CulConnection;
 import org.ogema.driver.homematic.manager.InputHandler;
-import org.ogema.driver.homematic.manager.StatusMessage;
 import org.ogema.driver.homematic.manager.RemoteDevice.InitStates;
+import org.ogema.driver.homematic.manager.StatusMessage;
 import org.ogema.driver.homematic.tools.Converter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +32,7 @@ import org.slf4j.LoggerFactory;
 public class AsksinInputHandler extends InputHandler implements Runnable {
 	private final Logger logger = LoggerFactory.getLogger(AsksinInputHandler.class);
 
-	private static final String OWNER_ID_KEY = "onwerId";
+	private static final String OWNER_ID_KEY = "org.openmuc.framework.driver.homematic.id";
 	private static final String OWNER_ID_DEFAULT = "F11034";
 
 	public AsksinInputHandler(LocalDevice localDevice) {
@@ -69,8 +68,9 @@ public class AsksinInputHandler extends InputHandler implements Runnable {
 		logger.debug("message type: " + (char) tempArray[0]);
 		switch (tempArray[0]) {
 		case 'V':
-			if (!localDeviceInited)
+			if (!localDeviceInited) {
 				parseSerialAdapterMsg(tempArray);
+			}
 			break;
 		case 'A':
 		case 'a':
@@ -123,14 +123,9 @@ public class AsksinInputHandler extends InputHandler implements Runnable {
 			lastMsg = emsg;
 			break;
 		default:
-			if (CulConnection.BINARY_MODE) {
-				logger.debug("Unknown message: " + Converter.toHexString(tempArray));
-			}
-			else {
-				logger.debug("Unknown message: " + Converter.dumpHexString(tempArray));
-			}
+			logger.debug("Unknown message: " + Converter.dumpHexString(tempArray));
+			break;
 		}
-		
 	}
 	
 	private void parseSerialAdapterMsg(byte[] data) {
@@ -140,6 +135,8 @@ public class AsksinInputHandler extends InputHandler implements Runnable {
 		localDevice.setName("SerialLocalDevice");
 		localDevice.setFirmware(new String(data));
 		localDevice.setSerial("");
+		
+		logger.info("Registered local controller: {}", new String(data));
 		
 		// Used in here, HMRemoteDevice and HMCmdMessage
 		String ownerid = System.getProperty(OWNER_ID_KEY, OWNER_ID_DEFAULT);

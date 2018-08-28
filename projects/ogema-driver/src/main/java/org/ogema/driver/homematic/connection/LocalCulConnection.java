@@ -48,10 +48,10 @@ public class LocalCulConnection extends LocalConnection {
 //						serialConnection.setAskSinMode(true);
 						synchronized (connectionLock) {
 							hasConnection = true;
-							localDevice = new LocalDevice(parameterString, connection,ProtocolType.ASKSIN);
+							localDevice = new LocalDevice(parameterString, connection, ProtocolType.ASKSIN);
 							while (!localDevice.getIsReady()) {
 								try {
-									Thread.sleep(Constants.CONNECT_WAIT_TIME/10);
+									Thread.sleep(Constants.CONNECT_WAIT_TIME);
 								} catch (InterruptedException ie) {
 									ie.printStackTrace();
 								}
