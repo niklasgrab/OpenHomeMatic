@@ -17,7 +17,6 @@ dependencies {
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
 
   compile group: 'org.ogema.core', name: 'api', version: ogemaVersion
-  compile group: 'org.ogema.drivers', name: 'homematic', version: ogemaVersion
 
   compile group: 'com.pi4j', name: 'pi4j-core', version: pi4jVersion
   compile group: 'com.pi4j', name: 'pi4j-device', version: pi4jVersion

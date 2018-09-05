@@ -58,9 +58,9 @@ public class AsksinMessageHandler extends MessageHandler {
 						device.augmentPairing();
 					}
 					sentMessageSerialAwaitingResponse.remove(token);
-					logger.debug("sentMessageAwaitingResponse removed " + msg.rtoken);
+					logger.info("sentMessageAwaitingResponse removed " + msg.rtoken);
 					sendThread.interrupt();
-					logger.debug("Thread has been notified");				
+					logger.info("Thread has been notified");				
 				}
 			}
 			else {
@@ -74,12 +74,12 @@ public class AsksinMessageHandler extends MessageHandler {
 				if (runningThreads.containsKey(msg.source)) {
 					SendThreadSerial sendThread = (SendThreadSerial) runningThreads.get(msg.source);
 					sentMessageSerialAwaitingResponse.remove(token);
-					logger.debug("sentMessageAwaitingResponse removed " + msg.rtoken);
+					logger.info("sentMessageAwaitingResponse removed !02" + msg.rtoken);
 					sendThread.interrupt();
-					logger.debug("Thread has been notified");
+					logger.info("Thread has been notified !02");
 				}
 				else {
-					logger.debug("Send Thread for " + msg.source + " not found!");
+					logger.info("Send Thread for " + msg.source + " not found!");
 				}
 			}
 			CmdMessage cmd;

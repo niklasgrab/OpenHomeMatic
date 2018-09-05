@@ -76,7 +76,7 @@ public class HomeMaticConnection extends Device implements Connection {
 	private LocalDevice localDevice;
 
 	public HomeMaticConnection(String deviceAddress, HomeMaticConnectionCallbacks callbacks) {
-		super(new DeviceLocator("null", "null", deviceAddress, null), null);
+		super(new DeviceLocator("null", "null", deviceAddress, null));
 		
 		this.callbacks = callbacks;
 	 }
@@ -95,7 +95,7 @@ public class HomeMaticConnection extends Device implements Connection {
 		while (it.hasNext()) {
 			DeviceCommand command = it.next();
 			String channel = command.generateChannelAddress();
-			ValueType valType = OgemaValue.encodeValueType(remoteDevice.getSubDevice().deviceCommands.get(
+			ValueType valType = encodeValueType(remoteDevice.getSubDevice().deviceCommands.get(
 					command.getIdentifier()).getValueType());
 			ChannelScanInfo channelInfo = new ChannelScanInfo(channel, 
 					"Device Type of Channel is: " + localDevice.getDevices().get(getDeviceAddress()).getDeviceType(), 
@@ -110,7 +110,7 @@ public class HomeMaticConnection extends Device implements Connection {
 		while (itAttr.hasNext()) {
 			DeviceAttribute attribute = itAttr.next();
 			String channel = attribute.generateChannelAddress();
-			ValueType valType = OgemaValue.encodeValueType(remoteDevice.getSubDevice().deviceAttributes.get(
+			ValueType valType = encodeValueType(remoteDevice.getSubDevice().deviceAttributes.get(
 					attribute.getIdentifier()).getValueType());
 			ChannelScanInfo channelInfo = new ChannelScanInfo(channel, 
 					"Device Type of Channel is: " + localDevice.getDevices().get(getDeviceAddress()).getDeviceType(), 
@@ -133,11 +133,11 @@ public class HomeMaticConnection extends Device implements Connection {
 					
 					if (isRemoteDeviceAvailable(container.getChannelAddress())) {
 						Channel channel = getChannel(container.getChannelAddress(), settings.getType());
-						SampledValue readValue = channel.readValue(null);
+						SampledValue readValue = channel.readValue();
 						if (readValue.getValue() == null) {
 							logger.debug("No value received yet from device \"{}\" for channel: {}", getDeviceAddress(), channel.getChannelLocator().getChannelAddress());
 						}
-						container.setRecord(OgemaSampledValue.decode(channel.readValue(null)));
+						container.setRecord(OgemaSampledValue.decode(channel.readValue()));
 					}
 					else {
 						throw new ConnectionException("Corresponding device was deleted due to a pairing failure");
@@ -193,7 +193,7 @@ public class HomeMaticConnection extends Device implements Connection {
 					if (isRemoteDeviceAvailable(container.getChannelAddress())) {
 						ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
 						Channel channel = getChannel(container.getChannelAddress(), settings.getType());
-						channel.writeValue(null, OgemaValue.encode(container.getValue()));
+						channel.writeValue(OgemaValue.encode(container.getValue()));
 					}
 					else {
 						throw new ConnectionException("Device deleted due to pairing failure");
@@ -262,4 +262,36 @@ public class HomeMaticConnection extends Device implements Connection {
 		return channel;
 	}
 
+	private ValueType encodeValueType(org.ogema.driver.homematic.manager.ValueType valueType) {
+		if (valueType.equals(ValueType.BOOLEAN)) {
+			return ValueType.BOOLEAN;
+		}
+		else if (valueType.equals(ValueType.BYTE)) {
+			return ValueType.BYTE;
+		}
+		else if (valueType.equals(ValueType.BYTE_ARRAY)) {
+			return ValueType.BYTE_ARRAY;
+		}
+		else if (valueType.equals(ValueType.DOUBLE)) {
+			return ValueType.DOUBLE;
+		}
+		else if (valueType.equals(ValueType.FLOAT)) {
+			return ValueType.FLOAT;
+		}
+		else if (valueType.equals(ValueType.INTEGER)) {
+			return ValueType.INTEGER;
+		}
+		else if (valueType.equals(ValueType.LONG)) {
+			return ValueType.LONG;
+		}
+		else if (valueType.equals(ValueType.SHORT)) {
+			return ValueType.SHORT;
+		}
+		else if (valueType.equals(ValueType.STRING)) {
+			return ValueType.STRING;
+		}
+		else {
+			return null;
+		}
+	}
 }

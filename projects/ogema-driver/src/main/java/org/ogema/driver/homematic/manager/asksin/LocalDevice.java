@@ -21,7 +21,6 @@
 package org.ogema.driver.homematic.manager.asksin;
 
 
-import org.ogema.driver.homematic.connection.ProtocolType;
 import org.ogema.driver.homematic.manager.InputHandler;
 import org.ogema.driver.homematic.manager.MessageHandler;
 import org.ogema.driver.homematic.manager.asksin.messages.CmdMessage;
@@ -31,25 +30,15 @@ public class LocalDevice extends org.ogema.driver.homematic.manager.LocalDevice 
 
 	private boolean ignoreExisting;
 
-	private ProtocolType protocolType = ProtocolType.BYTE;
-
-	public LocalDevice(String port, IUsbConnection con, ProtocolType type) {
+	public LocalDevice(String port, IUsbConnection con) {
 		super(port, con);
-		this.protocolType = type;
 		initialize();
 	}
 
 	@Override
 	protected void initialize() {
-		if (protocolType == null) return;
-		if (protocolType.equals(ProtocolType.BYTE)) {
-			messageHandler = new MessageHandler(this);
-			inputHandler = new InputHandler(this);
-		}
-		else {
-			messageHandler = new AsksinMessageHandler(this);
-			inputHandler = new AsksinInputHandler(this);
-		}
+		messageHandler = new AsksinMessageHandler(this);
+		inputHandler = new AsksinInputHandler(this);
 		inputHandlerThread = new Thread(inputHandler);
 		inputHandlerThread.setName("OGEMA-HomeMatic-CC1101-Asksin-inputHandler");
 		inputHandlerThread.start();
@@ -85,9 +74,5 @@ public class LocalDevice extends org.ogema.driver.homematic.manager.LocalDevice 
 		for (org.ogema.driver.homematic.manager.RemoteDevice rm : devices.values()) {
 			((RemoteDevice)rm).setIgnore(true);
 		}
-	}
-
-	public ProtocolType getProtocolType() {
-		return protocolType;
 	}
 }

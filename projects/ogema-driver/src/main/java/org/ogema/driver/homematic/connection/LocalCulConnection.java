@@ -20,9 +20,6 @@
  */
 package org.ogema.driver.homematic.connection;
 
-import java.io.IOException;
-import java.util.TooManyListenersException;
-
 import org.ogema.driver.homematic.Constants;
 import org.ogema.driver.homematic.connection.serial.CulConnection;
 import org.ogema.driver.homematic.manager.asksin.LocalDevice;
@@ -34,7 +31,7 @@ public class LocalCulConnection extends LocalConnection {
 	public LocalCulConnection(Object lock, String iface, String parameter) {
 		super(lock, iface, parameter);
 		
-		connection = new CulConnection(ProtocolType.ASKSIN);
+		connection = new CulConnection();
 		startConnectThread();
 	}
 	
@@ -48,7 +45,7 @@ public class LocalCulConnection extends LocalConnection {
 //						serialConnection.setAskSinMode(true);
 						synchronized (connectionLock) {
 							hasConnection = true;
-							localDevice = new LocalDevice(parameterString, connection, ProtocolType.ASKSIN);
+							localDevice = new LocalDevice(parameterString, connection);
 							while (!localDevice.getIsReady()) {
 								try {
 									Thread.sleep(Constants.CONNECT_WAIT_TIME);
@@ -58,7 +55,7 @@ public class LocalCulConnection extends LocalConnection {
 							}
 							connectionLock.notify();
 						}
-					} catch (IOException | TooManyListenersException e) {
+					} catch (Exception e) {
 						try {
 							Thread.sleep(Constants.CONNECT_WAIT_TIME);
 						} catch (InterruptedException ie) {

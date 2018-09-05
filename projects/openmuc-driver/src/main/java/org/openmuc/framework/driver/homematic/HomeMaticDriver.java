@@ -27,7 +27,6 @@ import org.ogema.core.channelmanager.measurements.BooleanValue;
 import org.ogema.driver.homematic.connection.LocalConnection;
 import org.ogema.driver.homematic.connection.LocalCulConnection;
 import org.ogema.driver.homematic.connection.LocalSccConnection;
-import org.ogema.driver.homematic.connection.LocalUsbConnection;
 import org.ogema.driver.homematic.manager.RemoteDevice.InitStates;
 import org.ogema.driver.homematic.manager.SubDevice;
 import org.ogema.driver.homematic.manager.asksin.LocalDevice;
@@ -67,7 +66,7 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 	private volatile boolean isDeviceScanInterrupted = false;
 
 	private final Map<String, HomeMaticConnection> connectionsMap = new HashMap<String, HomeMaticConnection>();
-	private final Object connectionLock = new Object();
+	private volatile Object connectionLock = new Object();
 	private LocalConnection connection;
 
 	@Override
@@ -227,9 +226,6 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 				else if (type.equals(CONNECTION_INTERFACE_CUL)) {
 					connection = new LocalCulConnection(connectionLock, type, "HMCUL");
 				}
-				else {
-					connection = new LocalUsbConnection(connectionLock, type, "HMUSB");
-				}
 			}
 			catch (Exception e) {
 				logger.error("Severe Error: " + e.getMessage());
@@ -244,7 +240,9 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 		}
 		while (!connection.hasConnection()) {
 			try {
-				connectionLock.wait();
+				synchronized (connectionLock) {
+					connectionLock.wait();
+				}
 			} catch (InterruptedException ex) {
 				// interrupt is used to terminate the thread
 			}

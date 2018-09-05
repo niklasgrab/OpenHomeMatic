@@ -65,7 +65,7 @@ public class AsksinInputHandler extends InputHandler implements Runnable {
 
 	@Override
 	public void handleMessage(byte[] tempArray) {
-		logger.debug("message type: " + (char) tempArray[0]);
+		logger.info("message type: " + (char) tempArray[0]);
 		switch (tempArray[0]) {
 		case 'V':
 			if (!localDeviceInited) {
@@ -75,14 +75,14 @@ public class AsksinInputHandler extends InputHandler implements Runnable {
 		case 'A':
 		case 'a':
 			if (tempArray[0] == 'A') {
-				logger.debug("A message: " + Converter.toHexString(tempArray));
+				logger.info("A message: " + Converter.toHexString(tempArray));
 			}
 			else {
-				logger.debug("A message: " + Converter.dumpHexString(tempArray));
+				logger.info("A message: " + Converter.dumpHexString(tempArray));
 			}
 			StatusMessage emsg = new AsksinStatusMessage(tempArray);
 			if (emsg.msg_type == 0x00 & localDevice.getPairing() != null) { // if pairing
-				logger.debug("Pairing response received");
+				logger.info("Pairing response received");
 				RemoteDevice temp_device = new RemoteDevice((LocalDevice)localDevice, emsg);
 				if (localDevice.getPairing().equals("0000000000")
 						| localDevice.getPairing().equals(temp_device.getSerial())) {

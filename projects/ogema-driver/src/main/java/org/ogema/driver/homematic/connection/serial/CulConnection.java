@@ -20,248 +20,64 @@
  */
 package org.ogema.driver.homematic.connection.serial;
 
-import java.io.BufferedReader;
+import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.util.TooManyListenersException;
 
-import org.ogema.driver.homematic.connection.ProtocolType;
-import org.ogema.driver.homematic.usbconnection.Fifo;
-import org.ogema.driver.homematic.usbconnection.IUsbConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.openmuc.jrxtx.DataBits;
+import org.openmuc.jrxtx.Parity;
+import org.openmuc.jrxtx.SerialPort;
+import org.openmuc.jrxtx.SerialPortBuilder;
+import org.openmuc.jrxtx.StopBits;
 
-import gnu.io.CommPort;
-import gnu.io.CommPortIdentifier;
-import gnu.io.NoSuchPortException;
-import gnu.io.PortInUseException;
-import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
-import gnu.io.UnsupportedCommOperationException;
-
-@SuppressWarnings("deprecation")
-public class CulConnection implements IUsbConnection {
-	private final Logger logger = LoggerFactory.getLogger(CulConnection.class);
-
+public class CulConnection extends SerialConnectionHandler {
 	private static final String SERIAL_PORT_KEY = "org.openmuc.framework.driver.homematic.serial.port";
 	private static final String SERIAL_PORT_DEFAULT = "/dev/ttyUSB0";
 
-	private static final String SERIAL_NAME = "org.openmuc.framework.driver.homematic.cul";
 	private static final int SERIAL_BAUDRATE = 9600;
-	private static final int SERIAL_DATA_BITS = 7;
-	private static final int SERIAL_STOP_BITS = 1;
-	private static final int SERIAL_PARITY = 2;
-
-	private final ProtocolType protocolType;
 
 	private String serialPortName;
 	private SerialPort serialPort;
 
-	private boolean closed = true;
-
-	protected volatile Fifo<byte[]> inputFifo;
-	protected volatile Object inputEventLock;
-
-	private BufferedReader input;
-	private OutputStream outputStream;
-
-	private SerialPortEventListener lsnr;
-
-	public CulConnection(final ProtocolType type) {
-		this.protocolType = type;
-		this.inputFifo = new Fifo<byte[]>(6);
-		this.inputEventLock = new Object();
-		this.lsnr = new CulEventListener();
-	}
-
-	public boolean isClosed() {
-		return this.closed;
-	}
-
-	public void open() throws IOException, TooManyListenersException {
-		if (isClosed()) {
-			try {
-				serialPortName = System.getProperty(SERIAL_PORT_KEY, SERIAL_PORT_DEFAULT);
-				serialPort = acquireSerialPort(serialPortName);
-				input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
-				outputStream = serialPort.getOutputStream();
-				serialPort.addEventListener(lsnr);
-				serialPort.notifyOnDataAvailable(true);
-				
-//				write("X71".getBytes());
-				write("Ar".getBytes());
-				write("V".getBytes());
-				
-			} catch (IOException |TooManyListenersException | RuntimeException e) {
-				if (serialPort != null) { 
-					serialPort.close();
-				}
-				throw e;
-			}
-		}
-		closed = false;
-	}
-
-	public void write(final byte[] data) throws IOException {
-			try {
-				// We have always to send CR and LF at the end of the data  //TODO Fix it in interface ?
-				byte[] dataCRLF = new byte[data.length+2];
-				for (int i = 0; i < data.length; i++) {
-					dataCRLF[i] = data[i];
-				}
-				dataCRLF[dataCRLF.length-2]= 13; // CR appended
-				dataCRLF[dataCRLF.length-1]= 10; // LF appended
-				
-				logger.debug("write message: " + new String(dataCRLF, "UTF-8"));
-
-				outputStream.write(dataCRLF);
-				outputStream.flush();
-			} catch (IOException e) {
-				throw e;
-			}
-	}
-
-	private SerialPort acquireSerialPort(String serialPortName) throws IOException {
-		CommPortIdentifier portIdentifier;
-		try {
-			portIdentifier = CommPortIdentifier.getPortIdentifier(serialPortName);
-			
-		} catch (NoSuchPortException e) {
-			throw new IOException("The specified port does not exist", e);
-		}
-
-		CommPort commPort;
-		try {
-			if (portIdentifier.isCurrentlyOwned()) {
-				System.out.println("Port is currently owned by: " + portIdentifier.getCurrentOwner());
-			}
-			commPort = portIdentifier.open(SERIAL_NAME, 2000);
-			
-		} catch (PortInUseException e) {
-			throw new IOException("The specified port is already in use", e);
-		}
-		
-		if (!(commPort instanceof SerialPort)) {
-			// may never be the case
-			commPort.close();
-			throw new IOException("The specified CommPort is not a serial port");
-		}
-		
-		try {
-			SerialPort serialPort = (SerialPort) commPort;
-			
-			serialPort.setSerialPortParams(SERIAL_BAUDRATE, SERIAL_DATA_BITS, SERIAL_STOP_BITS, SERIAL_PARITY);
-			serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
-			serialPort.disableReceiveTimeout();
-			serialPort.enableReceiveThreshold(1);
-			
-			return serialPort;
-			
-		} catch (UnsupportedCommOperationException e) {
-			if (commPort != null) {
-				commPort.close();
-			}
-			throw new IOException("Unable to set the baud rate or other serial port parameters", e);
-		}
-	}
-
-	public void setParameters(int baudrate, int dataBits, int stopBits, int parity) throws IOException {
-		if (serialPort.getBaudRate() != baudrate ||
-				serialPort.getDataBits() != dataBits || serialPort.getStopBits() != stopBits || serialPort.getParity() != parity) {
-
-			try {
-				serialPort.setSerialPortParams(baudrate, dataBits, stopBits, parity);
-				
-			} catch (UnsupportedCommOperationException e) {
-				throw new IOException("Unable to set the baud rate or other serial port parameters", e);
-			}
-		}
-	}
-
-	public ProtocolType getProtocolType() {
-		return protocolType;
+	public CulConnection() {
+		super();
 	}
 
 	@Override
-	public byte[] getReceivedFrame() {
-		return inputFifo.get();
+	protected Closeable createSerialPort() throws IOException {
+		serialPortName = System.getProperty(SERIAL_PORT_KEY, SERIAL_PORT_DEFAULT);
+        serialPort = SerialPortBuilder.newBuilder(serialPortName)
+                .setDataBits(DataBits.DATABITS_7)
+                .setStopBits(StopBits.STOPBITS_1)
+                .setParity(Parity.EVEN)
+                .setBaudRate(SERIAL_BAUDRATE)
+                .build();
+		return serialPort;
 	}
 
 	@Override
-	public void sendFrame(byte[] frame) {
-		try {
-			write(frame);
-		} catch (IOException e) {
-			throw new RuntimeException(e.getMessage());
-		}
-	}
-
-	@Override
-	public void closeConnection() {
-//		if (keepAlive != null) {
-//			keepAlive.stop();
-//			keepAliveThread.interrupt();
-//		}
-		
-		if (serialPort != null) {
-			serialPort.close();
-		}
-		closed = true;
-	}
-
-	@Override
-	public Object getInputEventLock() {
-		return inputEventLock;
-	}
-
-	@Override
-	public boolean hasFrames() {
-		return inputFifo.getCount() > 0 ? true : false;
-	}
-
-	@Override
-	public void setConnectionAddress(String address) {
-//		this.keepAlive.setConnectionAddress(address);
+	protected DataInputStream getDataInputStream() throws IOException {
+		return new DataInputStream(serialPort.getInputStream());
 	}
 	
-	class CulEventListener implements gnu.io.SerialPortEventListener {
-
-		@Override
-		public void serialEvent(SerialPortEvent event) {
-			try {
-				switch (event.getEventType()) {
-					case gnu.io.SerialPortEvent.DATA_AVAILABLE:
-						logger.debug("Notified about received data");
-						String line = null;
-						if (input.ready()) {
-							
-							line = input.readLine();
-							if (!line.isEmpty()) {
-								inputFifo.put(line.getBytes());
-								synchronized (inputEventLock) {
-									inputEventLock.notify();
-								}
-							}
-						}
-						break;
-						
-					case gnu.io.SerialPortEvent.BI:
-					case gnu.io.SerialPortEvent.CD:
-					case gnu.io.SerialPortEvent.CTS:
-					case gnu.io.SerialPortEvent.DSR:
-					case gnu.io.SerialPortEvent.FE:
-					case gnu.io.SerialPortEvent.OUTPUT_BUFFER_EMPTY:
-					case gnu.io.SerialPortEvent.PE:
-					case gnu.io.SerialPortEvent.RI:
-					default:
-						break;
-				}
-			}
-			catch (IOException ex) {
-				logger.warn("Error while receiving data: {}", ex.getMessage());
-			}
+	@Override
+	protected DataOutputStream getDataOutputStream() throws IOException {
+		return new DataOutputStream(serialPort.getOutputStream());
+	}
+		
+	public void setParameters(int baudrate, DataBits dataBits, StopBits stopBits, Parity parity) throws IOException {
+		if (serialPort.getBaudRate() != baudrate) {
+			serialPort.setBaudRate(baudrate);
+		}
+		if (!serialPort.getDataBits().equals(dataBits)) {
+			serialPort.setDataBits(dataBits);
+		}
+		if (!serialPort.getStopBits().equals(stopBits)) {
+			serialPort.setStopBits(stopBits);
+		}
+		if (!serialPort.getParity().equals(parity)) {
+			serialPort.setParity(parity);
 		}
 	}
 

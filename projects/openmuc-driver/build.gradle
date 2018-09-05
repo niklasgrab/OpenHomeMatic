@@ -28,7 +28,6 @@ dependencies {
   embed project(':ogema-driver-homematic')
 
   embed group: 'org.ogema.core', name: 'api', version: ogemaVersion
-  embed group: 'org.ogema.drivers', name: 'homematic', version: ogemaVersion
 
   embed group: 'com.pi4j', name: 'pi4j-core', version: pi4jVersion
   embed group: 'com.pi4j', name: 'pi4j-device', version: pi4jVersion
@@ -40,8 +39,8 @@ dependencies {
 jar {
   manifest {
     name = projectName
-    instruction 'Bundle-ClassPath', '.,lib/api-' + ogemaVersion + '.jar,lib/homematic-' + ogemaVersion + '.jar,lib/ogema-' + cfgVersion + '.jar,lib/ogema-driver-homematic-' + cfgVersion + '.jar,lib/pi4j-core.jar,lib/pi4j-device.jar,lib/pi4j-gpio-extension.jar,lib/json-' + jsonVersion + '.jar'
-    instruction 'Import-Package', '!org.ogema.core*,!org.ogema.driver.homematic*,!org.ogema.port*,!com.pi4j*,!org.json*,javax.xml.bind,javax.xml.datatype,*' + jarDefaultImportPackageVersion
+    instruction 'Bundle-ClassPath', '.,lib/api-' + ogemaVersion + '.jar,lib/ogema-' + cfgVersion + '.jar,lib/ogema-driver-homematic-' + cfgVersion + '.jar,lib/pi4j-core.jar,lib/pi4j-device.jar,lib/pi4j-gpio-extension.jar,lib/json-' + jsonVersion + '.jar'
+    instruction 'Import-Package', '!org.ogema.core*,!org.ogema.port*,!org.ogema.driver.homematic*,!com.pi4j*,!org.json*,org.openmuc.jrxtx,javax.xml.bind,javax.xml.datatype,*' + jarDefaultImportPackageVersion
     instruction 'Export-Package', ''
   }
 }
