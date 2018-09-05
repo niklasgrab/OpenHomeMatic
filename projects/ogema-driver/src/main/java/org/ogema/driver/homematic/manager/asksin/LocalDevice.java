@@ -21,22 +21,23 @@
 package org.ogema.driver.homematic.manager.asksin;
 
 
-import org.ogema.driver.homematic.manager.InputHandler;
-import org.ogema.driver.homematic.manager.MessageHandler;
 import org.ogema.driver.homematic.manager.asksin.messages.CmdMessage;
 import org.ogema.driver.homematic.usbconnection.IUsbConnection;
 
 public class LocalDevice extends org.ogema.driver.homematic.manager.LocalDevice {
 
 	private boolean ignoreExisting;
+	private boolean createHandlers = false;
 
 	public LocalDevice(String port, IUsbConnection con) {
 		super(port, con);
+		createHandlers = true;
 		initialize();
 	}
 
 	@Override
 	protected void initialize() {
+		if (!createHandlers) return;
 		messageHandler = new AsksinMessageHandler(this);
 		inputHandler = new AsksinInputHandler(this);
 		inputHandlerThread = new Thread(inputHandler);

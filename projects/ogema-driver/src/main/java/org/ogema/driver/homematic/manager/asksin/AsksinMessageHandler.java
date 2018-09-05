@@ -20,8 +20,8 @@
  */
 package org.ogema.driver.homematic.manager.asksin;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 import org.ogema.driver.homematic.manager.MessageHandler;
 import org.ogema.driver.homematic.manager.RemoteDevice.InitStates;
@@ -34,7 +34,7 @@ import org.ogema.driver.homematic.manager.StatusMessage;
 public class AsksinMessageHandler extends MessageHandler {
 	private final Logger logger = LoggerFactory.getLogger(AsksinMessageHandler.class);
 
-	private volatile List<String> sentMessageSerialAwaitingResponse = new ArrayList<String>(); // <Token>
+	private volatile List<String> sentMessageSerialAwaitingResponse = new Vector<String>(); // <Token>
 
 	private int pairing = 0;
 
@@ -48,7 +48,7 @@ public class AsksinMessageHandler extends MessageHandler {
 	public void messageReceived(StatusMessage msg) {
 		RemoteDevice device = (RemoteDevice) localDevice.getDevices().get(msg.source);
 		String token = msg.source + msg.msg_num;
-		logger.debug("Received ?-token: " + token);
+		logger.info("Received ?-token: " + token + " msg type: " +  msg.msg_type + sentMessageSerialAwaitingResponse.toString());
 		// msg_type 0x02 is receive from pairing requests or command
 		if (msg.msg_type == 0x02) {
 			if (sentMessageSerialAwaitingResponse.contains(token)) {
@@ -64,7 +64,7 @@ public class AsksinMessageHandler extends MessageHandler {
 				}
 			}
 			else {
-				logger.debug("sentMessageSerialAwaitingResponse contains not the token " + token);
+				logger.info("sentMessageSerialAwaitingResponse contains not the token " + token);
 			}
 		}
 		else {
@@ -88,7 +88,7 @@ public class AsksinMessageHandler extends MessageHandler {
 				key = msg.source + "" + device.sentMsgNum;
 				cmd = (CmdMessage) sentCommands.get(key);
 			}
-			logger.debug("Received message assigned to " + key);
+			logger.info("Received message assigned to " + key);
 			device.parseMsg(msg, cmd);
 		}
 	}
@@ -137,8 +137,10 @@ public class AsksinMessageHandler extends MessageHandler {
 					if (entry instanceof CmdMessage) {
 						int num = entry.refreshMsg_num();
 						token += num;
-						sentMessageSerialAwaitingResponse.add(token);
-						logger.debug("sentMessageSerialAwaitingResponse added " + token);
+						synchronized(sentMessageSerialAwaitingResponse) {
+							sentMessageSerialAwaitingResponse.add(token);
+							logger.info("sentMessageSerialAwaitingResponse added " + token + " " + sentMessageSerialAwaitingResponse.toString());
+						}
 						String key = entry.getDest() + "" + num;
 						synchronized (sentCommands) {
 							entry.getDevice().sentMsgNum = num;

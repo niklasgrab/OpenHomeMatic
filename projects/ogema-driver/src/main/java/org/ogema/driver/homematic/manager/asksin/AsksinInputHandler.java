@@ -75,10 +75,10 @@ public class AsksinInputHandler extends InputHandler implements Runnable {
 		case 'A':
 		case 'a':
 			if (tempArray[0] == 'A') {
-				logger.info("A message: " + Converter.toHexString(tempArray));
+				logger.debug("A message: " + Converter.toHexString(tempArray));
 			}
 			else {
-				logger.info("A message: " + Converter.dumpHexString(tempArray));
+				logger.debug("A message: " + Converter.dumpHexString(tempArray));
 			}
 			StatusMessage emsg = new AsksinStatusMessage(tempArray);
 			if (emsg.msg_type == 0x00 & localDevice.getPairing() != null) { // if pairing
