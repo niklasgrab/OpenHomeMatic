@@ -18,70 +18,43 @@ package org.ogema.driver.homematic.manager;
 import org.ogema.core.channelmanager.measurements.Value;
 
 /**
- * This class represents a command of a HM Device.
- * 
- * @author puschas/baerthbn
+ * This class represents a command of a HomeMatic Device.
  * 
  */
-public class DeviceCommand {
+public class DeviceCommand extends DeviceChannel {
 	protected final byte identifier;
-	private final String channelAddress;
-	private final String description;
-	private final boolean mandatory;
-	protected final ValueType valueType;
-	protected SubDevice subDevice;
+	protected final String address;
+	protected DeviceHandler device;
 
-	public DeviceCommand(SubDevice subDevice, byte commandIdentifier, String description, boolean mandatory, ValueType valueType) {
-		this.identifier = commandIdentifier;
-		this.description = description;
-		this.mandatory = mandatory;
-		this.valueType = valueType;
-		this.subDevice = subDevice;
-		channelAddress = generateChannelAddress();
+	public DeviceCommand(DeviceHandler device, byte identifier, String description, boolean mandatory, ValueType valueType) {
+		super(description, mandatory, valueType);
+		this.identifier = identifier;
+		this.address = "COMMAND:"+getIdentifier();
+		this.device = device;
 	}
 
-	/**
-	 * unused as of now. Creates the channel address of the attribute.
-	 * 
-	 * @return
-	 */
-	public String generateChannelAddress() {
-		StringBuilder tempString = new StringBuilder();
-		tempString.append("COMMAND:");
-		tempString.append(Integer.toHexString(identifier & 0xff));
-		switch (tempString.length()) {
-		case 8:
-			tempString.append("00");
+	@Override
+	public String getAddress() {
+		return address;
+	}
+
+	@Override
+	public String getIdentifier() {
+		StringBuilder id = new StringBuilder();
+		id.append(Integer.toHexString(identifier & 0xff));
+		switch (id.length()) {
+		case 0:
+			id.append("00");
 			break;
-		case 9:
-			tempString.insert(tempString.length() - 1, "0");
+		case 1:
+			id.insert(id.length() - 1, "0");
 			break;
 		}
-		return tempString.toString();
-	}
-
-	public byte getIdentifier() {
-		return identifier;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public boolean isMandatory() {
-		return mandatory;
-	}
-
-	public String getChannelAddress() {
-		return channelAddress;
+		return id.toString();
 	}
 
 	public void channelChanged(Value value) {
-		this.subDevice.channelChanged(identifier, value);
-	}
-	
-	public ValueType getValueType() {
-		return valueType;
+		this.device.channelChanged(identifier, value);
 	}
 
 }

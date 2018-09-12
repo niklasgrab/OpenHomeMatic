@@ -13,35 +13,16 @@
  * You should have received a copy of the GNU General Public License
  * along with OGEMA. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ogema.driver.homematic.manager.messages;
+package org.ogema.driver.homematic.config;
 
-import org.ogema.driver.homematic.manager.Device;
+public class ConfigList6 extends ConfigList {
+	ConfigList list;
 
-public abstract class Message {
-
-	protected Device device;
-
-	protected Message(Device device) {
-		this.device = device;
-	}
-
-	public String getDestination() {
-		return device.getAddress();
-	}
-
-	public abstract byte[] getFrame();
-
-	public abstract byte[] getFrame(int num);
-
-	public int getNumber() {
-		return device.getMessageNumber();
-	}
-
-	public int incNumber() {
-		return device.incMessageNumber();
-	}
-
-	public Device getDevice() {
-		return device;
+	public ConfigList6() {
+		list = this;
+		nl(6, 97, 0, "partyEndHr", 6, 0f, 23f, "", -1.0f, "h", true, "Party end hour. Use cmd partyMode to set");
+		nl(6, 97, 7, "partyEndMin", 1, 0f, 1f, "lookup47", -1.0f, "min", true,
+				"Party end min. Use cmd partyMode to set");
+		nl(6, 98, 0, "partyEndDay", 8, 0f, 200f, "", -1.0f, "d", true, "Party duration days. Use cmd partyMode to set");
 	}
 }

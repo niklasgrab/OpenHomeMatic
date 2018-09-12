@@ -22,22 +22,6 @@ import org.ogema.driver.homematic.tools.Converter;
 
 public class Constants {
 
-	/*
-	 * USB Device Configuration
-	 */
-	public static final short VENDOR_ID = 0x1b1f;
-	public static final short PRODUCT_ID = (short) 0xc00f;
-
-	public static final byte ENDPOINT_IN = (byte) 0x83;
-	public static final byte ENDPOINT_OUT = (byte) 0x02;
-
-	public static final int SIZE = 0x40;
-
-	public static final byte CONFIGURATION = 1;
-	public static final byte INTERFACE = 0;
-
-	public static final int KEEPALIVETIME = 30000;
-	public static final int USBCOM_TIMEOUT = 100000;
 	public static final int CONNECT_WAIT_TIME = 30000;
 
 	/*
@@ -256,7 +240,6 @@ public class Constants {
 		deviceNames.put("0000", "HM-LC-Sw1-Pl-DN-R3");
 		deviceNames.put("00C7", "HM-SEC-SCo");
 		deviceNames.put("001E", "HM-RC-KEY3-B");
-
 	}
 
 }

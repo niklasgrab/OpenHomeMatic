@@ -25,14 +25,15 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DeviceDescriptor {
+	private final Logger logger = LoggerFactory.getLogger(DeviceDescriptor.class);
 
 	private JSONObject jdata;
 	private String json;
 	private Iterator<String> Itr;
 	private Map<String, JSONObject> types = new HashMap<String, JSONObject>();
-	private final Logger logger = org.slf4j.LoggerFactory.getLogger("homematic-driver");
 
 	public DeviceDescriptor() {
 		InputStream is = getClass().getClassLoader().getResourceAsStream("deviceTypes.json");
@@ -50,7 +51,6 @@ public class DeviceDescriptor {
 		}
 		try {
 			jdata = new JSONObject(json);
-			@SuppressWarnings("unchecked")
 			Iterator<String> keys = jdata.keys();
 			Itr = keys;
 		} catch (JSONException e) {
@@ -80,7 +80,7 @@ public class DeviceDescriptor {
 		return name;
 	}
 
-	public String getSubType(String type) {
+	public String getType(String type) {
 		String classType = null;
 		try {
 			classType = types.get(type).getString("st");

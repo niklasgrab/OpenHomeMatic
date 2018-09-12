@@ -30,15 +30,15 @@ import org.openmuc.framework.driver.spi.ChannelRecordContainer;
 
 public class OgemaSampledValue {
 
-	public static Record decode(SampledValue in) {
+	public static Record decode(SampledValue value) {
 		Flag flag = Flag.VALID;
-		if (in.getValue() == null) {
+		if (value.getValue() == null) {
 			flag = Flag.NO_VALUE_RECEIVED_YET;
 		}
-		else if (in.getQuality() == Quality.BAD) {
+		else if (value.getQuality() == Quality.BAD) {
 			flag = Flag.UNKNOWN_ERROR;
 		}
-		return new Record(OgemaValue.decode(in.getValue()), in.getTimestamp(), flag);
+		return new Record(OgemaValue.decode(value.getValue()), value.getTimestamp(), flag);
 	}
 	
 	public static SampledValueContainer encodeContainer(ChannelRecordContainer container) {

@@ -18,30 +18,30 @@ package org.ogema.driver.homematic.manager.devices;
 import org.ogema.core.channelmanager.measurements.BooleanValue;
 import org.ogema.core.channelmanager.measurements.FloatValue;
 import org.ogema.core.channelmanager.measurements.Value;
+import org.ogema.driver.homematic.manager.Device;
 import org.ogema.driver.homematic.manager.DeviceAttribute;
-import org.ogema.driver.homematic.manager.RemoteDevice;
-import org.ogema.driver.homematic.manager.StatusMessage;
-import org.ogema.driver.homematic.manager.SubDevice;
+import org.ogema.driver.homematic.manager.DeviceHandler;
 import org.ogema.driver.homematic.manager.ValueType;
-import org.ogema.driver.homematic.manager.messages.CmdMessage;
+import org.ogema.driver.homematic.manager.messages.CommandMessage;
+import org.ogema.driver.homematic.manager.messages.StatusMessage;
 import org.ogema.driver.homematic.tools.Converter;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class MotionDetector extends SubDevice {
-
-	public final static Logger logger = org.slf4j.LoggerFactory.getLogger("homematic-driver");
+public class MotionDetector extends DeviceHandler {
+	public final static Logger logger = LoggerFactory.getLogger(MotionDetector.class);
 
 	private long old_cnt = 0;
 	private boolean motionInRun = false;
 	private Thread timer = new Thread();
 	private int nextTr = 0;
 
-	public MotionDetector(RemoteDevice rd) {
-		super(rd);
+	public MotionDetector(Device device) {
+		super(device);
 	}
 
 	@Override
-	protected void addMandatoryChannels() {
+	protected void configureChannels() {
 		deviceAttributes.put((short) 0x0001, new DeviceAttribute((short) 0x0001, "motion", true, true, ValueType.BOOLEAN));
 		deviceAttributes.put((short) 0x0002, new DeviceAttribute((short) 0x0002, "brightness", true, true, ValueType.FLOAT));
 		deviceAttributes.put((short) 0x0003, new DeviceAttribute((short) 0x0003, "batteryStatus", true, true, ValueType.FLOAT));
@@ -51,12 +51,12 @@ public class MotionDetector extends SubDevice {
 	public void parseValue(StatusMessage msg) {
 
 		// long state = Converter.toLong(msg[2]); // Is also brightness
-		if ((msg.msg_type == 0x10 || msg.msg_type == 0x02) && msg.msg_data[0] == 0x06 && msg.msg_data[1] == 0x01) {
-			long err = Converter.toLong(msg.msg_data[3]);
+		if ((msg.type == 0x10 || msg.type == 0x02) && msg.data[0] == 0x06 && msg.data[1] == 0x01) {
+			long err = Converter.toLong(msg.data[3]);
 			String err_str;
 			// long brightness = Converter.toLong(msg[2]);
 
-			if (remoteDevice.getDeviceType().equals("004A"))
+			if (device.getDeviceType().equals("004A"))
 				logger.debug("SabotageError: " + (((err & 0x0E) > 0) ? "on" : "off"));
 			else
 				logger.debug("Cover: " + (((err & 0x0E) > 0) ? "open" : "closed"));
@@ -66,10 +66,10 @@ public class MotionDetector extends SubDevice {
 			logger.debug("Battery: " + err_str);
 			deviceAttributes.get((short) 0x0003).setValue(new FloatValue(batt));
 		}
-		else if (msg.msg_type == 0x41) {
-			long cnt = Converter.toLong(msg.msg_data[1]);
-			long brightn = Converter.toLong(msg.msg_data[2]);
-			switch (msg.msg_data[3]) {
+		else if (msg.type == 0x41) {
+			long cnt = Converter.toLong(msg.data[1]);
+			long brightn = Converter.toLong(msg.data[2]);
+			switch (msg.data[3]) {
 			case (byte) 0x40:
 				nextTr = 15;
 				break;
@@ -125,7 +125,7 @@ public class MotionDetector extends SubDevice {
 				}
 			}
 		}
-		else if (msg.msg_type == 0x70 && msg.msg_data[0] == 0x7F) {
+		else if (msg.type == 0x70 && msg.data[0] == 0x7F) {
 			// TODO: NYI
 		}
 	}
@@ -137,9 +137,9 @@ public class MotionDetector extends SubDevice {
 	}
 
 	@Override
-	public void parseMessage(StatusMessage msg, CmdMessage cmd) {
-		byte msgType = msg.msg_type;
-		byte contentType = msg.msg_data[0];
+	public void parseMessage(StatusMessage msg, CommandMessage cmd) {
+		byte msgType = msg.type;
+		byte contentType = msg.data[0];
 		if ((msgType == 0x10 && (contentType == 0x02) || (contentType == 0x03))) {
 			// Configuration response Message
 			parseConfig(msg, cmd);

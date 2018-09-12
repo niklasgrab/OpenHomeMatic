@@ -19,30 +19,30 @@ import org.ogema.core.channelmanager.measurements.BooleanValue;
 import org.ogema.core.channelmanager.measurements.FloatValue;
 import org.ogema.core.channelmanager.measurements.Value;
 import org.ogema.driver.homematic.manager.DeviceAttribute;
-import org.ogema.driver.homematic.manager.RemoteDevice;
-import org.ogema.driver.homematic.manager.StatusMessage;
-import org.ogema.driver.homematic.manager.SubDevice;
+import org.ogema.driver.homematic.manager.DeviceHandler;
+import org.ogema.driver.homematic.manager.Device;
 import org.ogema.driver.homematic.manager.ValueType;
-import org.ogema.driver.homematic.manager.messages.CmdMessage;
+import org.ogema.driver.homematic.manager.messages.CommandMessage;
+import org.ogema.driver.homematic.manager.messages.StatusMessage;
 import org.ogema.driver.homematic.tools.Converter;
 
-public class SmokeSensor extends SubDevice {
+public class SmokeSensor extends DeviceHandler {
 
-	public SmokeSensor(RemoteDevice rd) {
-		super(rd);
+	public SmokeSensor(Device device) {
+		super(device);
 	}
 
 	@Override
-	protected void addMandatoryChannels() {
+	protected void configureChannels() {
 		deviceAttributes.put((short) 0x0001, new DeviceAttribute((short) 0x0001, "Temperature", true, true, ValueType.BOOLEAN));
 		deviceAttributes.put((short) 0x0002, new DeviceAttribute((short) 0x0002, "BatteryStatus", true, true, ValueType.FLOAT));
 	}
 
 	@Override
 	public void parseValue(StatusMessage msg) {
-		if (msg.msg_type == 0x41) {
-			long status = Converter.toLong(msg.msg_data[2]);
-			long err = Converter.toLong(msg.msg_data[0]);
+		if (msg.type == 0x41) {
+			long status = Converter.toLong(msg.data[2]);
+			long err = Converter.toLong(msg.data[0]);
 
 			String err_str = ((err & 0x80) > 0) ? "low" : "ok";
 			float batt = ((err & 0x80) > 0) ? 5 : 95;
@@ -67,9 +67,9 @@ public class SmokeSensor extends SubDevice {
 	}
 
 	@Override
-	public void parseMessage(StatusMessage msg, CmdMessage cmd) {
-		byte msgType = msg.msg_type;
-		byte contentType = msg.msg_data[0];
+	public void parseMessage(StatusMessage msg, CommandMessage cmd) {
+		byte msgType = msg.type;
+		byte contentType = msg.data[0];
 
 		if ((msgType == 0x10 && (contentType == 0x02) || (contentType == 0x03))) {
 			// Configuration response Message

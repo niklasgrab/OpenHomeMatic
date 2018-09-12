@@ -22,14 +22,14 @@ package org.ogema.driver.homematic.manager;
  * 
  */
 public enum ValueType {
-    DOUBLE,
-    FLOAT,
-    LONG,
-    INTEGER,
-    SHORT,
-    BYTE,
-    BOOLEAN,
-    BYTE_ARRAY,
-    OBJECT,
-    STRING;
+	DOUBLE,
+	FLOAT,
+	LONG,
+	INTEGER,
+	SHORT,
+	BYTE,
+	BOOLEAN,
+	BYTE_ARRAY,
+	OBJECT,
+	STRING;
 }

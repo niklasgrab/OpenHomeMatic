@@ -24,7 +24,6 @@ import java.util.Map;
 
 import javax.xml.bind.DatatypeConverter;
 
-import org.ogema.core.channelmanager.driverspi.ChannelLocator;
 import org.ogema.core.channelmanager.driverspi.ChannelUpdateListener;
 import org.ogema.core.channelmanager.driverspi.SampledValueContainer;
 import org.ogema.core.channelmanager.measurements.ByteArrayValue;
@@ -32,10 +31,13 @@ import org.ogema.core.channelmanager.measurements.ObjectValue;
 import org.ogema.core.channelmanager.measurements.Quality;
 import org.ogema.core.channelmanager.measurements.SampledValue;
 import org.ogema.core.channelmanager.measurements.Value;
+import org.ogema.driver.homematic.manager.Device;
 import org.ogema.driver.homematic.manager.DeviceAttribute;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public final class AttributeChannel extends Channel {
+public final class AttributeChannel extends HomeMaticChannel {
+	private final Logger logger = LoggerFactory.getLogger(AttributeChannel.class);
 
 	private DeviceAttribute deviceAttribute;
 	private final byte[] emptyMessagePayload = new byte[0];
@@ -44,35 +46,37 @@ public final class AttributeChannel extends Channel {
 	private List<SampledValueContainer> sampledValueContainerList = new ArrayList<SampledValueContainer>();
 	private ByteBuffer messagePayloadBuffer;
 	private Map<Short, SampledValue> sampledValueMap = new HashMap<Short, SampledValue>();
-	private final Logger logger = org.slf4j.LoggerFactory.getLogger("homematic-driver");
 	private ArrayList<DeviceAttribute> deviceAttributes = new ArrayList<DeviceAttribute>();
 	private final boolean multipleAttributes;
 
-	public AttributeChannel(ChannelLocator locator, String[] splitAddress, Device dev) {
-		super(locator);
-		if (splitAddress.length <= 2) { // Only one attribute
+	public AttributeChannel(String address, String[] configs, Device device) {
+		super(address);
+		
+		if (configs.length <= 2) { // Only one attribute
 			multipleAttributes = false;
-			byte[] attributeIdArray = DatatypeConverter.parseHexBinary(splitAddress[1]);
+			byte[] attributeIdArray = DatatypeConverter.parseHexBinary(configs[1]);
 			short attributeId = (short) ((short) (attributeIdArray[0] << 8) & 0xff00);
 			attributeId |= attributeIdArray[1] & 0x00ff;
-			deviceAttribute = dev.getRemoteDevice().getSubDevice().deviceAttributes.get(attributeId);
+			
+			deviceAttribute = device.getHandler().deviceAttributes.get(attributeId);
 		}
 		else { // Multiple attributes
 			multipleAttributes = true;
-			byte[] messagePayload = new byte[(splitAddress.length - 3) * 2]; // Store all attributeIds starting from the
+			byte[] messagePayload = new byte[(configs.length - 3) * 2]; // Store all attributeIds starting from the
 			// second, *2 because each id consists
 			// of 2 bytes
 			messagePayloadBuffer = ByteBuffer.wrap(messagePayload);
 
-			for (int i = 1; i < splitAddress.length; ++i) {
-				byte[] attributeIdArray = DatatypeConverter.parseHexBinary(splitAddress[i]);
+			for (int i = 1; i < configs.length; ++i) {
+				byte[] attributeIdArray = DatatypeConverter.parseHexBinary(configs[i]);
 				short attributeId = (short) ((short) (attributeIdArray[0] << 8) & 0xff00);
 				attributeId |= attributeIdArray[1] & 0x00ff;
 				if (i > 1) // Skip the first attribute ID because it is implied
 					// when sending via that attribute
 					messagePayloadBuffer.putShort(Short.reverseBytes(attributeId));
-				logger.info(" " + Integer.toHexString(attributeId));
-				deviceAttributes.add(dev.getRemoteDevice().getSubDevice().deviceAttributes.get(attributeId));
+				logger.debug(" " + Integer.toHexString(attributeId));
+				
+				deviceAttributes.add(device.getHandler().deviceAttributes.get(attributeId));
 			}
 		}
 	}
@@ -81,7 +85,7 @@ public final class AttributeChannel extends Channel {
 	public SampledValue readValue() throws IOException, UnsupportedOperationException {
 		if (multipleAttributes) {
 			for (DeviceAttribute deviceAttribute : deviceAttributes) { // Retrieve the values from all attributes
-				sampledValueMap.put(deviceAttribute.getIdentifier(), new SampledValue(deviceAttribute.getValue(),
+				sampledValueMap.put(deviceAttribute.getShortId(), new SampledValue(deviceAttribute.getValue(),
 						deviceAttribute.getValueTimestamp(), Quality.GOOD));
 			}
 			Value value = new ObjectValue(sampledValueMap);

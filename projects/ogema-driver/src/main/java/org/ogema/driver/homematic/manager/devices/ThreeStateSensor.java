@@ -19,25 +19,25 @@ import org.ogema.core.channelmanager.measurements.FloatValue;
 import org.ogema.core.channelmanager.measurements.StringValue;
 import org.ogema.core.channelmanager.measurements.Value;
 import org.ogema.driver.homematic.manager.DeviceAttribute;
-import org.ogema.driver.homematic.manager.RemoteDevice;
-import org.ogema.driver.homematic.manager.StatusMessage;
-import org.ogema.driver.homematic.manager.SubDevice;
+import org.ogema.driver.homematic.manager.DeviceHandler;
+import org.ogema.driver.homematic.manager.Device;
 import org.ogema.driver.homematic.manager.ValueType;
-import org.ogema.driver.homematic.manager.messages.CmdMessage;
+import org.ogema.driver.homematic.manager.messages.CommandMessage;
+import org.ogema.driver.homematic.manager.messages.StatusMessage;
 import org.ogema.driver.homematic.tools.Converter;
 
-public class ThreeStateSensor extends SubDevice {
+public class ThreeStateSensor extends DeviceHandler {
 	
 	// otherwise we assume it is a water sensor
 	private final boolean isDoorWindowSensor;
 
-	public ThreeStateSensor(RemoteDevice rd, boolean isDoorWindowSensor) {
-		super(rd);
+	public ThreeStateSensor(Device device, boolean isDoorWindowSensor) {
+		super(device);
 		this.isDoorWindowSensor = isDoorWindowSensor;
 	}
 
 	@Override
-	protected void addMandatoryChannels() {
+	protected void configureChannels() {
 		String statusName = isDoorWindowSensor ? "WindowStatus" : "HighWater";
 		deviceAttributes.put((short) 0x0001, new DeviceAttribute((short) 0x0001, statusName, true, true, ValueType.STRING));
 		deviceAttributes.put((short) 0x0002, new DeviceAttribute((short) 0x0002, "BatteryStatus", true, true, ValueType.FLOAT));
@@ -51,14 +51,14 @@ public class ThreeStateSensor extends SubDevice {
 		String state_str = "";
 		float batt;
 
-		if ((msg.msg_type == 0x10 && msg.msg_data[0] == 0x06) || (msg.msg_type == 0x02 && msg.msg_data[0] == 0x01)) {
-			state = Converter.toLong(msg.msg_data[1]);
-			err = Converter.toLong(msg.msg_data[2]);
+		if ((msg.type == 0x10 && msg.data[0] == 0x06) || (msg.type == 0x02 && msg.data[0] == 0x01)) {
+			state = Converter.toLong(msg.data[1]);
+			err = Converter.toLong(msg.data[2]);
 
 		}
-		else if (msg.msg_type == 0x41) {
-			state = Converter.toLong(msg.msg_data[2]);
-			err = Converter.toLong(msg.msg_data[0]);
+		else if (msg.type == 0x41) {
+			state = Converter.toLong(msg.data[2]);
+			err = Converter.toLong(msg.data[0]);
 		}
 
 		String err_str = ((err & 0x80) > 0) ? "low" : "ok";
@@ -85,9 +85,9 @@ public class ThreeStateSensor extends SubDevice {
 	}
 
 	@Override
-	public void parseMessage(StatusMessage msg, CmdMessage cmd) {
-		byte msgType = msg.msg_type;
-		byte contentType = msg.msg_data[0];
+	public void parseMessage(StatusMessage msg, CommandMessage cmd) {
+		byte msgType = msg.type;
+		byte contentType = msg.data[0];
 
 		if ((msgType == 0x10 && (contentType == 0x02) || (contentType == 0x03))) {
 			// Configuration response Message

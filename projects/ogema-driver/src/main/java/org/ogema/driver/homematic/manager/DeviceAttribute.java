@@ -15,80 +15,58 @@
  */
 package org.ogema.driver.homematic.manager;
 
-import java.util.Calendar;
-
 import org.ogema.core.channelmanager.measurements.Value;
 import org.ogema.driver.homematic.AttributeChannel;
-import org.slf4j.Logger;
 
-/**
- * 
- * @author puschas/baerthbn
- * 
- */
-public class DeviceAttribute {
-	private final short identifier;
-	private final String attributeName;
-	private final String channelAddress;
-	private final boolean readOnly;
-	protected final ValueType valueType;
+public class DeviceAttribute extends DeviceChannel {
+	protected final short identifier;
+	protected final String address;
+	protected final boolean readOnly;
 	protected Value value;
 	protected long valueTimestamp;
-	private final Logger logger = org.slf4j.LoggerFactory.getLogger("homematic-driver");
-	private AttributeChannel attributeChannel;
 	protected boolean haslistener = false;
-	protected Calendar calendar;
 
-	public DeviceAttribute(short identifier, String attributeName, boolean readOnly, boolean mandatory, ValueType valueType) {
-		this.calendar = Calendar.getInstance();
+	protected AttributeChannel attributeChannel;
+
+	public DeviceAttribute(short identifier, String description, boolean readOnly, boolean mandatory, ValueType valueType) {
+		super(description, mandatory, valueType);
 		this.identifier = identifier;
-		this.attributeName = attributeName;
+		this.address = "ATTRIBUTE:"+getIdentifier();
 		this.readOnly = readOnly;
-		this.valueType = valueType;
-		channelAddress = generateChannelAddress();
-		logger.debug("Channel Address: " + channelAddress);
 	}
 
-	/**
-	 * unused as of now. Creates the channel address of the attribute.
-	 * 
-	 * @return
-	 */
-	public String generateChannelAddress() {
-		StringBuilder tempString = new StringBuilder();
-		tempString.append("ATTRIBUTE:");
-		tempString.append(Integer.toHexString(identifier & 0xffff));
-		switch (tempString.length()) {
-		case 10:
-			tempString.append("0000");
+	@Override
+	public String getAddress() {
+		return address;
+	}
+
+	@Override
+	public String getIdentifier() {
+		StringBuilder id = new StringBuilder();
+		id.append(Integer.toHexString(identifier & 0xffff));
+		switch (id.length()) {
+		case 0:
+			id.append("0000");
 			break;
-		case 11:
-			tempString.insert(tempString.length() - 1, "000");
+		case 1:
+			id.insert(id.length() - 1, "000");
 			break;
-		case 12:
-			tempString.insert(tempString.length() - 2, "00");
+		case 2:
+			id.insert(id.length() - 2, "00");
 			break;
-		case 13:
-			tempString.insert(tempString.length() - 3, "0");
+		case 3:
+			id.insert(id.length() - 3, "0");
 			break;
 		}
-		return tempString.toString();
+		return id.toString();
 	}
 
-	public short getIdentifier() {
+	public short getShortId() {
 		return identifier;
-	}
-
-	public String getChannelAddress() {
-		return channelAddress;
 	}
 
 	public boolean readOnly() {
 		return readOnly;
-	}
-
-	public String getAttributeName() {
-		return attributeName;
 	}
 
 	public Value getValue() {
@@ -97,7 +75,7 @@ public class DeviceAttribute {
 
 	public void setValue(Value value) {
 		this.value = value;
-		valueTimestamp = calendar.getTimeInMillis();
+		valueTimestamp = System.currentTimeMillis();
 		if (haslistener) {
 			attributeChannel.updateListener();
 		}
@@ -114,16 +92,4 @@ public class DeviceAttribute {
 	public void setListener(boolean b) {
 		haslistener = b;
 	}
-
-	/**
-	 * @throws UnsupportedOperationException
-	 */
-	public void unsupportedAttribute() {
-		throw new UnsupportedOperationException();
-	}
-	
-	public ValueType getValueType() {
-		return valueType;
-	}
-
 }

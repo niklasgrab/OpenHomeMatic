@@ -18,30 +18,28 @@ package org.ogema.driver.homematic.manager.devices;
 import org.ogema.core.channelmanager.measurements.BooleanValue;
 import org.ogema.core.channelmanager.measurements.FloatValue;
 import org.ogema.core.channelmanager.measurements.Value;
+import org.ogema.driver.homematic.manager.Device;
 import org.ogema.driver.homematic.manager.DeviceAttribute;
 import org.ogema.driver.homematic.manager.DeviceCommand;
-import org.ogema.driver.homematic.manager.RemoteDevice;
-import org.ogema.driver.homematic.manager.StatusMessage;
-import org.ogema.driver.homematic.manager.SubDevice;
+import org.ogema.driver.homematic.manager.DeviceHandler;
 import org.ogema.driver.homematic.manager.ValueType;
-import org.ogema.driver.homematic.manager.messages.CmdMessage;
+import org.ogema.driver.homematic.manager.messages.CommandMessage;
+import org.ogema.driver.homematic.manager.messages.StatusMessage;
 import org.ogema.driver.homematic.tools.Converter;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class PowerMeter extends SubDevice {
-
-	public final static Logger logger = org.slf4j.LoggerFactory.getLogger("homematic-driver");
-
-	private byte random = (byte) 0x01;
+public class PowerMeter extends DeviceHandler {
+	public final static Logger logger = LoggerFactory.getLogger(PowerMeter.class);
 
 	private BooleanValue isOn;
 
-	public PowerMeter(RemoteDevice rd) {
-		super(rd);
+	public PowerMeter(Device device) {
+		super(device);
 	}
 
 	@Override
-	protected void addMandatoryChannels() {
+	protected void configureChannels() {
 		deviceCommands.put((byte) 0x01, new DeviceCommand(this, (byte) 0x01, "onOff", true, ValueType.BOOLEAN));
 		deviceAttributes.put((short) 0x0001, new DeviceAttribute((short) 0x0001, "isOn", true, true, ValueType.BOOLEAN));
 		deviceAttributes.put((short) 0x0002, new DeviceAttribute((short) 0x0002, "iRes", true, true, ValueType.FLOAT));
@@ -51,7 +49,7 @@ public class PowerMeter extends SubDevice {
 		deviceAttributes.put((short) 0x0006, new DeviceAttribute((short) 0x0006, "eRes", true, true, ValueType.FLOAT));
 
 		// Get state
-		this.remoteDevice.pushCommand((byte) 0xA0, (byte) 0x01, "010E");
+		this.device.pushCommand((byte) 0xA0, (byte) 0x01, "010E");
 	}
 
 	@Override
@@ -60,9 +58,9 @@ public class PowerMeter extends SubDevice {
 		String state_str = "";
 		String timedon;
 
-		if ((msg.msg_type == 0x10 && msg.msg_data[0] == 0x06) || (msg.msg_type == 0x02 && msg.msg_data[0] == 0x01)) {
+		if ((msg.type == 0x10 && msg.data[0] == 0x06) || (msg.type == 0x02 && msg.data[0] == 0x01)) {
 			// The whole button story
-			long state = Converter.toLong(msg.msg_data[2]);
+			long state = Converter.toLong(msg.data[2]);
 			if (state == 0x00) {
 				state_str = "off";
 				isOn = new BooleanValue(false);
@@ -74,20 +72,20 @@ public class PowerMeter extends SubDevice {
 				deviceAttributes.get((short) 0x0001).setValue(isOn);
 			}
 
-			long err = Converter.toLong(msg.msg_data[3]);
+			long err = Converter.toLong(msg.data[3]);
 			timedon = ((err & 0x40) > 0) ? "running" : "off";
 
 			logger.debug("State: " + state_str);
 			logger.debug("Timed-on: " + timedon);
 		}
-		else if (msg.msg_type == 0x5E || msg.msg_type == 0x5F) {
+		else if (msg.type == 0x5E || msg.type == 0x5F) {
 			// The Metering Story
-			float eCnt = ((float) Converter.toLong(msg.msg_data, 0, 3)) / 10;
-			float power = ((float) Converter.toLong(msg.msg_data, 3, 3)) / 100;
-			float current = ((float) Converter.toLong(msg.msg_data, 6, 2)) / 1;
-			float voltage = ((float) Converter.toLong(msg.msg_data, 8, 2)) / 10;
-			float frequence = ((float) Converter.toLong(msg.msg_data[10])) / 100 + 50;
-			boolean boot = (Converter.toLong(msg.msg_data, 0, 3) & 0x800000) > 0;
+			float eCnt = ((float) Converter.toLong(msg.data, 0, 3)) / 10;
+			float power = ((float) Converter.toLong(msg.data, 3, 3)) / 100;
+			float current = ((float) Converter.toLong(msg.data, 6, 2)) / 1;
+			float voltage = ((float) Converter.toLong(msg.data, 8, 2)) / 10;
+			float frequence = ((float) Converter.toLong(msg.data[10])) / 100 + 50;
+			boolean boot = (Converter.toLong(msg.data, 0, 3) & 0x800000) > 0;
 
 			logger.debug("Energy Counter: " + eCnt + " Wh");
 			deviceAttributes.get((short) 0x0006).setValue(new FloatValue(eCnt));
@@ -105,19 +103,19 @@ public class PowerMeter extends SubDevice {
 
 	@Override
 	public void channelChanged(byte identifier, Value value) {
-		if (identifier == 0x01) { // onOff
-			// Toggle
-			this.remoteDevice.pushCommand((byte) 0xA0, (byte) 0x3E, remoteDevice.getAddress() + "4001"
-					+ Converter.toHexString(random++));
+		if (identifier == 0x01) {
+			BooleanValue v = (BooleanValue)value;
+			this.device.pushCommand((byte) 0xA0, (byte) 0x11, "0201" + ((v.getBooleanValue()) ? "C8" : "00") + "0000");
+			
 			// Get state
-			this.remoteDevice.pushCommand((byte) 0xA0, (byte) 0x01, "010E");
+			this.device.pushCommand((byte) 0xA0, (byte) 0x01, "010E");
 		}
 	}
 
 	@Override
-	public void parseMessage(StatusMessage msg, CmdMessage cmd) {
-		byte msgType = msg.msg_type;
-		byte contentType = msg.msg_data[0];
+	public void parseMessage(StatusMessage msg, CommandMessage cmd) {
+		byte msgType = msg.type;
+		byte contentType = msg.data[0];
 
 		if ((msgType == 0x10 && (contentType == 0x02) || (contentType == 0x03))) {
 			// Configuration response Message

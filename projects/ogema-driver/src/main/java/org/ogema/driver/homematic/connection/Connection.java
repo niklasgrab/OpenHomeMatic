@@ -13,35 +13,22 @@
  * You should have received a copy of the GNU General Public License
  * along with OGEMA. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ogema.driver.homematic.manager.messages;
+package org.ogema.driver.homematic.connection;
 
-import org.ogema.driver.homematic.manager.Device;
+import java.io.IOException;
 
-public abstract class Message {
+public interface Connection {
 
-	protected Device device;
+	public void open() throws IOException;
 
-	protected Message(Device device) {
-		this.device = device;
-	}
+	public void close();
 
-	public String getDestination() {
-		return device.getAddress();
-	}
+	public Object getReceivedLock();
 
-	public abstract byte[] getFrame();
+	public boolean hasFrames();
 
-	public abstract byte[] getFrame(int num);
+	public byte[] getReceivedFrame();
 
-	public int getNumber() {
-		return device.getMessageNumber();
-	}
+	public void sendFrame(byte[] frame);
 
-	public int incNumber() {
-		return device.incMessageNumber();
-	}
-
-	public Device getDevice() {
-		return device;
-	}
 }

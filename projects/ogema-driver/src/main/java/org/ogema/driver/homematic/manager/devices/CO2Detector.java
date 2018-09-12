@@ -18,32 +18,32 @@ package org.ogema.driver.homematic.manager.devices;
 import org.ogema.core.channelmanager.measurements.FloatValue;
 import org.ogema.core.channelmanager.measurements.Value;
 import org.ogema.driver.homematic.manager.DeviceAttribute;
-import org.ogema.driver.homematic.manager.RemoteDevice;
-import org.ogema.driver.homematic.manager.StatusMessage;
-import org.ogema.driver.homematic.manager.SubDevice;
+import org.ogema.driver.homematic.manager.DeviceHandler;
+import org.ogema.driver.homematic.manager.Device;
 import org.ogema.driver.homematic.manager.ValueType;
-import org.ogema.driver.homematic.manager.messages.CmdMessage;
+import org.ogema.driver.homematic.manager.messages.CommandMessage;
+import org.ogema.driver.homematic.manager.messages.StatusMessage;
 import org.ogema.driver.homematic.tools.Converter;
 
-public class CO2Detector extends SubDevice {
+public class CO2Detector extends DeviceHandler {
 
-	public CO2Detector(RemoteDevice rd) {
-		super(rd);
+	public CO2Detector(Device device) {
+		super(device);
 	}
 
 	@Override
-	protected void addMandatoryChannels() {
+	protected void configureChannels() {
 		deviceAttributes.put((short) 0x0001, new DeviceAttribute((short) 0x0001, "Concentration", true, true, ValueType.FLOAT));
 	}
 
 	@Override
-	public void parseMessage(StatusMessage msg, CmdMessage cmd) {
-		byte msgType = msg.msg_type;
-		byte contentType = msg.msg_data[0];
+	public void parseMessage(StatusMessage msg, CommandMessage cmd) {
+		byte msgType = msg.type;
+		byte contentType = msg.data[0];
 
-		if (remoteDevice.getDeviceType().equals("0056") || remoteDevice.getDeviceType().equals("009F")) {
-			if ((msg.msg_type == 0x02 && msg.msg_data[0] == 0x01) || (msg.msg_type == 0x10 && msg.msg_data[0] == 0x06)
-					|| (msg.msg_type == 0x41)) {
+		if (device.getDeviceType().equals("0056") || device.getDeviceType().equals("009F")) {
+			if ((msg.type == 0x02 && msg.data[0] == 0x01) || (msg.type == 0x10 && msg.data[0] == 0x06)
+					|| (msg.type == 0x41)) {
 				parseValue(msg);
 			}
 			else if ((msgType == 0x10 && (contentType == 0x02) || (contentType == 0x03))) {
@@ -73,9 +73,9 @@ public class CO2Detector extends SubDevice {
 	@Override
 	public void parseValue(StatusMessage msg) {
 		long state = 0;
-		state = Converter.toLong(msg.msg_data[2]);
+		state = Converter.toLong(msg.data[2]);
 
-		if (remoteDevice.getDeviceType().equals("009F"))
+		if (device.getDeviceType().equals("009F"))
 			System.out.println("Level: " + state);
 		System.out.println("State: " + state);
 		deviceAttributes.get((short) 0x0001).setValue(new FloatValue(state));

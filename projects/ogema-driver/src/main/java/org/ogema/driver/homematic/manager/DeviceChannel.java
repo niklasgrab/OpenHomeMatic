@@ -13,35 +13,33 @@
  * You should have received a copy of the GNU General Public License
  * along with OGEMA. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ogema.driver.homematic.manager.messages;
+package org.ogema.driver.homematic.manager;
 
-import org.ogema.driver.homematic.manager.Device;
+public abstract class DeviceChannel {
+	protected final String description;
+	protected final boolean mandatory;
+	protected final ValueType valueType;
 
-public abstract class Message {
-
-	protected Device device;
-
-	protected Message(Device device) {
-		this.device = device;
+	public DeviceChannel(String description, boolean mandatory, ValueType valueType) {
+		this.description = description;
+		this.mandatory = mandatory;
+		this.valueType = valueType;
 	}
 
-	public String getDestination() {
-		return device.getAddress();
+	public abstract String getIdentifier();
+
+	public abstract String getAddress();
+
+	public String getDescription() {
+		return description;
 	}
 
-	public abstract byte[] getFrame();
-
-	public abstract byte[] getFrame(int num);
-
-	public int getNumber() {
-		return device.getMessageNumber();
+	public boolean isMandatory() {
+		return mandatory;
 	}
 
-	public int incNumber() {
-		return device.incMessageNumber();
+	public ValueType getValueType() {
+		return valueType;
 	}
 
-	public Device getDevice() {
-		return device;
-	}
 }

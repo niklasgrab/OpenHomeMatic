@@ -17,28 +17,28 @@ package org.ogema.driver.homematic.manager.devices;
 
 import org.ogema.core.channelmanager.measurements.FloatValue;
 import org.ogema.core.channelmanager.measurements.Value;
+import org.ogema.driver.homematic.manager.Device;
 import org.ogema.driver.homematic.manager.DeviceAttribute;
 import org.ogema.driver.homematic.manager.DeviceCommand;
-import org.ogema.driver.homematic.manager.RemoteDevice;
-import org.ogema.driver.homematic.manager.StatusMessage;
-import org.ogema.driver.homematic.manager.SubDevice;
+import org.ogema.driver.homematic.manager.DeviceHandler;
 import org.ogema.driver.homematic.manager.ValueType;
-import org.ogema.driver.homematic.manager.messages.CmdMessage;
+import org.ogema.driver.homematic.manager.messages.CommandMessage;
+import org.ogema.driver.homematic.manager.messages.StatusMessage;
 import org.ogema.driver.homematic.tools.Converter;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class Thermostat extends SubDevice {
-
-	public final static Logger logger = org.slf4j.LoggerFactory.getLogger("homematic-driver");
+public class Thermostat extends DeviceHandler {
+	public final static Logger logger = LoggerFactory.getLogger(Thermostat.class);
 
 	private static final String THERMOSTAT_TYPE = "0095";
 
-	public Thermostat(RemoteDevice rd) {
-		super(rd);
+	public Thermostat(Device device) {
+		super(device);
 	}
 
 	@Override
-	protected void addMandatoryChannels() {
+	protected void configureChannels() {
 		deviceCommands.put((byte) 0x01, new DeviceCommand(this, (byte) 0x01, "desiredTemp", true, ValueType.FLOAT));
 		deviceAttributes.put((short) 0x0001, new DeviceAttribute((short) 0x0001, "desiredTemp", true, true, ValueType.FLOAT));
 		deviceAttributes.put((short) 0x0002, new DeviceAttribute((short) 0x0002, "currentTemp", true, true, ValueType.FLOAT));
@@ -46,9 +46,9 @@ public class Thermostat extends SubDevice {
 		deviceAttributes.put((short) 0x0004, new DeviceAttribute((short) 0x0004, "batteryStatus", true, true, ValueType.FLOAT));
 	}
 
-	public void parseMessage(StatusMessage msg, CmdMessage cmd) {
-		byte msgType = msg.msg_type;
-		byte contentType = msg.msg_data[0];
+	public void parseMessage(StatusMessage msg, CommandMessage cmd) {
+		byte msgType = msg.type;
+		byte contentType = msg.data[0];
 		if ((msgType == 0x10 && contentType == 0x0A) || (msgType == 0x02 && contentType == 0x01)) {
 			parseValue(msg);
 		}
@@ -65,9 +65,9 @@ public class Thermostat extends SubDevice {
 	}
 
 	public void parseValue(StatusMessage msg) {
-		if (!remoteDevice.getDeviceType().equals(THERMOSTAT_TYPE))
+		if (!device.getDeviceType().equals(THERMOSTAT_TYPE))
 			return;
-		byte msgType = msg.msg_type;
+		byte msgType = msg.type;
 		float bat = 0;
 		float remoteCurrentTemp = 0;
 		long desTemp = 0;
@@ -78,26 +78,26 @@ public class Thermostat extends SubDevice {
 		String ctrlMode_str = "";
 
 		if (msgType == 0x10) {
-			bat = ((float) (Converter.toLong(msg.msg_data[3] & 0x1F))) / 10 + 1.5F;
-			remoteCurrentTemp = ((float) (Converter.toLong(msg.msg_data, 1, 2) & 0x3FF)) / 10;
-			desTemp = (Converter.toLong(msg.msg_data, 1, 2) >> 10);
-			valvePos = Converter.toLong(msg.msg_data[4] & 0x7F);
-			err = Converter.toLong(msg.msg_data[3] >> 5);
+			bat = ((float) (Converter.toLong(msg.data[3] & 0x1F))) / 10 + 1.5F;
+			remoteCurrentTemp = ((float) (Converter.toLong(msg.data, 1, 2) & 0x3FF)) / 10;
+			desTemp = (Converter.toLong(msg.data, 1, 2) >> 10);
+			valvePos = Converter.toLong(msg.data[4] & 0x7F);
+			err = Converter.toLong(msg.data[3] >> 5);
 		}
 		else {
-			desTemp = Converter.toLong(msg.msg_data, 1, 2);
-			err = Converter.toLong(msg.msg_data[3] >> 1);
+			desTemp = Converter.toLong(msg.data, 1, 2);
+			err = Converter.toLong(msg.data[3] >> 1);
 		}
 		float remoteDesiredTemp = (desTemp & 0x3f) / 2;
 		deviceAttributes.get((short) 0x0001).setValue(new FloatValue(remoteDesiredTemp));
 		err = err & 0x7;
-		ctrlMode = Converter.toLong((msg.msg_data[5] >> 6) & 0x3);
+		ctrlMode = Converter.toLong((msg.data[5] >> 6) & 0x3);
 
-		if (msg.msg_len >= 7) { // Messages with Party Mode
+		if (msg.length >= 7) { // Messages with Party Mode
 			// TODO: Implement Party features
 		}
 
-		if ((msg.msg_len >= 6) && (ctrlMode == 3)) { // Msg with Boost
+		if ((msg.length >= 6) && (ctrlMode == 3)) { // Msg with Boost
 			// TODO: Calculation with Boost Time
 		}
 		switch (Converter.toInt(err)) {
@@ -170,7 +170,7 @@ public class Thermostat extends SubDevice {
 			byte b = (byte) (i & 0x000000FF);
 			String bs = Converter.toHexString(b);
 			// Syntax: Commando + Desiredtemp * 2 + Flag + Type
-			this.remoteDevice.pushCommand((byte) 0xB0, (byte) 0x11, "8104" + bs);
+			this.device.pushCommand((byte) 0xB0, (byte) 0x11, "8104" + bs);
 		}
 	}
 }

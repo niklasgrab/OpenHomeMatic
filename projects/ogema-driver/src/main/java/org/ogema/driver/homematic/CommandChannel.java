@@ -19,26 +19,25 @@ import java.io.IOException;
 
 import javax.xml.bind.DatatypeConverter;
 
-import org.ogema.core.channelmanager.driverspi.ChannelLocator;
 import org.ogema.core.channelmanager.driverspi.ChannelUpdateListener;
 import org.ogema.core.channelmanager.driverspi.SampledValueContainer;
 import org.ogema.core.channelmanager.measurements.SampledValue;
 import org.ogema.core.channelmanager.measurements.Value;
+import org.ogema.driver.homematic.manager.Device;
 import org.ogema.driver.homematic.manager.DeviceCommand;
 
-public class CommandChannel extends Channel {
+public class CommandChannel extends HomeMaticChannel {
 
-	private DeviceCommand deviceCommand;
 	private Device device;
+	private DeviceCommand deviceCommand;
 
-	// private final byte[] emptyMessagePayload = new byte[0];
-
-	public CommandChannel(ChannelLocator locator, String[] splitAddress, Device dev) {
-		super(locator);
-		this.setDevice(dev);
-		byte[] commandIdArray = DatatypeConverter.parseHexBinary(splitAddress[1]);
+	public CommandChannel(String address, String[] configs, Device device) {
+		super(address);
+		this.setDevice(device);
+		
+		byte[] commandIdArray = DatatypeConverter.parseHexBinary(configs[1]);
 		byte commandId = commandIdArray[0];
-		deviceCommand = dev.getRemoteDevice().getSubDevice().deviceCommands.get(commandId);
+		deviceCommand = device.getHandler().deviceCommands.get(commandId);
 		deviceCommand.getIdentifier();
 	}
 

@@ -17,58 +17,60 @@ package org.ogema.driver.homematic.manager;
 
 import java.util.Arrays;
 
-import org.ogema.driver.homematic.manager.RemoteDevice.InitStates;
+import org.ogema.driver.homematic.manager.Device.InitState;
+import org.ogema.driver.homematic.manager.messages.StatusMessage;
 import org.ogema.driver.homematic.tools.Converter;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Handles incoming messages and responds accordingly.
- * 
- * @author baerthbn
- * 
- */
 public class InputHandler implements Runnable {
+	private final Logger logger = LoggerFactory.getLogger(InputHandler.class);
 
-	protected volatile boolean running;
-	protected volatile Object inputEventLock;
-	protected MessageHandler messageHandler;
-	protected LocalDevice localDevice;
-	protected StatusMessage lastMsg = new StatusMessage();
+	private static final String ID_KEY = "org.openmuc.framework.driver.homematic.id";
+	private static final String ID_DEFAULT = "F11034";
 
-	private final Logger logger = org.slf4j.LoggerFactory.getLogger("homematic-driver");
-	protected boolean localDeviceInited;
+	private volatile boolean running;
+	private volatile Object lock;
+	private Thread thread;
 
-	public InputHandler(LocalDevice localDevice) {
-		inputEventLock = localDevice.getInputEventLock();
-		messageHandler = localDevice.getMessageHandler();
+	private HomeMaticManager manager;
+
+	public InputHandler(HomeMaticManager manager) {
+		lock = manager.getReceivedLock();
 		running = true;
-		this.localDevice = localDevice;
+		
+		this.manager = manager;
+	}
+
+	/**
+	 *   Starts the input handler thread.
+	 */
+	public void start() {
+		thread = new Thread(this);
+		thread.setName("OGEMA-HomeMatic-CC1101-input-handler");
+		thread.start();
 	}
 
 	/**
 	 *   Stops the loop in run().
 	 */
 	public void stop() {
-		this.running = false;
+		running = false;
+		thread.interrupt();
 	}
 
 	@Override
 	public void run() {
 		while (running) {
-			synchronized (inputEventLock) {
-				while (!localDevice.connectionHasFrames()) {
+			synchronized (lock) {
+				while (!manager.hasReceivedFrames()) {
 					try {
-						inputEventLock.wait();
+						lock.wait();
 					} catch (InterruptedException e1) {
-						 e1.printStackTrace();
 					}
 				}
-				// long timeStamp = System.currentTimeMillis();
-				// System.out.print("receive: ");
-				// System.out.println(timeStamp);
-
 				try {
-					handleMessage(localDevice.getReceivedFrame());
+					handleMessage(manager.getReceivedFrame());
 				} catch (Throwable t) {
 					t.printStackTrace();
 				}
@@ -76,70 +78,73 @@ public class InputHandler implements Runnable {
 		}
 	}
 
-	protected void handleMessage(byte[] tempArray) {
-		logger.debug("message tpye: " + (char) tempArray[0]);
-		switch (tempArray[0]) {
-		case 'H':
-			if (!localDeviceInited)
-				parseAdapterMsg(tempArray);
+	public void handleMessage(byte[] data) {
+		switch (data[0]) {
+		case 'V':
+			if (!manager.isReady()) {
+				parseVersion(data);
+			}
 			break;
-		case 'R':
-		case 'E':
-			StatusMessage emsg = new StatusMessage(tempArray);
-//			if (!emsg.almostEquals(lastMsg)) {
-				if (emsg.msg_type == 0x00 & localDevice.getPairing() != null) { // if pairing
-					logger.debug("Pairing response received");
-					RemoteDevice temp_device = new RemoteDevice(localDevice, emsg);
-					if (localDevice.getPairing().equals("0000000000")
-							| localDevice.getPairing().equals(temp_device.getSerial())) {
-
-						RemoteDevice found_device = localDevice.getDevices().get(temp_device.getAddress());
-						if (found_device == null) {
-							localDevice.getDevices().put(temp_device.getAddress(), temp_device);
-							temp_device.init();
+		case 'a':
+		case 'A':
+			if (!manager.isReady()) {
+				break;
+			}
+			StatusMessage message = new StatusMessage(data);
+			
+			logger.info("Received {} {} of type {} from device {}: {}",
+					(message.destination.equals("000000") ? "broadcast" : "message"),
+					message.number & 0x000000FF, message.type, message.source, 
+					Converter.toHexString(message.data));
+			
+			if (message.type == 0x00 & manager.getPairing() != null) { // if pairing
+				Device device = new Device(manager, message);
+				
+				if (manager.getPairing().equals("0000000000") | manager.getPairing().equals(device.getSerial())) {
+					if (!manager.hasDevice(device.getAddress())) {
+						manager.addDevice(device);
+						logger.info("Received pairing request from device: {}", device.getAddress());
+						
+						device.init();
+					}
+					else {
+						device = manager.getDevice(device.getAddress());
+						if (device.getInitState().equals(InitState.UNKNOWN)) {
+							device.init();
 						}
-						else if (found_device.getInitState().equals(InitStates.UNKNOWN)) {
-							temp_device = localDevice.getDevices().get(found_device.getAddress());
-							temp_device.init();
+						else if (device.getInitState().equals(InitState.PAIRED)) {
+							device.init(false);
 						}
 					}
 				}
-				else {
-					if (localDevice.getOwnerid().equals(emsg.destination) || emsg.destination.equals("000000")
-							|| emsg.partyMode) {
-						if (localDevice.getDevices().containsKey(emsg.source)) {
-							// 000000 = broadcast
-							logger.debug("InputHandler has device");
-							messageHandler.messageReceived(emsg);
-						}
-						else
-							logger.debug("Unpaired Homematic device detected: " + emsg.source);
+			}
+			else {
+				if (manager.getId().equals(message.destination) || message.destination.equals("000000") || message.partyMode) {
+					// Destination "000000" is a broadcast
+					if (manager.hasDevice(message.source)) {
+						manager.onReceivedMessage(message);
+					}
+					else {
+						logger.debug("Received message from unpaired device: {}", message.source);
 					}
 				}
-//			}
-//			else
-//				logger.debug("Message is equal to the last message!");
-			lastMsg = emsg;
-			break;
-		case 'I':
-			// This is needed for AES magic
+			}
 			break;
 		default:
-			// TODO: Status & Condition Handling !
+			logger.debug("Unknown message: " + Converter.dumpHexString(data));
+			break;
 		}
 	}
 
-	private void parseAdapterMsg(byte[] data) {
-		localDevice.setName(new String(Arrays.copyOfRange(data, 2, 11)));
-		long raw_version = Converter.toLong(data, 11, 2);
-		localDevice.setFirmware(String.format("%d.%d", (raw_version >> 12) & 0xf, raw_version & 0xffff));
-		localDevice.setSerial(new String(Arrays.copyOfRange(data, 14, 24)));
-		String ownerid = Converter.toHexString(data, 27, 3);
-		if (ownerid.equals("000000"))
-			ownerid = Converter.toHexString(data, 24, 3);
-		localDevice.setOwnerid(ownerid);
-		localDevice.setUptime((int) Converter.toLong(data, 30, 4));
-		localDeviceInited = true;
+	private void parseVersion(byte[] data) {
+		// remove \r\n
+		data = Arrays.copyOfRange(data, 0, 13);
+		logger.info("Registered manager: {}", new String(data));
+		
+		// Used in command messages
+		manager.setId(System.getProperty(ID_KEY, ID_DEFAULT));
+		manager.setFirmware(new String(data));
+		manager.setSerial("");
 	}
 
 }
