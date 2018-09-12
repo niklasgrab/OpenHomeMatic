@@ -34,19 +34,21 @@ import com.pi4j.io.serial.Serial;
 import com.pi4j.io.serial.SerialDataEvent;
 import com.pi4j.io.serial.SerialDataEventListener;
 import com.pi4j.io.serial.SerialFactory;
-import com.pi4j.io.serial.SerialPortException;
 
 public class SccConnection extends SerialConnection {
 	private final Logger logger = LoggerFactory.getLogger(SccConnection.class);
 
+	private static final String SERIAL_PORT_KEY = "org.ogema.driver.homematic.serial.port";
 	private static final int SERIAL_BAUDRATE = 38400;
 
+	private SerialListener listener;
+	private Serial serial;
 	private GpioController gpio;
 	private GpioPinDigitalOutput pin;
-	private Serial port;
 
 	public SccConnection() {
 		super();
+		listener = new SerialListener(this);
 	}
 
 	@Override
@@ -59,9 +61,10 @@ public class SccConnection extends SerialConnection {
 			pin.setShutdownOptions(true, PinState.LOW);
 			
 			// Register the serial data listener
-			port = SerialFactory.createInstance();
-			port.addListener(new SerialListener(this));
-			port.open(Serial.DEFAULT_COM_PORT, SERIAL_BAUDRATE);
+			String port = System.getProperty(SERIAL_PORT_KEY, Serial.DEFAULT_COM_PORT);
+			serial = SerialFactory.createInstance();
+			serial.addListener(listener);
+			serial.open(port, SERIAL_BAUDRATE);
 			
 		} catch (RuntimeException e) {
 			throw new IOException(e);
@@ -70,20 +73,15 @@ public class SccConnection extends SerialConnection {
 
 	@Override
 	public void write(byte[] data) throws IOException {
-		if (port == null) throw new SerialPortException("Serial port is not open");
-		
-		String dataStr = new String(data, "UTF-8");
-		
-		port.writeln(dataStr);
-		port.flush();
+		serial.write(data);
+		serial.flush();
 	}
 
 	@Override
 	public void closePort() throws IOException {
 		try {
-			pin.low();
-			pin.unexport();
-			port.close();
+			serial.close();
+			gpio.unprovisionPin(pin);
 			
 		} catch (IllegalStateException | NullPointerException e) {
 			throw new IOException(e);

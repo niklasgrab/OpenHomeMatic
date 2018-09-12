@@ -92,7 +92,7 @@ public class InputHandler implements Runnable {
 			}
 			StatusMessage message = new StatusMessage(data);
 			
-			logger.info("Received {} {} of type {} from device {}: {}",
+			logger.debug("Received {} {} of type {} from device {}: {}",
 					(message.destination.equals("000000") ? "broadcast" : "message"),
 					message.number & 0x000000FF, message.type, message.source, 
 					Converter.toHexString(message.data));
