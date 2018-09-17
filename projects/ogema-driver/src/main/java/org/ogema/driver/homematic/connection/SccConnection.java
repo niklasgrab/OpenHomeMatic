@@ -30,7 +30,9 @@ import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
+import com.pi4j.io.serial.Baud;
 import com.pi4j.io.serial.Serial;
+import com.pi4j.io.serial.SerialConfig;
 import com.pi4j.io.serial.SerialDataEvent;
 import com.pi4j.io.serial.SerialDataEventListener;
 import com.pi4j.io.serial.SerialFactory;
@@ -38,13 +40,12 @@ import com.pi4j.io.serial.SerialFactory;
 public class SccConnection extends SerialConnection {
 	private final Logger logger = LoggerFactory.getLogger(SccConnection.class);
 
-	private static final String SERIAL_PORT_KEY = "org.ogema.driver.homematic.serial.port";
-	private static final int SERIAL_BAUDRATE = 38400;
-
-	private SerialListener listener;
-	private Serial serial;
 	private GpioController gpio;
-	private GpioPinDigitalOutput pin;
+	private GpioPinDigitalOutput pin17;
+	private GpioPinDigitalOutput pin18;
+
+	private Serial serial;
+	private SerialListener listener;
 
 	public SccConnection() {
 		super();
@@ -53,18 +54,28 @@ public class SccConnection extends SerialConnection {
 
 	@Override
 	public void openPort() throws IOException {
-		logger.info("Connecting Raspberry Pi HomeMatic Stackable Module");
+		String port = System.getProperty(SERIAL_PORT, Serial.DEFAULT_COM_PORT);
+		logger.info("Connecting Raspberry Pi HomeMatic Stackable Module at port {}", port);
 		try {
-			// Provision gpio pin #17 as an output pin and turn on
+			// Provision gpio pin #17 and #18 as an output pins and turn them on
 			gpio = GpioFactory.getInstance();
-			pin = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00, "SSC", PinState.HIGH);
-			pin.setShutdownOptions(true, PinState.LOW);
+			pin17 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00, "SCC17", PinState.HIGH);
+//			pin18 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01, "SCC18", PinState.HIGH);
+			pin17.setShutdownOptions(true, PinState.LOW);
+//			pin18.setShutdownOptions(true, PinState.LOW);
 			
 			// Register the serial data listener
-			String port = System.getProperty(SERIAL_PORT_KEY, Serial.DEFAULT_COM_PORT);
 			serial = SerialFactory.createInstance();
 			serial.addListener(listener);
-			serial.open(port, SERIAL_BAUDRATE);
+			
+			SerialConfig config = new SerialConfig().device(port)
+					.baud(Baud._38400);
+//					.dataBits(DataBits._7)
+//					.stopBits(StopBits._1)
+//					.parity(Parity.EVEN)
+//					.flowControl(FlowControl.NONE);
+			
+			serial.open(config);
 			
 		} catch (RuntimeException e) {
 			throw new IOException(e);
@@ -81,7 +92,10 @@ public class SccConnection extends SerialConnection {
 	public void closePort() throws IOException {
 		try {
 			serial.close();
-			gpio.unprovisionPin(pin);
+			
+			gpio.unprovisionPin(pin17);
+			gpio.unprovisionPin(pin18);
+			gpio.shutdown();
 			
 		} catch (IllegalStateException | NullPointerException e) {
 			throw new IOException(e);

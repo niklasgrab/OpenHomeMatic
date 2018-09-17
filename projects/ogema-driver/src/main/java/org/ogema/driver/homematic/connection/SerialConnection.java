@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 public abstract class SerialConnection implements Connection, ConnectionListener {
 	private final Logger logger = LoggerFactory.getLogger(SerialConnection.class);
 
+	protected static final String SERIAL_PORT = "org.ogema.driver.homematic.serial.port";
+
 	protected volatile InputOutputFifo<byte[]> fifo;
 	protected volatile Object lock;
 	protected boolean closed = true;

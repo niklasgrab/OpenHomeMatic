@@ -35,12 +35,11 @@ import org.slf4j.LoggerFactory;
 public class CulConnection extends SerialConnection {
 	private final Logger logger = LoggerFactory.getLogger(CulConnection.class);
 
-	private static final String SERIAL_PORT_KEY = "org.ogema.driver.homematic.serial.port";
 	private static final String SERIAL_PORT_DEFAULT = "/dev/ttyUSB0";
 
 	private static final int SERIAL_BAUDRATE = 9600;
 
-	private SerialPort serialPort;
+	private SerialPort serial;
 	private DataInputStream input;
 	private DataOutputStream output;
 	private Thread listener;
@@ -51,18 +50,18 @@ public class CulConnection extends SerialConnection {
 
 	@Override
 	protected void openPort() throws IOException {
-		logger.info("Connecting HomeMatic CUL Stick");
+		String port = System.getProperty(SERIAL_PORT, SERIAL_PORT_DEFAULT);
+		logger.info("Connecting HomeMatic CUL Stick at port {}", port);
 		
-		String port = System.getProperty(SERIAL_PORT_KEY, SERIAL_PORT_DEFAULT);
-		serialPort = SerialPortBuilder.newBuilder(port)
+		serial = SerialPortBuilder.newBuilder(port)
+				.setBaudRate(SERIAL_BAUDRATE)
 				.setDataBits(DataBits.DATABITS_7)
 				.setStopBits(StopBits.STOPBITS_1)
 				.setParity(Parity.EVEN)
-				.setBaudRate(SERIAL_BAUDRATE)
 				.build();
 		
-		input = new DataInputStream(serialPort.getInputStream());
-		output = new DataOutputStream(serialPort.getOutputStream());
+		input = new DataInputStream(serial.getInputStream());
+		output = new DataOutputStream(serial.getOutputStream());
 		
 		listener = new SerialListener(this);
 		listener.setName("OGEMA-HomeMatic-CC1101-CUL-listener");
@@ -76,7 +75,7 @@ public class CulConnection extends SerialConnection {
 			
 			input.close();
 			output.close();
-			serialPort.close();
+			serial.close();
 			
 		} catch (NullPointerException e) {
 			throw new IOException(e);
