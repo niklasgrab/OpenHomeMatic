@@ -1,66 +1,72 @@
 package org.ogema.driver.homematic.connection;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Arrays;
 
 import org.ogema.driver.homematic.manager.InputOutputFifo;
+import org.openmuc.jrxtx.SerialPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class SerialConnection implements Connection, ConnectionListener {
 	private final Logger logger = LoggerFactory.getLogger(SerialConnection.class);
 
-	protected static final String SERIAL_PORT = "org.ogema.driver.homematic.serial.port";
-
 	protected volatile InputOutputFifo<byte[]> fifo;
 	protected volatile Object lock;
-	protected boolean closed = true;
+
+	protected SerialListener listener;
+	protected SerialPort serial;
+	protected OutputStream output;
 
 	public SerialConnection() {
 		this.fifo = new InputOutputFifo<byte[]>(6);
 		this.lock = new Object();
 	}
 
-	public boolean isClosed() {
-		return this.closed;
-	}
-
 	@Override
 	public void open() throws IOException {
-		if (isClosed()) {
-			closed = false;
-			try {
-				openPort();
-				
-//				sendFrame("X71".getBytes());
-				sendFrame("Ar".getBytes());
-				sendFrame("V".getBytes());
-		 		
-			} catch (IOException e) {
-				closed = true;
-				close();
-				throw e;
-			}
+		try {
+			serial = build();
+			output = serial.getOutputStream();
+			listener = new SerialListener(this);
+			listener.start();
+
+//			Send "Ar" to enable Asksin mode and request version info "V" to verify connection
+//			sendFrame("Ar".getBytes());
+			sendFrame(new byte[] {(byte) 0x41, (byte) 0x72});
+//			sendFrame("V".getBytes());
+			sendFrame(new byte[] {(byte) 0x56});
+			
+		} catch (IOException e) {
+			close();
+			throw e;
 		}
 	}
 
-	protected abstract void openPort() throws IOException;
+	protected abstract SerialPort build() throws IOException;
 
 	@Override
 	public void close() {
-		closed = true;
 		try {
-			closePort();
+			listener.close();
+			output.close();
+			serial.close();
 			
-		} catch (IOException e) {
+		} catch (IOException | NullPointerException e) {
 			logger.warn("Error closing port: {}", e.getMessage());
 		}
 	}
 
-	protected abstract void closePort() throws IOException;
-
 	@Override
-	public Object getReceivedLock() {
-		return lock;
+	public void onDisconnect() {
+		try {
+			close();
+			open();
+			
+		} catch (IOException e) {
+			logger.error("Fatal error while reopening serial port");
+		}
 	}
 
 	@Override
@@ -69,6 +75,11 @@ public abstract class SerialConnection implements Connection, ConnectionListener
 		synchronized (lock) {
 			lock.notify();
 		}
+	}
+
+	@Override
+	public Object getReceivedLock() {
+		return lock;
 	}
 
 	@Override
@@ -85,20 +96,20 @@ public abstract class SerialConnection implements Connection, ConnectionListener
 	public void sendFrame(byte[] frame) {
 		try {
 			// We have always to send CR and LF at the end of the data
-			byte[] dataCRLF = new byte[frame.length+2];
-			for (int i = 0; i < frame.length; i++) {
-				dataCRLF[i] = frame[i];
-			}
-			dataCRLF[dataCRLF.length-2]= 13; // CR appended
-			dataCRLF[dataCRLF.length-1]= 10; // LF appended
+			byte[] data = Arrays.copyOf(frame, frame.length+2);
+			data[data.length-2]= (byte) 0x0D; // CR appended
+			data[data.length-1]= (byte) 0x0A; // LF appended
 			
-			write(dataCRLF);
+			write(data);
 			
 		} catch (IOException e) {
 			logger.warn("Error while sending frame: {}", new String(frame));
 		}
 	}
 
-	protected abstract void write(byte[] data) throws IOException;
+	protected void write(byte[] data) throws IOException {
+		output.write(data);
+		output.flush();
+	}
 
 }

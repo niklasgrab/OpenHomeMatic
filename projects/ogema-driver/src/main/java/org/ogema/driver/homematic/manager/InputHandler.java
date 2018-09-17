@@ -87,9 +87,6 @@ public class InputHandler implements Runnable {
 			break;
 		case 'a':
 		case 'A':
-			if (!manager.isReady()) {
-				break;
-			}
 			StatusMessage message = new StatusMessage(data);
 			
 			logger.debug("Received {} {} of type {} from device {}: {}",
@@ -97,6 +94,9 @@ public class InputHandler implements Runnable {
 					message.number & 0x000000FF, message.type, message.source, 
 					Converter.toHexString(message.data));
 			
+			if (!manager.isReady()) {
+				break;
+			}
 			if (message.type == 0x00 & manager.getPairing() != null) { // if pairing
 				Device device = new Device(manager, message);
 				

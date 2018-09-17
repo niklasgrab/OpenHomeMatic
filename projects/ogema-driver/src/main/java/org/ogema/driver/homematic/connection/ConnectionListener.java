@@ -19,4 +19,6 @@ public interface ConnectionListener {
 
 	public void onReceivedFrame(byte[] message);
 
+	public void onDisconnect();
+
 }

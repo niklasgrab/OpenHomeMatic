@@ -22,6 +22,11 @@ package org.ogema.driver.homematic.connection;
 
 import java.io.IOException;
 
+import org.openmuc.jrxtx.DataBits;
+import org.openmuc.jrxtx.Parity;
+import org.openmuc.jrxtx.SerialPort;
+import org.openmuc.jrxtx.SerialPortBuilder;
+import org.openmuc.jrxtx.StopBits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,52 +35,49 @@ import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
-import com.pi4j.io.serial.Baud;
-import com.pi4j.io.serial.Serial;
-import com.pi4j.io.serial.SerialConfig;
-import com.pi4j.io.serial.SerialDataEvent;
-import com.pi4j.io.serial.SerialDataEventListener;
-import com.pi4j.io.serial.SerialFactory;
+import com.pi4j.wiringpi.GpioUtil;
 
 public class SccConnection extends SerialConnection {
 	private final Logger logger = LoggerFactory.getLogger(SccConnection.class);
 
-	private GpioController gpio;
-	private GpioPinDigitalOutput pin17;
-	private GpioPinDigitalOutput pin18;
+	private static final String SERIAL_PORT = "org.ogema.driver.homematic.serial.port";
+	private static final String SERIAL_PORT_DEFAULT = "/dev/ttyAMA0";
 
-	private Serial serial;
-	private SerialListener listener;
+	private static final int SERIAL_BAUDRATE = 38400;
+
+	private GpioController gpio = null;
+	private GpioPinDigitalOutput pin = null;
 
 	public SccConnection() {
 		super();
-		listener = new SerialListener(this);
 	}
 
 	@Override
-	public void openPort() throws IOException {
-		String port = System.getProperty(SERIAL_PORT, Serial.DEFAULT_COM_PORT);
+	public SerialPort build() throws IOException {
+		String port = System.getProperty(SERIAL_PORT, SERIAL_PORT_DEFAULT);
 		logger.info("Connecting Raspberry Pi HomeMatic Stackable Module at port {}", port);
 		try {
-			// Provision gpio pin #17 and #18 as an output pins and turn them on
-			gpio = GpioFactory.getInstance();
-			pin17 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00, "SCC17", PinState.HIGH);
-//			pin18 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_01, "SCC18", PinState.HIGH);
-			pin17.setShutdownOptions(true, PinState.LOW);
-//			pin18.setShutdownOptions(true, PinState.LOW);
-			
-			// Register the serial data listener
-			serial = SerialFactory.createInstance();
-			serial.addListener(listener);
-			
-			SerialConfig config = new SerialConfig().device(port)
-					.baud(Baud._38400);
-//					.dataBits(DataBits._7)
-//					.stopBits(StopBits._1)
-//					.parity(Parity.EVEN)
-//					.flowControl(FlowControl.NONE);
-			
-			serial.open(config);
+	        // Check if privileged access is required on the running system and enable non-
+	        // privileged GPIO access if not.
+	        if (!GpioUtil.isPrivilegedAccessRequired()) {
+	            GpioUtil.enableNonPrivilegedAccess();
+	            
+				gpio = GpioFactory.getInstance();
+				
+				// Provision gpio pin #17 as output and set it high
+				pin = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00, "SCC", PinState.LOW);
+				pin.setShutdownOptions(true, PinState.LOW);
+				pin.setState(PinState.HIGH);
+	        }
+	        else {
+	            logger.warn("Privileged access is required to setup HomeMatic SCC boards");
+	        }
+			return SerialPortBuilder.newBuilder(port)
+					.setBaudRate(SERIAL_BAUDRATE)
+					.setDataBits(DataBits.DATABITS_8)
+					.setStopBits(StopBits.STOPBITS_1)
+					.setParity(Parity.NONE)
+					.build();
 			
 		} catch (RuntimeException e) {
 			throw new IOException(e);
@@ -83,47 +85,12 @@ public class SccConnection extends SerialConnection {
 	}
 
 	@Override
-	public void write(byte[] data) throws IOException {
-		serial.write(data);
-		serial.flush();
-	}
-
-	@Override
-	public void closePort() throws IOException {
-		try {
-			serial.close();
-			
-			gpio.unprovisionPin(pin17);
-			gpio.unprovisionPin(pin18);
+	public void close() {
+		super.close();
+		if (gpio != null) {
+			gpio.unprovisionPin(pin);
 			gpio.shutdown();
-			
-		} catch (IllegalStateException | NullPointerException e) {
-			throw new IOException(e);
+			gpio = null;
 		}
 	}
-
-	private class SerialListener implements SerialDataEventListener {
-
-		private final ConnectionListener listener;
-
-		public SerialListener(ConnectionListener listener) {
-			this.listener = listener;
-		}
-
-		@Override
-		public void dataReceived(SerialDataEvent event) {
-			if (logger.isTraceEnabled()) {
-				logger.trace("Notified about received data");
-			}
-			try {
-				String data = event.getAsciiString();
-				if (!data.isEmpty()) {
-					listener.onReceivedFrame(data.trim().getBytes());
-				}
-			} catch (IOException e) {
-				logger.warn("Failed reading serial event data");
-			}
-		}
-	}
-
 }
