@@ -20,7 +20,6 @@
  */
 package org.ogema.port;
 
-import org.ogema.driver.homematic.manager.ValueType;
 import org.openmuc.framework.data.BooleanValue;
 import org.openmuc.framework.data.ByteArrayValue;
 import org.openmuc.framework.data.DoubleValue;
@@ -89,38 +88,4 @@ public class OgemaValue {
 		
 		return null;
 	}
-	
-	public static org.openmuc.framework.data.ValueType encodeValueType(ValueType valuetype) {
-		if (valuetype.equals(ValueType.BOOLEAN)) {
-			return org.openmuc.framework.data.ValueType.BOOLEAN;
-		}
-		else if (valuetype.equals(ValueType.BYTE)) {
-			return org.openmuc.framework.data.ValueType.BYTE;
-		}
-		else if (valuetype.equals(ValueType.BYTE_ARRAY)) {
-			return org.openmuc.framework.data.ValueType.BYTE_ARRAY;
-		}
-		else if (valuetype.equals(ValueType.DOUBLE)) {
-			return org.openmuc.framework.data.ValueType.DOUBLE;
-		}
-		else if (valuetype.equals(ValueType.FLOAT)) {
-			return org.openmuc.framework.data.ValueType.FLOAT;
-		}
-		else if (valuetype.equals(ValueType.INTEGER)) {
-			return org.openmuc.framework.data.ValueType.INTEGER;
-		}
-		else if (valuetype.equals(ValueType.LONG)) {
-			return org.openmuc.framework.data.ValueType.LONG;
-		}
-		else if (valuetype.equals(ValueType.SHORT)) {
-			return org.openmuc.framework.data.ValueType.SHORT;
-		}
-		else if (valuetype.equals(ValueType.STRING)) {
-			return org.openmuc.framework.data.ValueType.STRING;
-		}
-		else {
-			return null;
-		}
-	}
-
 }

@@ -31,7 +31,7 @@ public class DeviceSettings extends Preferences {
 	private String type;
 
 	@Option
-	private boolean defaultState = false;
+	private Boolean defaultState = null;
 
 	@Override
 	public PreferenceType getPreferenceType() {
@@ -44,6 +44,10 @@ public class DeviceSettings extends Preferences {
 
 	public boolean getDefaultState() {
 		return defaultState;
+	}
+
+	public boolean hasDefaultState() {
+		return defaultState != null;
 	}
 
 }

@@ -16,7 +16,7 @@
       <option id="address">
         <name>Identifier</name>
         <description>The unique identifier of the HomeMatic device</description>
-        <mandatory>false</mandatory>
+        <mandatory>true</mandatory>
         <type>STRING</type>
       </option>
     </deviceAddress>
@@ -176,12 +176,7 @@
             This may be applicable e.g. for some Smart Plugs or Switches after a blackout.
           ]]>
         </description>
-        <selection>
-            <item value="true">On</item>
-            <item value="false">Off</item>
-        </selection>
         <type>BOOLEAN</type>
-        <default>false</default>
       </option>
     </deviceSettings>
     
@@ -214,7 +209,7 @@
       <option id="type">
         <name>Type</name>
         <description><![CDATA[
-            The type of the data channel:<br>
+            The type of the register:<br>
             <ol>
               <li>Attribute channels from which can be read.</li>
               <li>Command channels which can be set</li>

@@ -20,20 +20,14 @@
  */
 package org.openmuc.framework.driver.homematic;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.ogema.core.channelmanager.measurements.BooleanValue;
-import org.ogema.driver.homematic.connection.LocalConnection;
-import org.ogema.driver.homematic.connection.LocalCulConnection;
-import org.ogema.driver.homematic.connection.LocalSccConnection;
-import org.ogema.driver.homematic.connection.LocalUsbConnection;
-import org.ogema.driver.homematic.manager.RemoteDevice.InitStates;
-import org.ogema.driver.homematic.manager.SubDevice;
-import org.ogema.driver.homematic.manager.asksin.LocalDevice;
-import org.ogema.driver.homematic.manager.asksin.RemoteDevice;
-import org.ogema.driver.homematic.manager.devices.PowerMeter;
-import org.ogema.driver.homematic.manager.devices.SwitchPlug;
+import org.ogema.driver.homematic.manager.Device;
+import org.ogema.driver.homematic.manager.Device.InitState;
+import org.ogema.driver.homematic.manager.HomeMaticManager;
 import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.DeviceScanInfo;
 import org.openmuc.framework.config.DriverInfo;
@@ -53,22 +47,21 @@ import org.slf4j.LoggerFactory;
 
 @Component
 public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallbacks {
-	private final static Logger logger = LoggerFactory.getLogger(HomeMaticDriver.class);
+	private static final Logger logger = LoggerFactory.getLogger(HomeMaticDriver.class);
 
 	private final DriverInfo info = DriverInfoFactory.getPreferences(HomeMaticDriver.class);
 
-	public static final String CONNECTION_INTERFACE = "org.openmuc.framework.driver.homematic.interface";
-	public static final String CONNECTION_INTERFACE_CUL = "CUL";
-	public static final String CONNECTION_INTERFACE_SCC = "SCC";
+	private int SLEEP_TIME = 1000;
 
-	private static int SLEEP_TIME = 1000;
-	private static int CONNECT_TIMEOUT = 41; // in Seconds
+	private HomeMaticManager manager;
+
+	private final Map<String, HomeMaticConnection> connections = new HashMap<String, HomeMaticConnection>();
 
 	private volatile boolean isDeviceScanInterrupted = false;
 
-	private final Map<String, HomeMaticConnection> connectionsMap = new HashMap<String, HomeMaticConnection>();
-	private final Object connectionLock = new Object();
-	private LocalConnection connection;
+	public HomeMaticDriver() {
+		manager = new HomeMaticManager();
+	}
 
 	@Override
 	public DriverInfo getInfo() {
@@ -80,43 +73,45 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 			throws UnsupportedOperationException, ArgumentSyntaxException, ScanException, ScanInterruptedException {
 
 		DeviceScanSettings settings = info.parse(settingsStr, DeviceScanSettings.class);
-		boolean ignore = settings.ignoreExisting();
 		
 		// TODO: implement as deviceScanSettings option
 		int duration = 60;
 		
-		LocalConnection localCon = getConnection();
-		if (localCon != null) {
-			LocalDevice localDevice = localCon.getLocalDevice();
-			localDevice.setIgnoreExisting(ignore);
-			localDevice.setPairing("0000000000");
-			
-			logger.info("Enabled Pairing for {} seconds", duration);
-			for (int i = 0; i <= duration; i++) {
-				if (isDeviceScanInterrupted) {
-					break;
-				}
-				for (org.ogema.driver.homematic.manager.RemoteDevice rm: localDevice.getDevices().values()) {
-					if (!((RemoteDevice)rm).isIgnore() && ((RemoteDevice)rm).getInitState() == InitStates.PAIRED) {
-						String type = rm.getDeviceType();
-						String description = localDevice.getDeviceDescriptor().getName(type) + ":" + 
-								localDevice.getDeviceDescriptor().getSubType(type);
-						DeviceScanInfo info = new DeviceScanInfo(rm.getAddress(), "type:" + type, description);
-						listener.deviceFound(info);
-					}
-				}
-				listener.scanProgressUpdate((int) Math.round(i/(double) duration*100));
-
-				try {
-					Thread.sleep(SLEEP_TIME);
+		List<String> ignore = new ArrayList<String>();
+		if (settings.ignoreExisting()) {
+			ignore.addAll(connections.keySet());
+		}
+		logger.info("Enabled Pairing for {} seconds", duration);
+		
+		manager.setPairing("0000000000");
+		
+		for (int i = 0; i <= duration; i++) {
+			if (isDeviceScanInterrupted) {
+				break;
+			}
+			for (Device device: manager.getDevices().values()) {
+				if (device.getInitState() == InitState.PAIRED && !ignore.contains(device.getAddress())) {
+					String address = device.getAddress();
+					String type = device.getDeviceType();
+					String description = manager.getDeviceDescriptor().getName(type);
 					
-				} catch (InterruptedException e) {
-					throw new ScanInterruptedException("Unexpected interruption during device scan");
+					DeviceScanInfo info = new DeviceScanInfo(address, "type:" + type, description);
+					listener.deviceFound(info);
+					
+					ignore.add(address);
 				}
 			}
-			localDevice.setPairing(null);
-			logger.info("Pairing disabled.");
+			listener.scanProgressUpdate((int) Math.round(i/(double) duration*100));
+			
+			try {
+				Thread.sleep(SLEEP_TIME);
+				
+			} catch (InterruptedException e) {
+				throw new ScanInterruptedException("Unexpected interruption during device scan");
+			}
 		}
+		manager.setPairing(null);
+		logger.info("Pairing disabled.");
 	}
 
 	@Override
@@ -132,129 +127,25 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 			throw new ArgumentSyntaxException("Device Address has an incorrect length. The length has to be 6 Characters.");
 		}
 		
-		HomeMaticConnection connection = connectionsMap.get(addressStr);
+		HomeMaticConnection connection = connections.get(addressStr);
 		if (connection == null) {
-			LocalConnection localCon = getConnection();
-			LocalDevice localDevice = localCon.getLocalDevice();		
-			
-			connection = new HomeMaticConnection(addressStr, this);
-			connection.setLocalDevice(localDevice);
-			connectionsMap.put(addressStr, connection);
-			
-			if (localDevice.getDevices().get(addressStr) == null) {
-				DeviceSettings settings = info.parse(settingsStr, DeviceSettings.class);
-				
-				new RemoteDevice(localDevice, addressStr, settings.getType(), null); 
-				RemoteDevice remoteDevice = (RemoteDevice) localDevice.getDevices().get(addressStr);
-				SubDevice subDevice = remoteDevice.getSubDevice();
-				
-				if (subDevice instanceof PowerMeter || subDevice instanceof SwitchPlug) {
-					BooleanValue defaultState = new BooleanValue(settings.getDefaultState());
-					if (! defaultState.equals(subDevice.deviceAttributes.get((short) 0x0001).getValue())) {
-						subDevice.channelChanged((byte) 0x01, defaultState);
-						if (! isRemoteDeviceConnected(remoteDevice, defaultState, addressStr)) {
-							connection.close();
-							throw new ConnectionException("Device is not paired");
-						}
-					}
-					else if (! isRemoteDeviceConnected(remoteDevice, null, addressStr)) {
-						connection.close();
-						throw new ConnectionException("Device is not paired, as no value has been sent");
-					}
-				}
+			DeviceSettings settings = info.parse(settingsStr, DeviceSettings.class);
+			Device device;
+			if (manager.hasDevice(addressStr)) {
+				device = manager.getDevice(addressStr);
 			}
-		}
-
-		return connection;
-
-	}
-	
-	private boolean isRemoteDeviceConnected(RemoteDevice remoteDevice, BooleanValue defaultState, 
-			String deviceAddressStr) {
-		int connectionTime = 0;
-		SubDevice subDevice = remoteDevice.getSubDevice();
-		boolean retry = true;
-		while (true) {
-			try  {
-				if (defaultState == null) {
-					if (subDevice.deviceAttributes.get((short) 0x0001).getValue() != null) {
-						logger.debug("Device " + deviceAddressStr + " is connected, Value is sent");
-						return true;
-					}	
-				}
-
-				Thread.sleep(1000);
-
-				if (defaultState != null) {
-					if (defaultState.equals(subDevice.deviceAttributes.get((short) 0x0001).getValue())) {
-						logger.debug("Device " + deviceAddressStr + " is connected");
-						return true;
-					}
-					else if (subDevice.deviceAttributes.get((short) 0x0001).getValue() != null) {
-						if (retry) {
-							remoteDevice.getMsgNum();
-							remoteDevice.getMsgNum();
-							subDevice.channelChanged((byte) 0x01, defaultState);
-							retry = false;
-						}
-						else {
-							logger.debug("Device " + deviceAddressStr + " is not connected (wrong state)");					
-							return false;
-						}
-					}
-				}
-				connectionTime++;
-				if (connectionTime >= CONNECT_TIMEOUT) {
-					logger.debug("Device " + deviceAddressStr + " is not connected (timeout)");					
-					return false;
-				}
-			} catch (InterruptedException e) {
-				break;
+			else {
+				device = manager.addDevice(addressStr, settings.getType());
 			}
-		}
-		logger.debug("Device " + deviceAddressStr + " is not connected(interrupted)");					
-		return false;
-	}
-
-	private void establishConnection() {
-		if (connection == null) {
-			try {
-				String type = System.getProperty(CONNECTION_INTERFACE, CONNECTION_INTERFACE_SCC).toUpperCase();
-				
-				if (type.equals(CONNECTION_INTERFACE_SCC)) {
-					connection = new LocalSccConnection(connectionLock, type, "HMSCC");
-				}
-				else if (type.equals(CONNECTION_INTERFACE_CUL)) {
-					connection = new LocalCulConnection(connectionLock, type, "HMCUL");
-				}
-				else {
-					connection = new LocalUsbConnection(connectionLock, type, "HMUSB");
-				}
-			}
-			catch (Exception e) {
-				logger.error("Severe Error: " + e.getMessage());
-				e.printStackTrace();
-			}
-		}
-	}
-
-	protected LocalConnection getConnection() {
-		if (connection == null) {
-			establishConnection();
-		}
-		while (!connection.hasConnection()) {
-			try {
-				connectionLock.wait();
-			} catch (InterruptedException ex) {
-				// interrupt is used to terminate the thread
-			}
+			connection = new HomeMaticConnection(this, device, settings);
+			connections.put(addressStr, connection);
 		}
 		return connection;
 	}
 
 	@Override
 	public void onDisconnect(String deviceAddress) {
-		connectionsMap.remove(deviceAddress);
+		connections.remove(deviceAddress);
 	}
 
 }
