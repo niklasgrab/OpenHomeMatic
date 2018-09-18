@@ -132,7 +132,7 @@
             "description": "Plug Voltage",
             "address": "0003",
             "settings": "type:ATTRIBUTE",
-            "logging": {"loggingInterval": 5000, "loggingMaxInterval": 180000},
+            "logging": {"loggingInterval": 5000, "loggingMaxInterval": 180000, "loggingTolerance": 1, "average": true},
             "configs": {"samplingInterval": 5000, "valueType":"FLOAT", "unit":"V"},
             "processList": [
                 {
@@ -146,7 +146,7 @@
             "description": "Plug Frequency",
             "address": "0005",
             "settings": "type:ATTRIBUTE",
-            "logging": {"loggingInterval": 5000, "loggingMaxInterval": 180000},
+            "logging": {"loggingInterval": 5000, "loggingMaxInterval": 180000, "loggingTolerance": 0.1, "average": true},
             "configs": {"samplingInterval": 5000, "valueType":"FLOAT", "unit":"Hz"},
             "processList": [
                 {
@@ -201,7 +201,7 @@
         }
     ],
     
-    "prefix": "node",
+    "prefix": "name",
     "syntax": {
         "deviceAddress": {
             "keyValue": false
