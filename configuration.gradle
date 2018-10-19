@@ -13,14 +13,12 @@ project.ext {
   jarDefaultImportPackageVersion = ";version=0"
 
   distributionProjects = subprojects.findAll {
-    it.getPath() == ":ogema" ||
-    it.getPath() == ":ogema-driver-homematic" ||
+    it.getPath() == ":homematic-cc1101" ||
     it.getPath() == ":openmuc-driver-homematic-cc1101"
   }
 
   docProjects = distributionProjects.findAll {
-    it.getPath() == ":ogema" ||
-    it.getPath() == ":ogema-driver-homematic"
+    it.getPath() == ":homematic-cc1101"
   }
 
 }
