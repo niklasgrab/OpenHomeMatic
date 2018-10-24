@@ -79,25 +79,13 @@ public abstract class Device {
 	public Map<Byte, DeviceCommand> deviceCommands;
 	public Map<Short, DeviceAttribute> deviceAttributes;
 
-
-	// Used if device is created through pairing
-	protected Device(DeviceDescriptor descriptor, MessageHandler messageHandler, StatusMessage msg) {
-		this.descriptor = descriptor;
-		this.messageHandler = messageHandler;
-		
-		this.address = msg.source;
-		this.key = msg.parseKey();
-		this.serial = msg.parseSerial();
-		this.name = descriptor.getName(this.key);
-		
-	}
-
-	// Used if device loading from configuration
 	protected Device(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, 
 			String key, String serial, boolean paired) {
 		this.descriptor = descriptor;
 		this.messageHandler = messageHandler;
 
+		this.deviceAttributes = new HashMap<Short, DeviceAttribute>();
+		this.deviceCommands = new HashMap<Byte, DeviceCommand>();
 		this.address = address;
 		this.key = key;
 		this.serial = serial;
