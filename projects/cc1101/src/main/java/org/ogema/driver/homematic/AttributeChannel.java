@@ -48,7 +48,7 @@ public final class AttributeChannel extends HomeMaticChannel {
 	private ArrayList<DeviceAttribute> deviceAttributes = new ArrayList<DeviceAttribute>();
 	private final boolean multipleAttributes;
 
-	public AttributeChannel(String address, String[] configs, Device device) {
+	protected AttributeChannel(String address, String[] configs, Device device) {
 		super(address);
 		
 		if (configs.length <= 2) { // Only one attribute

@@ -30,7 +30,7 @@ public class CommandChannel extends HomeMaticChannel {
 	private Device device;
 	private byte commandId;
 
-	public CommandChannel(String address, String[] configs, Device device) {
+	protected CommandChannel(String address, String[] configs, Device device) {
 		super(address);
 		this.setDevice(device);
 		
