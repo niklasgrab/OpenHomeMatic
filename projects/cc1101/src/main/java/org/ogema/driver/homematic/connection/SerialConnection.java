@@ -15,7 +15,7 @@ public abstract class SerialConnection implements Connection, ConnectionListener
 	protected volatile InputOutputFifo<byte[]> fifo;
 	protected volatile Object lock;
 
-	protected SerialListener listener;
+	protected SerialInputThread listener;
 	protected SerialPort serial;
 	protected OutputStream output;
 
@@ -29,7 +29,7 @@ public abstract class SerialConnection implements Connection, ConnectionListener
 		try {
 			serial = build();
 			output = serial.getOutputStream();
-			listener = new SerialListener(this);
+			listener = new SerialInputThread(this, serial.getInputStream());
 			listener.start();
 
 //			Send "Ar" to enable Asksin mode and request version info "V" to verify connection
