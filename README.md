@@ -44,6 +44,37 @@ Those can be found at *lib/device/homematic-cc1101* and should be copied to the 
 cp -R ~/OpenHomeMatic/lib/device/homematic-cc1101 /opt/emonmuc/lib/device/homematic-cc1101
 ~~~
 
+### 1.2 Configuration
+
+### 1.2.1 System Property Configuration 
+
+The homematic driver uses following system properties as configuration.
+
+You have to decide which connection you want to use for this driver. The possible connections are the CulConnection used for connection with a CUL Stick and SccConnection with a SCC board. Both are serial connections. With the property “org.openmuc.framework.driver.homematic.interface” you can decide which connection will be established. The default value is “SCC”. If you want to establish a connection with CulConnection you have to set the property to “CUL”.
+
+The property “org.openmuc.framework.driver.homematic.connection.port” defines the port to be used. For the CulConnection the default value of the port is “/dev/ttyUSB0”. For the SccConnection the default value of the port is “/dev/ttyAMA0”.
+
+The AskSin protocol contains a destination address of 6 character length to identify the driver. With the property “org.openmuc.framework.driver.homematic.id” you can set this address. The address can be an arbitrary string of 6 characters. The default value is “F11034”.
+
+### 1.2.2 Device Configuration
+
+The options for the device configuration for OpenMUC are defined in the options.xml. You have to identify each device by a unique address. The “Identifier” is of type String, can have an arbitrary length and has no default value. This parameter is mandatory. For each device you also have to set the type of the device. You can select the “Type” from a selection box containing all types of devices which are supported by this driver. The device type is normally somewhere printed on the hardware device. This parameter is mandatory and of type String. The String decodes the device type in hex code. Therefore it is not recommended to edit directly. Some device types has the possibility to have default values so it can be switched to the same state as they are before for example a reboot. The parameter “Default State” is of type boolean, is not mandatory and has no default value.
+ 
+Each device can have one or more channels. For each channel it is mandatory to set an “Identifier”. The “Identifier” is of type String, can have an arbitrary length and has no default value. For each channel you have to define the type of the channel. The channel can be of type “ATTRIBUTE” or of type “COMMAND”. From attribute channels values can be read. To command channels values can be written. You can select it from a selection box. The parameter is of type String, is mandatory and the default value is “ATTRIBUTE”.
+ 
+In the scanForDevices method of the homematic driver it is possible to decide whether already configured and paired devices should be ignored. If disabled, all already paired and registered devices will be returned as well. The name of the parameter is “Ignore Existing”. The parameter is of type Boolean, is not mandatory and has the default value “true”.
+
+
+### 1.2.3 Device Types Configuration
+
+This configuration is a json file and interpreted by the devices class DeviceDescriptor. The first part of the json file is an array of keys, described by a hex code. For each key of a device the descriptor allows to fetch the properties name, type and channels. We build a key value pair containing the name for each key in the device configuration (see above). This key value pairs are members of the selection box. We use the device key only internally and the name of the device in the user interface.
+
+The property type of the device type we use to create the device class of package devices. For example the device type can be "powerMeter" then we create a PowerMeter device.
+ 
+The property channels are only used in the RemoteDevice class of package devices. It adds the two attributes short pressed button and long pressed button, if in the channels “Sw” or “Btn” is configured.
+
+All other properties as “cyc”, “lst” or “rxt” are not used in this driver.
+
 ### 2. Software Description
 
 ### 2.1 Introduction
