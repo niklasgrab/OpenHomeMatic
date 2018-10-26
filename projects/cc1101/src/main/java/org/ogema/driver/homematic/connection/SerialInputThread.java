@@ -22,8 +22,9 @@ package org.ogema.driver.homematic.connection;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
-public class SerialListener extends Thread {
+public class SerialInputThread extends Thread {
     private static final long SLEEP_TIME = 100L;
 
 	private final ConnectionListener listener;
@@ -31,9 +32,9 @@ public class SerialListener extends Thread {
 
 	private volatile boolean closed = true;
 
-	public SerialListener(SerialConnection connection) throws IOException {
+	public SerialInputThread(ConnectionListener connection, InputStream inputStream) throws IOException {
 		this.listener = connection;
-		this.input = new DataInputStream(connection.serial.getInputStream());
+		this.input = new DataInputStream(inputStream);
 		
 		this.setName("OGEMA-HomeMatic-CC1101-listener");
 	}
