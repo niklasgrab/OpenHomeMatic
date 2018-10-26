@@ -41,9 +41,6 @@ import org.slf4j.LoggerFactory;
 public class MessageHandler {
 	private final Logger logger = LoggerFactory.getLogger(MessageHandler.class);
 
-	private static final int SEND_SLEEP = 2500;
-	private static final int SEND_RETRIES = 4;
-
 	private final String CONNECTION_INTERFACE = "org.openmuc.framework.driver.homematic.interface";
 	private final String CONNECTION_DEFAULT = "SCC";
 
@@ -88,7 +85,7 @@ public class MessageHandler {
 		return this.id != null;
 	}
 
-	public void onReceivedMessage(StatusMessage msg) {
+	protected void onReceivedMessage(StatusMessage msg) {
 		String token = msg.source + msg.number;
 		if (manager.hasDevice(msg.source)) {
 			Device device = manager.getDevice(msg.source);
@@ -119,11 +116,11 @@ public class MessageHandler {
 				}
 				sent.remove(token);
 			}
-			device.parseMessage(msg, cmd);
+			device.parseMessage(msg, cmd, device);
 		}
 	}
 
-	public void sendAck(StatusMessage msg, Device device) {
+	protected void sendAck(StatusMessage msg, Device device) {
 		logger.debug("Sending acknoledgement {} to device {}", msg.number, msg.source);
 		connection.sendFrame(new CommandMessage(device.getAddress(), id, (byte) 0x80, (byte) 0x02, "00")
 				.getFrame(device, msg.number));
@@ -177,6 +174,9 @@ public class MessageHandler {
 
 	private class OutputThread extends Thread {
 
+		private static final int SEND_SLEEP = 2500;
+		private static final int SEND_RETRIES = 4;
+
 		private String destination;
 		private volatile int tries = 0;
 		private volatile int errors = 0;
@@ -217,13 +217,13 @@ public class MessageHandler {
 					Device device = manager.getDevices().get(destination);
 					if (device != null) {
 						CommandMessage cmd = (CommandMessage) entry;
-						String token = destination + cmd.getNumber(device);
+						String token = destination + device.getMessageNumber();
 
 						while (tries < SEND_RETRIES && running) {
 							synchronized (sent) {
 								if (sent.containsKey(token)) {
 									sent.remove(token);
-									token = destination + cmd.getNumber(device);
+									token = destination + device.getMessageNumber();
 								}
 								sent.put(token, cmd);
 								if (logger.isTraceEnabled()) {
@@ -231,12 +231,12 @@ public class MessageHandler {
 											sent.keySet().toString());
 								}
 							}
-							logger.debug("Sending message {} to device {}: {}", cmd.getNumber(device), destination,
+							logger.debug("Sending message {} to device {}: {}", device.getMessageNumber(), destination,
 									Converter.toHexString(cmd.data));
 
 							connection.sendFrame(cmd.getFrame(device));
 
-							cmd.incNumber(device);
+							device.incMessageNumber();
 							try {
 								Thread.sleep(SEND_SLEEP);
 

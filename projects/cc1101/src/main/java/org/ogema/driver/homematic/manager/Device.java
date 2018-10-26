@@ -151,7 +151,7 @@ public abstract class Device {
 
 	public abstract void channelChanged(byte identifier, Value value);
 
-	public void parseConfig(StatusMessage response, CommandMessage cmd) {
+	protected void parseConfig(StatusMessage response, CommandMessage cmd) {
 		if (configs == null)
 			configs = DeviceConfigs.getConfigs(getName());
 
@@ -268,7 +268,7 @@ public abstract class Device {
 		return messageNum = (messageNum + 1) & 0x000000FF;
 	}
 
-	public void setMessageNumber(int number) {
+	protected void setMessageNumber(int number) {
 		int next = number & 0x000000FF;
 		if (next > messageNum)
 			messageNum = next;
@@ -276,10 +276,6 @@ public abstract class Device {
 
 	public Message getLastMessage() {
 		return messageLast;
-	}
-
-	public void parseMessage(StatusMessage msg, CommandMessage cmd) {
-		parseMessage(msg, cmd, this);
 	}
 
 	public void pushConfig(int channel, int list, byte[] configs) {
