@@ -21,11 +21,8 @@ import org.ogema.driver.homematic.tools.Converter;
 
 public class StatusMessage {
 
-	public Integer rtoken;
 	public String source;
 	public String destination;
-	public byte status = 0;
-	public byte cond = 0;
 
 	public long length = 0;
 	public int number = 0;
