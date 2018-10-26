@@ -51,7 +51,7 @@ public class CommandMessage extends Message {
 
 	@Override
 	public byte[] getFrame(Device device) {
-		return getFrame(device, getNumber(device));
+		return getFrame(device, device.getMessageNumber());
 	}
 
 	@Override

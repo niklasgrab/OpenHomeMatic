@@ -33,11 +33,4 @@ public abstract class Message {
 
 	public abstract byte[] getFrame(Device device, int num);
 
-	public int getNumber(Device device) {
-		return device.getMessageNumber();
-	}
-
-	public int incNumber(Device device) {
-		return device.incMessageNumber();
-	}
 }
