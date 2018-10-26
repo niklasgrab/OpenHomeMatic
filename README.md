@@ -62,16 +62,22 @@ The OpenMUC framework use the HomeMaticConnection class to scan for channels. Ea
 
 ### 2.3 Package settings in project open-driver-homematic-cc1101
 
+In settings package the classes describes the configuration possibilities of the homematic driver and holds the configuration values. The DeviceSettings holds the type of the device coded as 2 byte hexcode and the default state of the device. The default state of the HomeMatic device, the driver will attempt to set when starting up. This may be applicable e.g. for some Smart Plugs or Switches after a blackout. The ChannelSettings hold the channel type. The type of a channel is either "ATTRIBUTE" or "COMMAND". The DeviceScanSettings allows to influence the kind of scanning. If ignoreExisting is configured as true, already configured HomeMatic devices are ignored when scanning. If ingoreExitsting is false, then all already paired and registered devices will be returned as well.
+
 ### 2.4 Package homematic in project homematic-cc1101
 
-The package contains the abstract HomeMaticChannel class. Channel classes are divided in the types attribute channel class and command channel class. Each channel has a unique address. The abstract Home_MaticChannel class creates the channel class. The channel class reads the record and return it. The record contains the of the attribute value of the channel, the time of the last update and a validation flag. It allows to set and remove an update event listener. With the write method a command value can be written to the channel.
+The package contains the abstract HomeMaticChannel class. Channel classes are divided in the types attribute channel class and command channel class. Each channel has a unique address. The abstract HomeMaticChannel class creates the channel class. The channel class reads the record and return it. The record contains the of the attribute value of the channel, the time of the last update and a validation flag. It allows to set and remove an update event listener. With the write method a command value can be written to the channel.
 
 
 ### 2.5 Package config in project homematic-cc1101
 
+In this package we only made some rename of class names. The content of the classes are the same as in the ogema project.
+
 ### 2.6 Package connection in project homematic-cc1101
 
 ![class diagram connection](doc/img/connection.png)
+
+The classes in this package handles the jrxtx interface for communication. The class SerialConnection is abstract and implements the interface Connection and ConnectionListner. It contains a fifo list to hold incoming messages. After creation of the SerialConnection the Connection is opened. There we build the port, get the outputStream of the port, instantiate the SerialInputThread and start it, and send the ["Ar"](http://culfw.de/commandref.html#cmd_A) message and the ["V"](http://culfw.de/commandref.html#cmd_V) message to get the version of the connection. The method close will close the SerialInputThread, close the outputStream and close the port. The method onDisconnect will reopening the connection. If the SerialInputThread reads an input the method onReceivedFrame of the SerialConnection is called. This method puts the input in the fifo list and notify the lock object that a new message was received. With method hasFrames one can ask the Connection, if in the fifo list are messages stored. The method getFrame is used to get oldest message in the fifo list. The fifo list will remove the returned message from its list. The method sendFrame allows the caller to write a message to the output stream. We support SccConnection and the CulConnection. The SccConnection will connecting Raspberry Pi HomeMatic Stackable Module at port /dev/ttyAMA0 for example. The port is configurable as system property with the name "org.ogema.driver.homematic.serial.port". The CulConnection will connect HomeMatic CUL Stick at port "/dev/ttyUSB0" for example. The port is configurable as system property with name "org.ogema.driver.homematic.serial.port". The SerialInputThread is a thread which looks in his while loop if input is available. Then it reads the input and call the method onReceivedFrame of the Connection Listener. Otherwise the SerialInputThread sleeps for 100 milliseconds.
 
 ### 2.7 Package data in project homematic-cc1101
 
@@ -87,9 +93,11 @@ A device represented by the abstract class Device is either a CO2Detector, a Mot
 
 The DeviceAttribute class and the DeviceCommand is extended from abstract class DeviceChannel. The DeviceAttribute class has a unique identifier. The DeviceAttribute class holds the attribute value and the time of the last update. If the status message is received the device can call setValue of the DeviceAttribute to store the value and create a new timestamp. If a listener is registered it further calls the method updateListerner of the AttributeChannel to inform the the listener over value changes. The DeviceCommand class is only for distinguishing the device channels from DeviceAttribute classes in the HomeMaticConnection class when we are scan for channels. The class ValueType contains the supported value types for the DeviceAttribute.
 
-The MessageHandler creates and starts the InputThread for receiving messages. It creates and opens the configured Connection from the package connection. The MessageHandler can be called with one of the methods sendMessage. In this case for each device an output thread is created and started if this thread is not available. The send message is added to the outputThread. The OutputThread is responsible to send the message over the Connection Class. The The input- and the output-threads lives until the MessageHandler is stopped. When the inputThread not receives a pairing message it calls the method onReceivedMessage of the MessageHandler. The method onReceivedMessage checks if the incoming message belongs to known device and returns immediate if not so. Next we look if we have to acknowledge the outputThread by calling interrupt because this thread is waiting for a received message. If a broadcast message was sent, we sent an acknowledge message back. We look for the last sent command message and call parseMessage of the device.
+The MessageHandler creates and starts the InputThread for receiving messages. It creates and opens the configured Connection from the package connection. The MessageHandler can be called with one of the methods sendMessage. In this case for each device an output thread is created and started if this thread is not available. The send message is added to the outputThread. The OutputThread is responsible to send the message over the Connection Class. The The input- and the output-threads lives until the MessageHandler is stopped. When the inputThread not receives a pairing message it calls the method onReceivedMessage of the MessageHandler. The method onReceivedMessage checks if the incoming message belongs to known device and returns immediate if not so. Next we look if we have to acknowledge the outputThread by calling interrupt because this thread is waiting for a received message. If a broadcast message (that is the case when the destination is "000000") was sent, we sent an acknowledge message back. We look for the last sent command message and call parseMessage of the device.
 
-In the run method of the InputThread the thread waits in a loop for incoming messages. If an incoming message was received it calls handleMessage. The first byte of the message have to start with 'V' for Version message and 'A' or 'a' for status messages. If the type of the status message is 0x00 and manager is in pairing mode we try to create a new device. In the other case if the message destination equals to the id or it is a broadcast message or the message is in party mode the message is forwarded to onReceivedMessage.
+In the run method of the InputThread the thread waits in a loop for incoming messages. If an incoming message was received it calls handleMessage. The first byte of the message have to start with ['V'](http://culfw.de/commandref.html#cmd_V) for Version message and ['A' or 'a'](http://culfw.de/commandref.html#cmd_A) for status messages. If the type of the status message is 0x00 and HomeMaticManager is in pairing mode we try to create a new device. In the other case if the message destination equals to the id or it is a broadcast message or in the message the destination and the source are equal (that is party mode) the message is forwarded to onReceivedMessage.
+
+In the run method of the OutputThread we have an error counter. The loop is finished if the error counter is greater 25 or the thread should be stopped. Next we look for messages to be sent in the fifo list. Only CommandMessages could be sent. We build a token with the destination and the message number to identify if we receive an answer to our command message. If we want pairing we have to sent 3 three messages where we expect for each message an answer. Only if we get all answers then the device is paired. Otherwise state of the device is set to unknown.  This is done in the next loop where we sent the command message over the connection object and increment the message number and wait 2500 milliseconds for an answer (see onReceivedMessage). If an exceptions occurs we increment the error counter.
        
 
 ![activity diagram messages](doc/img/messages.png)
@@ -100,7 +108,16 @@ This package contains the concrete devices which are derived from the abstract c
 
 ### 2.10 Package messages in project homematic-cc1101
 
+There are two types of messages supported yet, the StatusMessage and the CommandMessage. 
+
+The class StatusMessage] holds the data of the received message. When the StatusMessage is created and the first byte of the data contains a ['A' or a 'a'](http://culfw.de/commandref.html#cmd_A) the message header is parsed. The message header consist of length, number, flag, type, source and destination. The message content is hold in the variable msg. 
+
+The CommandMessage holds all data needed to build a byte array a so called frame to be send. The frame consist of ["As"](http://culfw.de/commandref.html#cmd_A), number,  flag, type, id(the destination where the answer has to send to) destination(the device address) and the command data. 
+
 ### 2.11 Package tools in project homematic-cc1101
+
+This package only contains a Converter class with pulbic static converter methods to convert data to other types.
+
 ----------
 
 # Contact
