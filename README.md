@@ -23,14 +23,17 @@ To setup this protocol driver, [emonmuc](https://github.com/isc-konstanz/emonmuc
 With emonmuc being installed, the driver may be enabled
 
 ~~~
-emonmuc enable homematic-cc1101
+emonmuc install homematic-cc1101
 ~~~
 
 To disable the driver, use
 
 ~~~
-emonmuc disable homematic-cc1101
+emonmuc remove homematic-cc1101
 ~~~
+
+This shell command will set up the driver, as instructed in the [setup script](setup.sh).  
+If there is the need to manually install the driver, the separate [installation guide](doc/LinuxInstall.md) may be followed.
 
 
 ### 1.1 Configuration
@@ -41,37 +44,6 @@ emonmuc disable homematic-cc1101
 
 With the protocol driver being enabled, some first steps can be taken to learn about the features of this project.  
 For this purpose, a [First Steps guide](doc/FirstSteps.md) was documented to be followed.
-
-
-### 1.3 Setup Steps
-
-The [setup script](setup.sh) performs the protocol driver installation. To manually setup the driver, only a few steps need to be taken.  
-As a simplification, this short documentation will assume the generic version 1.0.0 of the driver.
-To install the OSGi bundle, simply download it into the emonmuc frameworks *bundles* directory
-
-~~~
-wget --quiet --show-progress --directory-prefix=/opt/emonmuc/bundles https://github.com/isc-konstanz/OpenHomeMatic/releases/download/v1.0.0/openmuc-driver-homematic-cc1101-1.0.0.jar
-~~~
-
-Afterwards restart the framework, for the driver to be started
-
-~~~
-emonmuc restart
-~~~
-
-
-#### 1.3.1 Device templates
-
-Next, device template files are provided by this project, to ease up the configuration of some new hardware devices.  
-Those can be found at *lib/device/homematic-cc1101* and should be downloaded to the corresponding directory in the emonmuc root:
-
-~~~
-mkdir -p /var/tmp/emonmuc/homematic-cc1101
-wget --quiet --show-progress --directory-prefix=/var/tmp/emonmuc https://github.com/isc-konstanz/OpenHomeMatic/releases/download/v1.0.0/homematic-cc1101-1.0.0.zip
-unzip -q /var/tmp/emonmuc/homematic-cc1101-1.0.0.zip -d /var/tmp/emonmuc/homematic-cc1101
-mv -f /var/tmp/emonmuc/homematic-cc1101/lib/device/homematic-cc1101 /opt/emonmuc/lib/device/homematic-cc1101
-rm -rf /var/tmp/emonmuc/homematic-cc1101
-~~~
 
 
 ----------

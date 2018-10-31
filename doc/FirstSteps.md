@@ -11,7 +11,7 @@ Recommended and tested hardware are e.g. CC1101 RF transceivers:
 With the emonmuc framework installed, the driver should be enabled with
 
 ~~~
-emonmuc enable homematic-cc1101
+emonmuc install homematic-cc1101
 ~~~
 
 
