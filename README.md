@@ -32,8 +32,8 @@ To disable the driver, use
 emonmuc disable homematic-cc1101
 ~~~
 
-This will set up the driver automatically with the help of the [setup script](setup.sh).  
-To manually install the driver, the separate [installation guide](doc/LinuxInstall.md) may be followed.
+This shell command will set up the driver, as instructed in the [setup script](setup.sh).  
+If there is the need to manually install the driver, the separate [installation guide](doc/LinuxInstall.md) may be followed.
 
 
 ### 1.1 Configuration
