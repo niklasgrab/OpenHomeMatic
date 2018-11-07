@@ -84,14 +84,28 @@ public final class AttributeChannel extends HomeMaticChannel {
 	public Record readRecord() throws IOException, UnsupportedOperationException {
 		if (multipleAttributes) {
 			for (DeviceAttribute deviceAttribute : deviceAttributes) { // Retrieve the values from all attributes
-				recordMap.put(deviceAttribute.getShortId(), new Record(deviceAttribute.getValue(),
-						deviceAttribute.getValueTimestamp(), Flag.VALID));
+				Record record;
+				if (deviceAttribute.getValue() != null) {
+					record = new Record(deviceAttribute.getValue(),
+							deviceAttribute.getValueTimestamp(), Flag.VALID);
+				}
+				else {
+					record = new Record(Flag.NO_VALUE_RECEIVED_YET);
+				}
+				recordMap.put(deviceAttribute.getShortId(), record);
 			}
 			Value value = new ObjectValue(recordMap);
 			return new Record(value, deviceAttribute.getValueTimestamp(), Flag.VALID); // TODO use average for Quality?
 		}
 		else {
-			return new Record(deviceAttribute.getValue(), deviceAttribute.getValueTimestamp(), Flag.VALID);
+			Record record;
+			if (deviceAttribute.getValue() != null) {
+				record = new Record(deviceAttribute.getValue(), deviceAttribute.getValueTimestamp(), Flag.VALID);
+			}
+			else {
+				record = new Record(Flag.NO_VALUE_RECEIVED_YET);
+			}
+			return record;
 		}
 	}
 
@@ -148,6 +162,7 @@ public final class AttributeChannel extends HomeMaticChannel {
 		else {
 			Record record = new Record(deviceAttribute.getValue(), 
 					deviceAttribute.getValueTimestamp(), Flag.VALID);
+			System.out.println("RecordListener " + record.getValue() + " " +  record.getTimestamp() + " " + record.getValue());
 			for (ChannelRecordContainer recordContainer : recordContainerList) {
 				recordContainer.setRecord(record);
 			}
