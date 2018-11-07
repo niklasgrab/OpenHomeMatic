@@ -56,9 +56,6 @@ public class MessageHandler {
 	public MessageHandler(HomeMaticManager manager) {
 		this.manager = manager;
 		running = true;
-		inputThread = new InputThread();
-		inputThread.setName("OGEMA-HomeMatic-CC1101-input-handler");
-		inputThread.start();
 		try {
 			initialize();
 
@@ -78,6 +75,9 @@ public class MessageHandler {
 			connection = new SccConnection();
 			break;
 		}
+		inputThread = new InputThread();
+		inputThread.setName("OGEMA-HomeMatic-CC1101-input-handler");
+		inputThread.start();
 		connection.open();
 	}
 
@@ -137,11 +137,25 @@ public class MessageHandler {
 	}
 
 	public void sendMessage(String destination, byte flag, byte type, String data) {
+		while (!isReady()) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+		}
+		System.out.println("CMD MESSAGE: " +data);
 		CommandMessage cmdMessage = new CommandMessage(destination, id, flag, type, data);
 		sendMessage(cmdMessage);
 	}
 
 	public void sendMessage(String destination, byte flag, byte type, byte[] data) {
+		while (!isReady()) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+		}
+		System.out.println("CMD MESSAGE: " +data);
 		CommandMessage cmdMessage = new CommandMessage(destination, id, flag, type, data);
 		sendMessage(cmdMessage);
 	}
