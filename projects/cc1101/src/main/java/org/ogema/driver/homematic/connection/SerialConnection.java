@@ -32,6 +32,13 @@ public abstract class SerialConnection implements Connection, ConnectionListener
 			listener = new SerialInputThread(this, serial.getInputStream());
 			listener.start();
 
+			try {
+				Thread.sleep(2500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 //			Send "Ar" to enable Asksin mode and request version info "V" to verify connection
 //			sendFrame("Ar".getBytes());
 			sendFrame(new byte[] {(byte) 0x41, (byte) 0x72});
