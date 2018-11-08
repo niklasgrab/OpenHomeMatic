@@ -41,11 +41,3 @@ local.properties
 *.gradle/
 build/
 /build/
-!/build/
-/build/*
-!/build/docs
-!/build/libs
-/build/libs/*
-!/build/libs/ogema*
-!/build/libs/homematic*
-!/build/libs/openmuc-driver-*
