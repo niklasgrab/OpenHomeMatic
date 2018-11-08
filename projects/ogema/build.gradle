@@ -2,12 +2,10 @@
 def projectName = "OGEMA Driver - Porting"
 
 def ogemaVersion = '2.1.2'
-def openmucVersion = '2.0.0'
 
 repositories {
    flatDir {
-       dirs rootDir.getPath() + '/dependencies/ogema', 
-	        rootDir.getPath() + '/dependencies/openmuc'
+       dirs rootDir.getPath() + '/dependencies/ogema'
    }
 }
 
@@ -16,8 +14,7 @@ dependencies {
 
   compile group: 'org.ogema.core', name: 'api', version: ogemaVersion
 
-  compile group: 'org.openmuc.framework', name: 'openmuc-core-api', version: openmucVersion
-  compile group: 'org.openmuc.framework', name: 'openmuc-core-spi', version: openmucVersion
+  compile fileTree(dir: 'dependencies/openmuc', include: ['*.jar'])
 }
 
 jar {

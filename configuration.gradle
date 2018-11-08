@@ -32,19 +32,25 @@ tasks.withType(Tar) {
 
   into(project.name) {
 
-    from("./") {
-      include "dependencies/**"
-      include "conf/**"
-      include "lib/**"
-      include "LICENSE**"
-      include "NOTICE**"
-    }
-
     from("build") {
       include "lib/**"
     }
 
-    if (name.equals("tar") ){
+    from("./") {
+      include "LICENSE**"
+      include "NOTICE**"
+      include "lib/**"
+      include "conf/**"
+      include "dependencies/**"
+    }
+
+    for (Project myproject: distributionProjects) {
+      from (myproject.getProjectDir().toString()) {
+        include "dependencies/**"
+	  }
+    }
+
+    if (name.equals("tar")) {
       exclude "**/dependencies/**/src"
     }
   }
