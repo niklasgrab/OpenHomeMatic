@@ -13,7 +13,7 @@ To install the OSGi bundle, simply download the latest release tarball and move 
 ~~~shell
 wget --quiet --show-progress https://github.com/isc-konstanz/OpenHomeMatic/releases/download/v1.0.0/OpenHomeMatic-1.0.0.tar.gz
 tar -xzf OpenHomeMatic-1.0.0.tar.gz
-mv ./OpenHomeMatic/lib/openmuc-driver-homematic-cc1101-1.0.0.jar /opt/emonmuc/bundles/
+mv ./OpenHomeMatic/libs/openmuc-driver-homematic-cc1101-1.0.0.jar /opt/emonmuc/bundles/
 ~~~
 
 Afterwards restart the framework, for the driver to be started
@@ -29,7 +29,7 @@ Next, device template files are provided by this project, to ease up the configu
 Those can be found at *lib/device/homematic-cc1101* and should be moved to the corresponding directory in the emonmuc root:
 
 ~~~shell
-mv ./OpenHomeMatic/lib/device/homematic-cc1101 /opt/emonmuc/lib/device/
+mv ./OpenHomeMatic/libs/device/homematic-cc1101 /opt/emonmuc/lib/device/
 ~~~
 
 

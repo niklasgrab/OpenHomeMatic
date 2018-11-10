@@ -33,13 +33,13 @@ tasks.withType(Tar) {
   into(project.name) {
 
     from("build") {
-      include "lib/**"
+      include "libs/**"
     }
 
     from("./") {
       include "LICENSE**"
       include "NOTICE**"
-      include "lib/**"
+      include "libs/**"
       include "conf/**"
       include "dependencies/**"
     }

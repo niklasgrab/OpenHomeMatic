@@ -1,4 +1,4 @@
-![emonmuc header](doc/img/emonmuc-logo.png)
+![emonmuc header](docs/img/emonmuc-logo.png)
 
 This project implements a communication protocol as part of [emonmuc](https://github.com/isc-konstanz/emonmuc/) (**e**nergy **mon**itoring **m**ulty **u**tility **c**ommunication), based on the open-source project [OpenMUC](https://www.openmuc.org/), a software framework based on Java and OSGi, that simplifies the development of customized *monitoring, logging and control* systems.
 
@@ -33,7 +33,7 @@ emonmuc remove homematic-cc1101
 ~~~
 
 This shell command will set up the driver, as instructed in the [setup script](setup.sh).  
-If there is the need to manually install the driver, the separate [installation guide](doc/LinuxInstall.md) may be followed.
+If there is the need to manually install the driver, the separate [installation guide](docs/LinuxInstall.md) may be followed.
 
 
 ### 1.1 Configuration
@@ -59,10 +59,9 @@ The property `org.openmuc.framework.driver.homematic.id` allows to set this ID, 
 ## 2 Guide
 
 With the protocol driver being enabled, some first steps can be taken to learn about the features of this project.  
-For this purpose, a [First Steps guide](doc/FirstSteps.md) was documented to be followed.
+For this purpose, a [First Steps guide](docs/FirstSteps.md) was documented to be followed.
 
 
-----------
 
 ## 3 Development
 
@@ -73,7 +72,7 @@ For this purpose, a [First Steps guide](doc/FirstSteps.md) was documented to be 
 
 This project is maintained by:
 
-![ISC logo](doc/img/isc-logo.png)
+![ISC logo](docs/img/isc-logo.png)
 
 - **[ISC Konstanz](http://isc-konstanz.de/)** (International Solar Energy Research Center)
 - **Adrian Minde**: adrian.minde@isc-konstanz.de
