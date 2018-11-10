@@ -65,6 +65,9 @@ For this purpose, a [First Steps guide](docs/FirstSteps.md) was documented to be
 
 ## 3 Development
 
+To provide an entrypoint for further developments, a generated [javadoc](https://isc-konstanz.github.io/OpenHomeMatic/javadoc/) can be visited.  
+For other questions or initiatives please don't hesitate to file an issue or get into contact directly.
+
 
 ----------
 

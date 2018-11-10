@@ -1,0 +1,8 @@
+org.ogema.driver.homematic
+org.ogema.driver.homematic.config
+org.ogema.driver.homematic.connection
+org.ogema.driver.homematic.manager
+org.ogema.driver.homematic.manager.devices
+org.ogema.driver.homematic.manager.messages
+org.ogema.driver.homematic.tools
+org.ogema.port
