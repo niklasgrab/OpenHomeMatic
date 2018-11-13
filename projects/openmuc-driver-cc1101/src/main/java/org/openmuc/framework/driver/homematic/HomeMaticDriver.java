@@ -91,11 +91,11 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 			}
 			for (Device device: manager.getDevices().values()) {
 				if (device.getInitState() == InitState.PAIRED && !ignore.contains(device.getAddress())) {
+					String key = device.getKey();
 					String address = device.getAddress();
-					String key = device.getDeviceKey();
 					String description = manager.getDeviceDescriptor().getName(key);
 					
-					DeviceScanInfo info = new DeviceScanInfo(address, "key:" + key, description);
+					DeviceScanInfo info = new DeviceScanInfo(address, "type:" + key, description);
 					listener.deviceFound(info);
 					
 					ignore.add(address);

@@ -40,8 +40,7 @@ public class HomeMaticManager {
 	}
 
 	public Device addDevice(String address, String type, String serial) {
-		Device device = Device.createDevice(descriptor, messageHandler, address, type, serial, true);
-//		Device device = new Device(descriptor, messageHandler, address, type, serial);
+		Device device = Device.createPairedDevice(descriptor, messageHandler, address, type, serial);
 		addDevice(device);
 		
 		return device;

@@ -162,7 +162,6 @@ public final class AttributeChannel extends HomeMaticChannel {
 		else {
 			Record record = new Record(deviceAttribute.getValue(), 
 					deviceAttribute.getValueTimestamp(), Flag.VALID);
-			System.out.println("RecordListener " + record.getValue() + " " +  record.getTimestamp() + " " + record.getValue());
 			for (ChannelRecordContainer recordContainer : recordContainerList) {
 				recordContainer.setRecord(record);
 			}

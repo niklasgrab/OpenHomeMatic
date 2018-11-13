@@ -143,7 +143,6 @@ public class MessageHandler {
 			} catch (InterruptedException e) {
 			}
 		}
-		System.out.println("CMD MESSAGE: " +data);
 		CommandMessage cmdMessage = new CommandMessage(destination, id, flag, type, data);
 		sendMessage(cmdMessage);
 	}
@@ -155,7 +154,6 @@ public class MessageHandler {
 			} catch (InterruptedException e) {
 			}
 		}
-		System.out.println("CMD MESSAGE: " +data);
 		CommandMessage cmdMessage = new CommandMessage(destination, id, flag, type, data);
 		sendMessage(cmdMessage);
 	}
@@ -357,8 +355,7 @@ public class MessageHandler {
 					break;
 				}
 				if (message.type == 0x00 & manager.getPairing() != null) { // if pairing
-					Device device = Device.createDevice(manager.getDeviceDescriptor(), MessageHandler.this,
-							message.source, message.parseKey(), message.parseSerial(), false);
+					Device device = Device.createDevice(manager.getDeviceDescriptor(), MessageHandler.this, message);
 
 					if (manager.getPairing().equals("0000000000") | manager.getPairing().equals(device.getSerial())) {
 						if (!manager.hasDevice(device.getAddress())) {

@@ -31,9 +31,9 @@ public class ThreeStateSensor extends Device {
 	// otherwise we assume it is a water sensor
 	private final boolean isDoorWindowSensor;
 
-	public ThreeStateSensor(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, 
-			String serial, boolean paired, boolean isDoorWindowSensor) {
-		super(descriptor, messageHandler, address, deviceKey, serial, paired);
+	public ThreeStateSensor(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial, 
+			boolean isDoorWindowSensor) {
+		super(descriptor, messageHandler, address, deviceKey, serial);
 		this.isDoorWindowSensor = isDoorWindowSensor;
 	}
 

@@ -27,9 +27,8 @@ import org.ogema.driver.homematic.tools.Converter;
 
 public class CO2Detector extends Device {
 
-	public CO2Detector(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, 
-			String serial, boolean paired) {
-		super(descriptor, messageHandler, address, deviceKey, serial, paired);
+	public CO2Detector(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) {
+		super(descriptor, messageHandler, address, deviceKey, serial);
 	}
 
 	@Override
@@ -42,7 +41,7 @@ public class CO2Detector extends Device {
 		byte msgType = msg.type;
 		byte contentType = msg.data[0];
 
-		if (device.getDeviceKey().equals("0056") || device.getDeviceKey().equals("009F")) {
+		if (device.getKey().equals("0056") || device.getKey().equals("009F")) {
 			if ((msg.type == 0x02 && msg.data[0] == 0x01) || (msg.type == 0x10 && msg.data[0] == 0x06)
 					|| (msg.type == 0x41)) {
 				parseValue(msg);

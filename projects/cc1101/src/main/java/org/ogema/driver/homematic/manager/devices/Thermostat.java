@@ -33,9 +33,8 @@ public class Thermostat extends Device {
 
 	private static final String THERMOSTAT_KEY = "0095";
 
-	public Thermostat(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, 
-			String serial, boolean paired) {
-		super(descriptor, messageHandler, address, deviceKey, serial, paired);
+	public Thermostat(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) {
+		super(descriptor, messageHandler, address, deviceKey, serial);
 	}
 
 	@Override
@@ -106,40 +105,40 @@ public class Thermostat extends Device {
 			err_str = "OK";
 			break;
 		case 1:
-			err_str = "ralve tight";
+			err_str = "Valve tight";
 			break;
 		case 2:
-			err_str = "adjust range too large";
+			err_str = "Adjust range too large";
 			break;
 		case 3:
-			err_str = "adjust range too small";
+			err_str = "Adjust range too small";
 			break;
 		case 4:
-			err_str = "communication error";
+			err_str = "Communication error";
 			break;
 		case 5:
-			err_str = "unknown";
+			err_str = "Unknown";
 			break;
 		case 6:
-			err_str = "low Battery";
+			err_str = "Low Battery";
 			break;
 		case 7:
-			err_str = "valve error position";
+			err_str = "Valve error position";
 			break;
 		}
 
 		switch (Converter.toInt(ctrlMode)) {
 		case 0:
-			ctrlMode_str = "auto";
+			ctrlMode_str = "Auto";
 			break;
 		case 1:
-			ctrlMode_str = "manual";
+			ctrlMode_str = "Manual";
 			break;
 		case 2:
-			ctrlMode_str = "party(urlaub)";
+			ctrlMode_str = "Party";
 			break;
 		case 3:
-			ctrlMode_str = "boost";
+			ctrlMode_str = "Boost";
 			break;
 		default:
 			ctrlMode_str = Long.toHexString(ctrlMode);

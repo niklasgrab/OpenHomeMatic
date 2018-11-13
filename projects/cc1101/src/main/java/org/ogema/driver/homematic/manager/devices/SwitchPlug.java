@@ -33,9 +33,8 @@ public class SwitchPlug extends Device {
 
 	private BooleanValue isOn;
 
-	public SwitchPlug(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, 
-			String serial, boolean paired) {
-		super(descriptor, messageHandler, address, deviceKey, serial, paired);
+	public SwitchPlug(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) {
+		super(descriptor, messageHandler, address, deviceKey, serial);
 	}
 
 	@Override

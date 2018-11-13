@@ -31,9 +31,8 @@ public class Remote extends Device {
 	private byte oldflag = 0x00;
 	private int numOfSwitches;
 
-	public Remote(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, 
-			String serial, boolean paired) {
-		super(descriptor, messageHandler, address, deviceKey, serial, paired);
+	public Remote(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) {
+		super(descriptor, messageHandler, address, deviceKey, serial);
 	}
 
 	@Override

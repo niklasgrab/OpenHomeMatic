@@ -36,9 +36,8 @@ public class MotionDetector extends Device {
 	private Thread timer = new Thread();
 	private int nextTr = 0;
 
-	public MotionDetector(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, 
-			String serial, boolean paired) {
-		super(descriptor, messageHandler, address, deviceKey, serial, paired);
+	public MotionDetector(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) {
+		super(descriptor, messageHandler, address, deviceKey, serial);
 	}
 
 	@Override

@@ -28,9 +28,8 @@ import org.ogema.driver.homematic.tools.Converter;
 
 public class SmokeSensor extends Device {
 
-	public SmokeSensor(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, 
-			String serial, boolean paired) {
-		super(descriptor, messageHandler, address, deviceKey, serial, paired);
+	public SmokeSensor(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) {
+		super(descriptor, messageHandler, address, deviceKey, serial);
 	}
 
 	@Override

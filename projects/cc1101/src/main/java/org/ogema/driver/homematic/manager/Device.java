@@ -79,8 +79,8 @@ public abstract class Device {
 	public Map<Byte, DeviceCommand> deviceCommands;
 	public Map<Short, DeviceAttribute> deviceAttributes;
 
-	protected Device(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, 
-			String key, String serial, boolean paired) {
+	protected Device(DeviceDescriptor descriptor, MessageHandler messageHandler, 
+			String address, String key, String serial) {
 		this.descriptor = descriptor;
 		this.messageHandler = messageHandler;
 
@@ -90,40 +90,50 @@ public abstract class Device {
 		this.key = key;
 		this.serial = serial;
 		this.name = descriptor.getName(this.key);
-		if (paired) {
-			configureChannels();
-			setInitState(InitState.PAIRED);
-		}
 	}
 
 	public static Device createDevice(DeviceDescriptor descriptor, MessageHandler messageHandler, 
-			String address, String type, String serial, boolean paired) {
-		String s = descriptor.getType(type);
-		switch (s) {
+			String address, String type, String serial) {
+
+		String key = descriptor.getType(type);
+		switch (key) {
 		case "THSensor":
-			return new THSensor(descriptor, messageHandler, address, type, serial, paired);
+			return new THSensor(descriptor, messageHandler, address, type, serial);
 		case "threeStateSensor":
 			boolean isDoorWindowSensor = type.equals("00B1");
-			return new ThreeStateSensor(descriptor, messageHandler, address, type, serial, paired, isDoorWindowSensor);
+			return new ThreeStateSensor(descriptor, messageHandler, address, type, serial, isDoorWindowSensor);
 		case "thermostat":
-			return new Thermostat(descriptor, messageHandler, address, type, serial, paired);
+			return new Thermostat(descriptor, messageHandler, address, type, serial);
 		case "powerMeter":
-			return new PowerMeter(descriptor, messageHandler, address, type, serial, paired);
+			return new PowerMeter(descriptor, messageHandler, address, type, serial);
 		case "smokeDetector":
-			return new SmokeSensor(descriptor, messageHandler, address, type, serial, paired);
+			return new SmokeSensor(descriptor, messageHandler, address, type, serial);
 		case "CO2Detector":
-			return new CO2Detector(descriptor, messageHandler, address, type, serial, paired);
+			return new CO2Detector(descriptor, messageHandler, address, type, serial);
 		case "motionDetector":
-			return new MotionDetector(descriptor, messageHandler, address, type, serial, paired);
+			return new MotionDetector(descriptor, messageHandler, address, type, serial);
 		case "switch":
-			return new SwitchPlug(descriptor, messageHandler, address, type, serial, paired);
+			return new SwitchPlug(descriptor, messageHandler, address, type, serial);
 		case "remote":
 		case "pushbutton":
 		case "swi":
-			return new Remote(descriptor, messageHandler, address, type, serial, paired);
+			return new Remote(descriptor, messageHandler, address, type, serial);
 		default:
-			throw new RuntimeException("Type not supported: " + s);
+			throw new RuntimeException("Type not supported: " + key);
 		}
+	}
+
+	public static Device createPairedDevice(DeviceDescriptor descriptor, MessageHandler messageHandler, 
+			String address, String type, String serial) {
+
+		Device device = createDevice(descriptor, messageHandler, address, type, serial);
+		device.configureChannels();
+		device.setInitState(InitState.PAIRED);
+		return device;
+	}
+
+	public static Device createDevice(DeviceDescriptor descriptor, MessageHandler messageHandler, StatusMessage message) {
+		return createDevice(descriptor, messageHandler, message.source, message.parseKey(), message.parseSerial());
 	}
 
 	public String getName() {
@@ -306,7 +316,7 @@ public abstract class Device {
 		return address;
 	}
 
-	public String getDeviceKey() {
+	public String getKey() {
 		return key;
 	}
 
