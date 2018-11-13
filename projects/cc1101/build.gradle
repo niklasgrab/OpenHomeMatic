@@ -1,24 +1,21 @@
 
 def projectName = "OGEMA Driver - HomeMatic"
 
-def openmucVersion = '2.0.0'
 def pi4jVersion = '1.2-SNAPSHOT'
 def jrxtxVersion = '1.0.1'
 def jsonVersion = '20170516'
 
 repositories {
    flatDir {
-       dirs rootDir.getPath() + '/dependencies/openmuc',
-       		rootDir.getPath() + '/dependencies/pi4j'
+       dirs rootDir.getPath() + '/dependencies/pi4j'
    }
 }
 
 dependencies {
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
 
-  compile group: 'org.openmuc.framework', name: 'openmuc-core-api', version: openmucVersion
-  compile group: 'org.openmuc.framework', name: 'openmuc-core-spi', version: openmucVersion
-  
+  compile fileTree(dir: rootDir.getPath() + '/dependencies/openmuc', include: ['*.jar'])
+
   compile group: 'com.pi4j', name: 'pi4j-core', version: pi4jVersion
   compile group: 'com.pi4j', name: 'pi4j-device', version: pi4jVersion
   compile group: 'com.pi4j', name: 'pi4j-gpio-extension', version: pi4jVersion

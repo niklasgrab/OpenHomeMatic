@@ -1,27 +1,36 @@
 #!/bin/bash
 #Description: Setup script to install OpenHomeMatic
-NAME="OpenHomeMatic"
-DRIVER="homematic-cc1101"
-VERSION="1.0.0"
 SERVER="https://github.com/isc-konstanz"
+PROJECT="OpenHomeMatic"
+ID="homematic-cc1101"
+
+VERSION="1.0.0"
 
 # Set the targeted location of the OpenMUC framework if not already set.
 if [ -z ${ROOT_DIR+x} ]; then
-    ROOT_DIR="/opt/emonmuc"
+  ROOT_DIR="/opt/emonmuc"
 fi
-TEMP_DIR="/var/tmp/emonmuc"
+TMP_DIR="/var/tmp/emonmuc"
 
 # Verify, if the specific version does exists already
-if [ ! -f "$ROOT_DIR/bundles/openmuc-driver-$DRIVER-$VERSION.jar" ]; then
-    # Create temporary directory and remove old versions
-    mkdir -p "$TEMP_DIR/$DRIVER"
-    rm -f "$ROOT_DIR/bundles/openmuc-driver-$DRIVER*"
-    rm -rf "$ROOT_DIR/lib/device/$DRIVER*"
+if [ ! -f "$ROOT_DIR/bundles/openmuc-driver-$ID-$VERSION.jar" ]; then
+  # Create temporary directory and remove old versions
+  mkdir -p "$TMP_DIR"
+  rm -f "$ROOT_DIR/bundles/openmuc-driver-$ID*"
+  rm -rf "$ROOT_DIR/lib/device/$ID*"
 
-    wget --quiet --show-progress --directory-prefix="$ROOT_DIR/bundles" "$SERVER/$NAME/releases/download/v$VERSION/openmuc-driver-$DRIVER-$VERSION.jar"
-    wget --quiet --show-progress --directory-prefix="$TEMP_DIR/$DRIVER" "$SERVER/$NAME/releases/download/v$VERSION/$DRIVER-$VERSION.zip"
-    unzip -q "$TEMP_DIR/$DRIVER/$DRIVER-$VERSION.zip" -d "$TEMP_DIR/$DRIVER"
-    mv -f "$TEMP_DIR/$DRIVER/lib/device/$DRIVER" "$ROOT_DIR/lib/device/$DRIVER"
-    rm -rf "$TEMP_DIR/$DRIVER"
+  if [ ! -f  "$TMP_DIR/$PROJECT-$VERSION.tar.gz" ]; then
+  	rm -rf "$TMP_DIR/$PROJECT"*
+    wget --quiet \
+         --show-progress \
+         --directory-prefix="$TMP_DIR" \
+         "$SERVER/$PROJECT/releases/download/v$VERSION/$PROJECT-$VERSION.tar.gz"
+
+    tar -xzf "$TMP_DIR/$PROJECT-$VERSION.tar.gz" -C "$TMP_DIR/"
+  fi
+  mv -f "$TMP_DIR/$PROJECT/libs/openmuc-driver-$ID-$VERSION.jar" "$ROOT_DIR/bundles/"
+  mv -f "$TMP_DIR/$PROJECT/libs/device/$ID" "$ROOT_DIR/lib/device/$ID"
+
+  rm -rf "$TMP_DIR/$PROJECT"*
 fi
 exit 0

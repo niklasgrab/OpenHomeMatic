@@ -1,0 +1,115 @@
+{
+    "name": "Temperature",
+    "category": "Sensors",
+    "group": "eQ-3 HomeMatic",
+    "description": "eQ-3 HomeMatic Wireless Temperature Sensor",
+    
+    "driver": "homematic-cc1101",
+    "devices": [
+        {
+            "description": "eQ-3 HomeMatic Sensor"
+        }
+    ],
+    "scan": true,
+    
+    "options": [
+        {
+            "id": "address",
+            "name": "Address",
+            "description": "Address of the HomeMatic Device",
+            "type": "text",
+			"scan": true,
+            "mandatory": true,
+            "syntax": "deviceAddress"
+        },
+        {
+            "id": "type",
+            "name": "Type",
+            "description": "Type of the HomeMatic Device",
+            "type": "selection",
+            "select": [
+                { "name": "HM-WDS30-T-O", "value": "003E" }
+            ],
+			"scan": true,
+            "mandatory": true,
+            "syntax": "deviceSettings"
+        }
+    ],
+    
+    "items": [
+        {
+            "id": "temperature",
+            "type": "Text",
+            "label": "Temperature",
+            "format": "%.1f",
+            "right": "°C",
+            "input": "temperature"
+        },
+        {
+            "id": "battery",
+            "type": "Text",
+            "label": "Battery",
+            "format": "%i",
+            "right": "%",
+            "input": "battery_state"
+        }
+    ],
+    
+    "channels": [
+        {
+            "name": "temperature",
+            "description": "Temperature",
+            "address": "0001",
+            "settings": "type:ATTRIBUTE",
+            "logging": {"loggingInterval": 60000, "loggingMaxInterval": 900000, "loggingTolerance": 0.25, "average": true},
+            "configs": {"samplingInterval": 60000, "valueType":"FLOAT", "unit":"°C"},
+            "processList": [
+                {
+                    "process": "log_to_feed",
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "temperature"}
+                }
+            ]
+        },
+        {
+            "name": "battery_state",
+            "description": "Battery state",
+            "address": "0003",
+            "settings": "type:ATTRIBUTE",
+            "logging": {"loggingInterval": 5000, "loggingMaxInterval": 180000},
+            "configs": {"samplingInterval": 5000, "valueType":"FLOAT", "unit":"%"},
+            "processList": [
+                {
+                    "process": "log_to_feed",
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "battery_state"}
+                }
+            ]
+        }
+    ],
+    
+    "feeds": [
+        {
+            "name": "temperature",
+            "tag": "Temperature",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPTIMESERIES",
+            "unit": "°C"
+        },
+        {
+            "name": "battery_state",
+            "tag": "State",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPTIMESERIES",
+            "unit": "%"
+        }
+    ],
+    
+    "prefix": "name",
+    "syntax": {
+        "deviceAddress": {
+            "keyValue": false
+        },
+        "deviceSettings": {
+            "keyValue": true
+        }
+    }
+}

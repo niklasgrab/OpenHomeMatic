@@ -1,38 +1,33 @@
-/*
- * Copyright 2011-16 Fraunhofer ISE
- *
- * This file is part of OpenMUC.
- * For more information visit http://www.openmuc.org
- *
- * OpenMUC is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OpenMUC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OpenMUC.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+   =========================================================================
+   Pi4J :: Java library for Raspberry Pi
+   =========================================================================
 
+   Pi4J Library
+   Copyright (C) 2012-2018 Pi4J.com
 
-Dependencies
-------------
+   This product includes software developed at:
+   The Pi4J Project (http://www.pi4j.com/).
 
-Various bundles/modules that make up the OpenMUC framework depend on
-different third party open source software libraries. Some of these
-libraries are embedded as jar files in the respective bundle for
-convenience. Information about the licenses of open source software
-packaged with OpenMUC can be found in the following folders of the
-distribution:
+   This product was originally authored by: Robert Savage
 
-/dependencies 
-/demo/framework/dependencies
-/projects/{my/project}/dependencies
+   This software is licensed under the GNU LGPLv3 license.
+   More information about licensing terms can be found at:
+     http://pi4j.com/license.html
 
-You may request the source code of the dependencies by sending a mail
-through our website at openmuc.org.
+   Additional information about this project and its authors can be found at:
+   - http://www.pi4j.com/
+   - http://www.raspicentral.com
+   - http://www.savagehomeautomation.com
+
+   This software compiles against libraries from the WiringPi project.
+   The Wiring Pi project is provided by Gordon Henderson and is available
+   from
+     http://wiringpi.com/
+
+   The WiringPi project is licensed under the GNU LGPLv3 license
+     http://www.gnu.org/licenses/lgpl.html
+
+   =========================================================================
+   Subject to the terms of the software license, this NOTICE file must be
+   included in any Derivative Works that You distribute as a readable copy.
+   (Section 4d)
