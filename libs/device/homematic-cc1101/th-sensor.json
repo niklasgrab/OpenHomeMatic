@@ -1,6 +1,6 @@
 {
     "name": "Temperature/Humidity",
-    "category": "Sensors",
+    "category": "Environment",
     "group": "eQ-3 HomeMatic",
     "description": "eQ-3 HomeMatic Wireless Temperature/Humidity Sensor",
     
