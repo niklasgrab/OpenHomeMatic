@@ -22,12 +22,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.openmuc.framework.data.Value;
+import org.ogema.driver.homematic.HomeMaticConnectionException;
 import org.ogema.driver.homematic.config.ConfigList;
 import org.ogema.driver.homematic.config.ConfigListEntry;
 import org.ogema.driver.homematic.config.ConfigListEntryValue;
 import org.ogema.driver.homematic.config.ConfigLookups;
 import org.ogema.driver.homematic.config.DeviceConfigs;
+import org.ogema.driver.homematic.data.Value;
 import org.ogema.driver.homematic.manager.devices.CO2Detector;
 import org.ogema.driver.homematic.manager.devices.DeviceDescriptor;
 import org.ogema.driver.homematic.manager.devices.MotionDetector;
@@ -80,7 +81,7 @@ public abstract class Device {
 	public Map<Short, DeviceAttribute> deviceAttributes;
 
 	protected Device(DeviceDescriptor descriptor, MessageHandler messageHandler, 
-			String address, String key, String serial) {
+			String address, String key, String serial) throws HomeMaticConnectionException {
 		this.descriptor = descriptor;
 		this.messageHandler = messageHandler;
 
@@ -93,7 +94,7 @@ public abstract class Device {
 	}
 
 	public static Device createDevice(DeviceDescriptor descriptor, MessageHandler messageHandler, 
-			String address, String type, String serial) {
+			String address, String type, String serial) throws HomeMaticConnectionException {
 
 		String key = descriptor.getType(type);
 		switch (key) {
@@ -124,7 +125,7 @@ public abstract class Device {
 	}
 
 	public static Device createPairedDevice(DeviceDescriptor descriptor, MessageHandler messageHandler, 
-			String address, String type, String serial) {
+			String address, String type, String serial) throws HomeMaticConnectionException {
 
 		Device device = createDevice(descriptor, messageHandler, address, type, serial);
 		device.configureChannels();
@@ -132,7 +133,8 @@ public abstract class Device {
 		return device;
 	}
 
-	public static Device createDevice(DeviceDescriptor descriptor, MessageHandler messageHandler, StatusMessage message) {
+	public static Device createDevice(DeviceDescriptor descriptor, MessageHandler messageHandler, StatusMessage message) 
+			throws HomeMaticConnectionException {
 		return createDevice(descriptor, messageHandler, message.source, message.parseKey(), message.parseSerial());
 	}
 
@@ -140,11 +142,11 @@ public abstract class Device {
 		return name;
 	}
 
-	public void init() {
+	public void init() throws HomeMaticConnectionException {
 		this.init(true);
 	}
 
-	public void init(boolean channels) {
+	public void init(boolean channels) throws HomeMaticConnectionException {
 		setInitState(InitState.PAIRING);
 		messageHandler.pushConfig(getAddress(), "00", "00");
 		
@@ -153,13 +155,13 @@ public abstract class Device {
 		}
 	}
 
-	protected abstract void configureChannels();
+	protected abstract void configureChannels()  throws HomeMaticConnectionException;
 
 	protected abstract void parseValue(StatusMessage msg);
 
 	public abstract void parseMessage(StatusMessage msg, CommandMessage cmd, Device device);
 
-	public abstract void channelChanged(byte identifier, Value value);
+	public abstract void channelChanged(byte identifier, Value value)  throws HomeMaticConnectionException;
 
 	protected void parseConfig(StatusMessage response, CommandMessage cmd) {
 		if (configs == null)
@@ -288,7 +290,7 @@ public abstract class Device {
 		return messageLast;
 	}
 
-	public void pushConfig(int channel, int list, byte[] configs) {
+	public void pushConfig(int channel, int list, byte[] configs) throws HomeMaticConnectionException {
 		// see HACK in 10_CUL_HM.pm, for the Thermostat HM-CC-RT-DN the channel 0 is a shadow of channel 4
 		if (name.equals("HM-CC-RT-DN")) {
 			if (list == 7 && channel == 4)
@@ -332,7 +334,7 @@ public abstract class Device {
 		this.initState = initState;
 	}
 
-	public void getAllConfigs() { // 00040000000000: chNUM[1]| |peer[4]|lst[1]
+	public void getAllConfigs() throws HomeMaticConnectionException { // 00040000000000: chNUM[1]| |peer[4]|lst[1]
 		messageHandler.sendMessage(getAddress(), (byte) 0xA0, (byte) 0x01, "00040000000000"); // TODO: last byte should be
 		// listnumber, first byte the channel number!
 		String[] channels = descriptor.getChannels(key);
@@ -405,7 +407,7 @@ public abstract class Device {
 	}
 
 	// PUSH CONFIGURATION
-	public void writeConfig(String confName, String setting) {
+	public void writeConfig(String confName, String setting) throws HomeMaticConnectionException {
 		HashMap<String, ConfigListEntryValue> devconfigs = configs.getDeviceConfigs();
 		ConfigListEntryValue entryV = devconfigs.get(confName);
 		ConfigListEntry entry = entryV.entry;
