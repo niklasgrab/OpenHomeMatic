@@ -15,8 +15,9 @@
  */
 package org.ogema.driver.homematic.manager.devices;
 
-import org.openmuc.framework.data.FloatValue;
-import org.openmuc.framework.data.Value;
+import org.ogema.driver.homematic.HomeMaticConnectionException;
+import org.ogema.driver.homematic.data.FloatValue;
+import org.ogema.driver.homematic.data.Value;
 import org.ogema.driver.homematic.manager.Device;
 import org.ogema.driver.homematic.manager.DeviceAttribute;
 import org.ogema.driver.homematic.manager.DeviceCommand;
@@ -33,7 +34,8 @@ public class Thermostat extends Device {
 
 	private static final String THERMOSTAT_KEY = "0095";
 
-	public Thermostat(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) {
+	public Thermostat(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) 
+			throws HomeMaticConnectionException {
 		super(descriptor, messageHandler, address, deviceKey, serial);
 	}
 
@@ -157,7 +159,7 @@ public class Thermostat extends Device {
 	}
 
 	@Override
-	public void channelChanged(byte identifier, Value value) {
+	public void channelChanged(byte identifier, Value value) throws HomeMaticConnectionException {
 		if (identifier == 0x01) { // desiredTemp
 			float localDesiredTemp = value.asFloat();
 			localDesiredTemp = (float) (Math.ceil(localDesiredTemp * 2) / 2);

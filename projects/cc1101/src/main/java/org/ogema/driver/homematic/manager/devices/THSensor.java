@@ -15,8 +15,9 @@
  */
 package org.ogema.driver.homematic.manager.devices;
 
-import org.openmuc.framework.data.FloatValue;
-import org.openmuc.framework.data.Value;
+import org.ogema.driver.homematic.HomeMaticConnectionException;
+import org.ogema.driver.homematic.data.FloatValue;
+import org.ogema.driver.homematic.data.Value;
 import org.ogema.driver.homematic.manager.Device;
 import org.ogema.driver.homematic.manager.DeviceAttribute;
 import org.ogema.driver.homematic.manager.MessageHandler;
@@ -34,7 +35,8 @@ public class THSensor extends Device {
 	private FloatValue humidity;
 	private FloatValue batteryStatus;
 
-	public THSensor(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) {
+	public THSensor(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) 
+			throws HomeMaticConnectionException {
 		super(descriptor, messageHandler, address, deviceKey, serial);
 	}
 
