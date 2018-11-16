@@ -1,6 +1,6 @@
 {
-    "name": "Smart Plug",
-    "category": "Switching",
+    "name": "Switch Meter",
+    "category": "Control",
     "group": "eQ-3 HomeMatic",
     "description": "eQ-3 HomeMatic Wireless Switch Actuator 1-channel with power metering",
     

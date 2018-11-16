@@ -1,6 +1,6 @@
 {
     "name": "Temperature",
-    "category": "Environment",
+    "category": "Sensor",
     "group": "eQ-3 HomeMatic",
     "description": "eQ-3 HomeMatic Wireless Temperature Sensor",
     
