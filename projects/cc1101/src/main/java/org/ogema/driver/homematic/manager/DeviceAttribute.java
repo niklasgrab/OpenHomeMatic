@@ -15,9 +15,8 @@
  */
 package org.ogema.driver.homematic.manager;
 
-import org.openmuc.framework.data.Value;
-
 import org.ogema.driver.homematic.AttributeChannel;
+import org.ogema.driver.homematic.data.Value;
 
 public class DeviceAttribute extends DeviceChannel {
 	protected final short identifier;
