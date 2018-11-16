@@ -19,11 +19,10 @@ import java.io.IOException;
 
 import javax.xml.bind.DatatypeConverter;
 
-import org.openmuc.framework.data.Record;
-import org.openmuc.framework.data.Value;
+import org.ogema.driver.homematic.data.Record;
+import org.ogema.driver.homematic.data.UpdateListener;
+import org.ogema.driver.homematic.data.Value;
 import org.ogema.driver.homematic.manager.Device;
-import org.openmuc.framework.driver.spi.ChannelRecordContainer;
-import org.openmuc.framework.driver.spi.RecordsReceivedListener;
 
 public class CommandChannel extends HomeMaticChannel {
 
@@ -47,7 +46,7 @@ public class CommandChannel extends HomeMaticChannel {
 	 * The value has to be a ByteArrayValue in reversed byte order
 	 */
 	@Override
-	public void writeValue(Value value) throws IOException {
+	public void writeValue(Value value) throws IOException, HomeMaticConnectionException   {
 		// byte[] messagePayload = value.getByteArrayValue();
 		// if (messagePayload == null)
 		// messagePayload = emptyMessagePayload;
@@ -63,7 +62,7 @@ public class CommandChannel extends HomeMaticChannel {
 	}
 
 	@Override
-	public void setEventListener(ChannelRecordContainer container, RecordsReceivedListener listener) throws IOException,
+	public void setEventListener(UpdateListener listener) throws IOException,
 			UnsupportedOperationException {
 		// throw new UnsupportedOperationException();
 	}

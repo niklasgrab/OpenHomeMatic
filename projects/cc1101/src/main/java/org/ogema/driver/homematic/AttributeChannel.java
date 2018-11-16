@@ -19,20 +19,18 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.DatatypeConverter;
 
-import org.openmuc.framework.data.ByteArrayValue;
-import org.openmuc.framework.data.Flag;
-import org.openmuc.framework.data.Record;
-import org.openmuc.framework.data.Value;
+import org.ogema.driver.homematic.data.ByteArrayValue;
+import org.ogema.driver.homematic.data.Flag;
 import org.ogema.driver.homematic.data.ObjectValue;
+import org.ogema.driver.homematic.data.Record;
+import org.ogema.driver.homematic.data.UpdateListener;
+import org.ogema.driver.homematic.data.Value;
 import org.ogema.driver.homematic.manager.Device;
 import org.ogema.driver.homematic.manager.DeviceAttribute;
-import org.openmuc.framework.driver.spi.ChannelRecordContainer;
-import org.openmuc.framework.driver.spi.RecordsReceivedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +39,7 @@ public final class AttributeChannel extends HomeMaticChannel {
 
 	private DeviceAttribute deviceAttribute;
 	private final byte[] emptyMessagePayload = new byte[0];
-	private RecordsReceivedListener recordReceivedListener;
-	private List<ChannelRecordContainer> recordContainerList = new ArrayList<ChannelRecordContainer>();
+	private UpdateListener updateListener;
 	private ByteBuffer messagePayloadBuffer;
 	private Map<Short, Record> recordMap = new HashMap<Short, Record>();
 	private ArrayList<DeviceAttribute> deviceAttributes = new ArrayList<DeviceAttribute>();
@@ -128,7 +125,7 @@ public final class AttributeChannel extends HomeMaticChannel {
 	}
 
 	@Override
-	public void setEventListener(ChannelRecordContainer container, RecordsReceivedListener listener) throws IOException,
+	public void setEventListener(UpdateListener listener) throws IOException,
 			UnsupportedOperationException {
 		if (multipleAttributes) {
 			throw new UnsupportedOperationException(); // TODO implement this method
@@ -136,9 +133,7 @@ public final class AttributeChannel extends HomeMaticChannel {
 		else {
 			deviceAttribute.setChannel(this);
 			deviceAttribute.setListener(true);
-			recordReceivedListener = listener;
-			recordContainerList.add(container); // TODO the whole solution with a list for one container is
-			// ugly...
+			updateListener = listener;
 		}
 	}
 
@@ -149,8 +144,7 @@ public final class AttributeChannel extends HomeMaticChannel {
 		}
 		else {
 			deviceAttribute.setListener(false);
-			recordReceivedListener = null;
-			recordContainerList.clear();
+			updateListener = null;
 		}
 	}
 
@@ -162,10 +156,7 @@ public final class AttributeChannel extends HomeMaticChannel {
 		else {
 			Record record = new Record(deviceAttribute.getValue(), 
 					deviceAttribute.getValueTimestamp(), Flag.VALID);
-			for (ChannelRecordContainer recordContainer : recordContainerList) {
-				recordContainer.setRecord(record);
-			}
-			recordReceivedListener.newRecords(recordContainerList);
+			updateListener.valueChanged(record, address);
 		}
 	}
 }

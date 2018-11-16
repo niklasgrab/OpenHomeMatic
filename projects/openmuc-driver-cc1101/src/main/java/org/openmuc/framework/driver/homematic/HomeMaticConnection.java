@@ -23,6 +23,7 @@ package org.openmuc.framework.driver.homematic;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,8 @@ import org.openmuc.framework.data.Flag;
 import org.openmuc.framework.data.Record;
 import org.openmuc.framework.data.ValueType;
 import org.ogema.driver.homematic.HomeMaticChannel;
+import org.ogema.driver.homematic.HomeMaticConnectionException;
+import org.ogema.driver.homematic.data.UpdateListener;
 import org.ogema.driver.homematic.manager.Device;
 import org.ogema.driver.homematic.manager.DeviceAttribute;
 import org.ogema.driver.homematic.manager.DeviceChannel;
@@ -52,7 +55,7 @@ import org.openmuc.framework.driver.spi.RecordsReceivedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HomeMaticConnection implements Connection {
+public class HomeMaticConnection implements Connection, UpdateListener {
 	private static final Logger logger = LoggerFactory.getLogger(HomeMaticConnection.class);
 
 	private final DriverPreferences prefs = DriverInfoFactory.getPreferences(HomeMaticDriver.class);
@@ -72,6 +75,9 @@ public class HomeMaticConnection implements Connection {
 
 	private final Map<String, HomeMaticChannel> channels = new HashMap<String, HomeMaticChannel>();
 	private final Device device;
+	
+	private final Map<RecordsReceivedListener, List<ChannelRecordContainer>> listenerMap = 
+			new HashMap<RecordsReceivedListener, List<ChannelRecordContainer>>();
 
 	public HomeMaticConnection(HomeMaticConnectionCallbacks callbacks, Device device, DeviceSettings settings) 
 			throws ConnectionException {
@@ -82,7 +88,11 @@ public class HomeMaticConnection implements Connection {
 			if (settings.hasDefaultState()) {
 				BooleanValue defaultState = new BooleanValue(settings.getDefaultState());
 				if (!defaultState.equals(device.deviceAttributes.get((short) 0x0001).getValue())) {
-					device.channelChanged((byte) 0x01, defaultState);
+					try {
+						device.channelChanged((byte) 0x01, HomeMaticPort.convert2CC1101(defaultState));
+					} catch (HomeMaticConnectionException e) {
+						throw new ConnectionException(e.getMessage());
+					}
 				}
 			}
 		}
@@ -121,14 +131,14 @@ public class HomeMaticConnection implements Connection {
 					ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
 					
 					HomeMaticChannel channel = getChannel(container.getChannelAddress(), settings.getType());
-					Record record = channel.readRecord();
+					Record record = HomeMaticPort.convert2Openmuc(channel.readRecord());
 					if (record.getValue() == null) {
 						logger.debug("No value received yet from device \"{}\" for channel: {}", device.getAddress(), channel.getAddress());
 					}
 					container.setRecord(record);
 				}
 				catch (NullPointerException | ArgumentSyntaxException e) {
-					container.setRecord(new Record(Flag.DRIVER_ERROR_CHANNEL_ADDRESS_SYNTAX_INVALID));					
+					container.setRecord(new Record(Flag.DRIVER_ERROR_CHANNEL_ADDRESS_SYNTAX_INVALID));	
 					logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
 				}
 			}
@@ -143,12 +153,23 @@ public class HomeMaticConnection implements Connection {
 	public void startListening(List<ChannelRecordContainer> containers, RecordsReceivedListener listener)
 			throws UnsupportedOperationException, ConnectionException {
 		try {
+			List<ChannelRecordContainer> listenerContainers;
+			if (!listenerMap.containsKey(listener)) {
+				listenerContainers = new ArrayList<ChannelRecordContainer>();
+				listenerMap.put(listener, listenerContainers);
+			}
+			else {
+				listenerContainers = listenerMap.get(listener);
+			}
 			for (ChannelRecordContainer container : containers) {
+				if (!listenerContainers.contains(container)) {
+					listenerContainers.add(container);
+				}
 				try {
 					ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
 					
 					HomeMaticChannel channel = getChannel(container.getChannelAddress(), settings.getType());
-					channel.setEventListener(container, listener);
+					channel.setEventListener(this);
 				}
 				catch (NullPointerException | ArgumentSyntaxException e) {
 					logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
@@ -160,6 +181,25 @@ public class HomeMaticConnection implements Connection {
 	}
 
 	@Override
+	public void valueChanged(org.ogema.driver.homematic.data.Record record, String address) {
+		Iterator<RecordsReceivedListener> it = listenerMap.keySet().iterator();
+		while (it.hasNext()) {
+			RecordsReceivedListener recordReceivedListener = it.next();
+			List<ChannelRecordContainer> listenerContainers = listenerMap.get(recordReceivedListener);
+			List<ChannelRecordContainer> updatedContainers = new ArrayList<ChannelRecordContainer>();
+			for (ChannelRecordContainer container : listenerContainers) {
+				if (container.getChannelAddress().equals(address)) {
+					container.setRecord(HomeMaticPort.convert2Openmuc(record));
+					updatedContainers.add(container);
+				}
+			}
+			if (! updatedContainers.isEmpty()) {
+				recordReceivedListener.newRecords(updatedContainers);
+			}
+		}
+		
+	}
+	@Override
 	public Object write(List<ChannelValueContainer> containers, Object containerListHandle)
 			throws UnsupportedOperationException, ConnectionException {
 		
@@ -168,7 +208,11 @@ public class HomeMaticConnection implements Connection {
 				try {
 					ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
 					HomeMaticChannel channel = getChannel(container.getChannelAddress(), settings.getType());
-					channel.writeValue(container.getValue());
+					try {
+						channel.writeValue(HomeMaticPort.convert2CC1101(container.getValue()));
+					} catch (HomeMaticConnectionException e) {
+						throw new ConnectionException(e.getMessage());
+					}
 					
 					container.setFlag(Flag.VALID);
 				}

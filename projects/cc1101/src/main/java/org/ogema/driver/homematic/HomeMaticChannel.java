@@ -17,11 +17,10 @@ package org.ogema.driver.homematic;
 
 import java.io.IOException;
 
-import org.openmuc.framework.data.Record;
-import org.openmuc.framework.data.Value;
+import org.ogema.driver.homematic.data.Record;
+import org.ogema.driver.homematic.data.UpdateListener;
+import org.ogema.driver.homematic.data.Value;
 import org.ogema.driver.homematic.manager.Device;
-import org.openmuc.framework.driver.spi.ChannelRecordContainer;
-import org.openmuc.framework.driver.spi.RecordsReceivedListener;
 
 
 /**
@@ -56,9 +55,9 @@ public abstract class HomeMaticChannel {
 	abstract public Record readRecord() throws IOException, UnsupportedOperationException;
 
 	abstract public void writeValue(Value value) throws IOException,
-			UnsupportedOperationException;
+		HomeMaticConnectionException , UnsupportedOperationException;
 
-	abstract public void setEventListener(ChannelRecordContainer container, RecordsReceivedListener listener)
+	abstract public void setEventListener(UpdateListener listener)
 			throws IOException, UnsupportedOperationException;
 
 	abstract public void removeUpdateListener() throws IOException, UnsupportedOperationException;
