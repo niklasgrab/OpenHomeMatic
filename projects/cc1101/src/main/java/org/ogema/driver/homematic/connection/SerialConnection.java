@@ -13,7 +13,7 @@ public abstract class SerialConnection implements Connection, ConnectionListener
 	private final Logger logger = LoggerFactory.getLogger(SerialConnection.class);
 
 	protected volatile InputOutputFifo<byte[]> fifo;
-	protected volatile Object lock;
+	protected Object lock;
 
 	protected SerialInputThread listener;
 	protected SerialPort serial;
@@ -29,26 +29,12 @@ public abstract class SerialConnection implements Connection, ConnectionListener
 		try {
 			serial = build();
 			output = serial.getOutputStream();
-			listener = new SerialInputThread(this, serial.getInputStream());
-			listener.start();
-
-			try {
-				Thread.sleep(2500);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-//			Send "Ar" to enable Asksin mode and request version info "V" to verify connection
-//			sendFrame("Ar".getBytes());
-			sendFrame(new byte[] {(byte) 0x41, (byte) 0x72});
-//			sendFrame("V".getBytes());
-			sendFrame(new byte[] {(byte) 0x56});
-			
 		} catch (IOException e) {
 			close();
 			throw e;
 		}
+		listener = new SerialInputThread(this, serial.getInputStream());
+		listener.start();
 	}
 
 	protected abstract SerialPort build() throws IOException;
@@ -56,7 +42,7 @@ public abstract class SerialConnection implements Connection, ConnectionListener
 	@Override
 	public void close() {
 		try {
-			listener.close();
+			if (listener != null) listener.close();
 			output.close();
 			serial.close();
 			
