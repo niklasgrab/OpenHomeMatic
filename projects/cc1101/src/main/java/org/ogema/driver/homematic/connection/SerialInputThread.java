@@ -23,14 +23,14 @@ package org.ogema.driver.homematic.connection;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
 public class SerialInputThread extends Thread {
+    private static final long SLEEP_TIME = 100L;
 
 	private final ConnectionListener listener;
     private final DataInputStream input;
 
-	private volatile boolean closed = true;
+	private boolean closed = true;
 
 	public SerialInputThread(ConnectionListener connection, InputStream inputStream) throws IOException {
 		this.listener = connection;
@@ -52,8 +52,6 @@ public class SerialInputThread extends Thread {
 
 	@Override
 	public void run() {
-		byte[] line = new byte[1000]; //Max message length supported
-		int j = 0;
 		while (!closed) {
 			int numBytesInStream;
 			byte[] bytesInStream = null;
@@ -62,18 +60,12 @@ public class SerialInputThread extends Thread {
 				if (numBytesInStream > 0) {
 					bytesInStream = new byte[numBytesInStream];
 					input.read(bytesInStream);
-					for (int i = 0; i < numBytesInStream; i++) {
-						if (bytesInStream[i] != 10) { // ignore return
-							line[j++] = bytesInStream[i];
-						}
-						if (bytesInStream[i] == 13) {
-							line[j++] = 10;
-							listener.onReceivedFrame(Arrays.copyOfRange(line, 0, j));
-							line = new byte[1000];
-							j = 0;
-						}
-					}
+					
+					listener.onReceivedFrame(bytesInStream);
 				}
+				Thread.sleep(SLEEP_TIME);
+				
+			} catch (InterruptedException e) {
 			} catch (Exception e) {
 				listener.onDisconnect();
 				return;
