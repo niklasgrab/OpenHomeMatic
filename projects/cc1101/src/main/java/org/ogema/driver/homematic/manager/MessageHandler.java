@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.ogema.driver.homematic.HomeMaticConnectionException;
 import org.ogema.driver.homematic.connection.Connection;
 import org.ogema.driver.homematic.connection.ConnectionType;
 import org.ogema.driver.homematic.connection.CulConnection;
@@ -51,7 +52,7 @@ public class MessageHandler {
 
 	private volatile Map<String, Message> sent = new LinkedHashMap<String, Message>(); // <Token>
 	private volatile Map<String, OutputThread> outputThreads = new ConcurrentHashMap<String, OutputThread>();
-	private volatile boolean running;
+	private boolean running;
 
 	public MessageHandler(HomeMaticManager manager) {
 		this.manager = manager;
@@ -79,6 +80,36 @@ public class MessageHandler {
 		inputThread.setName("OGEMA-HomeMatic-CC1101-input-handler");
 		inputThread.start();
 		connection.open();
+		Thread sendVersionRequestThread = new SendVersionRequestThread();
+		sendVersionRequestThread.setName("OGEMA-HomeMatic-CC1101-send-version-request");
+		sendVersionRequestThread.start();
+	}
+
+	private class SendVersionRequestThread extends Thread {
+		
+		private static final int OPEN_SLEEP = 1000;
+		private static final int OPEN_RETRIES = 10;
+
+		@Override
+		public void run() {
+			for (int i = 0; i < OPEN_RETRIES; i++) {
+				if (!isReady()) {
+//						Send "Ar" to enable Asksin mode and request version info "V" to verify connection
+//						connection.sendFrame("Ar".getBytes());
+						connection.sendFrame(new byte[] {(byte) 0x41, (byte) 0x72});
+//						connection.sendFrame("V".getBytes());
+						connection.sendFrame(new byte[] {(byte) 0x56});
+				}
+				else {
+					break;
+				}
+				try {
+					Thread.sleep(OPEN_SLEEP);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	protected boolean isReady() {
@@ -126,7 +157,7 @@ public class MessageHandler {
 				.getFrame(device, msg.number));
 	}
 
-	public void pushConfig(String address, String channel, String list) {
+	public void pushConfig(String address, String channel, String list) throws HomeMaticConnectionException {
 		String owner = id;
 		String configs = "0201" + "0A" + owner.charAt(0) + owner.charAt(1) + "0B" + owner.charAt(2) + owner.charAt(3)
 				+ "0C" + owner.charAt(4) + owner.charAt(5);
@@ -136,23 +167,17 @@ public class MessageHandler {
 		sendMessage(address, (byte) 0xA0, (byte) 0x01, channel + "06");
 	}
 
-	public void sendMessage(String destination, byte flag, byte type, String data) {
-		while (!isReady()) {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-			}
+	public void sendMessage(String destination, byte flag, byte type, String data) throws HomeMaticConnectionException {
+		if (!isReady()) {
+			throw new HomeMaticConnectionException("Connection not yet established!");
 		}
 		CommandMessage cmdMessage = new CommandMessage(destination, id, flag, type, data);
 		sendMessage(cmdMessage);
 	}
 
-	public void sendMessage(String destination, byte flag, byte type, byte[] data) {
-		while (!isReady()) {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-			}
+	public void sendMessage(String destination, byte flag, byte type, byte[] data) throws HomeMaticConnectionException {
+		if (!isReady()) {
+			throw new HomeMaticConnectionException("Connection not yet established!");
 		}
 		CommandMessage cmdMessage = new CommandMessage(destination, id, flag, type, data);
 		sendMessage(cmdMessage);
@@ -163,7 +188,7 @@ public class MessageHandler {
 		OutputThread thread = outputThreads.get(destination);
 		if (thread == null) {
 			thread = new OutputThread(destination);
-			thread.setName("OGEMA-HomeMatic-CC1101-message");
+			thread.setName("OGEMA-HomeMatic-CC1101-send-message");
 			thread.start();
 
 			outputThreads.put(destination, thread);
@@ -190,10 +215,10 @@ public class MessageHandler {
 		private static final int SEND_RETRIES = 4;
 
 		private String destination;
-		private volatile int tries = 0;
-		private volatile int errors = 0;
+		private int tries = 0;
+		private int errors = 0;
 
-		private volatile InputOutputFifo<Message> unsent; // Messages waiting to be sent
+		private InputOutputFifo<Message> unsent; // Messages waiting to be sent
 
 		public OutputThread(String destination) {
 			this.destination = destination;
@@ -310,7 +335,7 @@ public class MessageHandler {
 		private static final String ID_KEY = "org.openmuc.framework.driver.homematic.id";
 		private static final String ID_DEFAULT = "F11034";
 
-		private volatile Object lock;
+		private Object lock;
 
 		public InputThread() {
 			lock = connection.getReceivedLock();
@@ -328,7 +353,15 @@ public class MessageHandler {
 					}
 					try {
 						byte[] data = connection.getReceivedFrame();
-						handleMessage(data);
+						int j = 0;
+						for (int i = 0; i < data.length; i++) {
+							if (i > 0 && data[i-1] == 13 && data[i] == 10) {
+								byte[] nextData = new byte[i+1-j];
+								System.arraycopy(data, j, nextData, 0, nextData.length);
+								handleMessage(nextData);
+								j = i + 1;
+							}
+						}
 					} catch (Throwable t) {
 						t.printStackTrace();
 					}
@@ -355,22 +388,28 @@ public class MessageHandler {
 					break;
 				}
 				if (message.type == 0x00 & manager.getPairing() != null) { // if pairing
-					Device device = Device.createDevice(manager.getDeviceDescriptor(), MessageHandler.this, message);
-
-					if (manager.getPairing().equals("0000000000") | manager.getPairing().equals(device.getSerial())) {
-						if (!manager.hasDevice(device.getAddress())) {
-							manager.addDevice(device);
-							logger.info("Received pairing request from device: {}", device.getAddress());
-
-							device.init();
-						} else {
-							device = manager.getDevice(device.getAddress());
-							if (device.getInitState().equals(InitState.UNKNOWN)) {
+					try {
+						Device device = Device.createDevice(manager.getDeviceDescriptor(), MessageHandler.this, message);
+	
+						if (manager.getPairing().equals("0000000000") | manager.getPairing().equals(device.getSerial())) {
+							if (!manager.hasDevice(device.getAddress())) {
+								manager.addDevice(device);
+								logger.info("Received pairing request from device: {}", device.getAddress());
+	
 								device.init();
-							} else if (device.getInitState().equals(InitState.PAIRED)) {
-								device.init(false);
+							} else {
+								device = manager.getDevice(device.getAddress());
+								if (device.getInitState().equals(InitState.UNKNOWN)) {
+									device.init();
+								} else if (device.getInitState().equals(InitState.PAIRED)) {
+									device.init(false);
+								}
 							}
 						}
+						}
+					catch (HomeMaticConnectionException e) {
+						// nothing to do here, because we break if connection is not ready (!isReady).
+						// Messages are ignored during not ready state!
 					}
 				} else {
 					if (id.equals(message.destination) || message.destination.equals("000000") || message.partyMode) {
