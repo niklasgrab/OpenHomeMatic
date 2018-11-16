@@ -32,6 +32,7 @@ import org.openmuc.framework.config.DriverInfoFactory;
 import org.openmuc.framework.config.ScanException;
 import org.openmuc.framework.config.ScanInterruptedException;
 import org.openmuc.framework.driver.homematic.HomeMaticConnection.HomeMaticConnectionCallbacks;
+import org.ogema.driver.homematic.HomeMaticConnectionException;
 import org.ogema.driver.homematic.manager.Device;
 import org.ogema.driver.homematic.manager.Device.InitState;
 import org.ogema.driver.homematic.manager.HomeMaticManager;
@@ -135,7 +136,11 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 				device = manager.getDevice(addressStr);
 			}
 			else {
-				device = manager.addDevice(addressStr, settings.getType());
+				try {
+					device = manager.addDevice(addressStr, settings.getType());
+				} catch (HomeMaticConnectionException e) {
+					throw new ConnectionException(e.getMessage());
+				}
 			}
 			connection = new HomeMaticConnection(this, device, settings);
 			connections.put(addressStr, connection);
