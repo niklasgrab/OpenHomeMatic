@@ -1,8 +1,5 @@
 package org.ogema.driver.homematic.data;
 
-import org.openmuc.framework.data.TypeConversionException;
-import org.openmuc.framework.data.Value;
-
 public class ObjectValue implements Value {
 	
 	private final Object value;
