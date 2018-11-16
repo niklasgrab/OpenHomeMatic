@@ -18,6 +18,7 @@ package org.ogema.driver.homematic.manager;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.ogema.driver.homematic.HomeMaticConnectionException;
 import org.ogema.driver.homematic.manager.devices.DeviceDescriptor;
 
 public class HomeMaticManager {
@@ -39,14 +40,17 @@ public class HomeMaticManager {
 		messageHandler = new MessageHandler(this);
 	}
 
-	public Device addDevice(String address, String type, String serial) {
+	public Device addDevice(String address, String type, String serial) throws HomeMaticConnectionException {
+		if (! messageHandler.isReady()) {
+			throw new HomeMaticConnectionException("Connection not yet established!");
+		}
 		Device device = Device.createPairedDevice(descriptor, messageHandler, address, type, serial);
 		addDevice(device);
 		
 		return device;
 	}
 
-	public Device addDevice(String address, String type) {
+	public Device addDevice(String address, String type) throws HomeMaticConnectionException {
 		return addDevice(address, type, null);
 	}
 
