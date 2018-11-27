@@ -24,7 +24,7 @@ The [Serial Port preparation guide](LinuxSerialPort.md) may be followed to do so
 To install, download the binaries via debian repository:
 
 ~~~
-sudo apt-get install avrdude
+sudo apt-get install avrdude gcc-avr binutils-avr avr-libc
 ~~~
 
 
@@ -51,10 +51,32 @@ While pressing the button, issue the `program` build command to complete the pre
 sudo make program
 ~~~
 
+If the update fails (which is quite possible), `sudo reboot` the system if not done so already and execute the flashing process manually and without safemode. Remember to keep the program button pressed while starting.
+
+~~~
+cd ~/culfw-1.67/Devices/SCC
+if test ! -d /sys/class/gpio/gpio17; then sudo echo 17 > /sys/class/gpio/export; fi
+if test ! -d /sys/class/gpio/gpio18; then sudo echo 18 > /sys/class/gpio/export; fi
+sudo echo out > /sys/class/gpio/gpio17/direction
+sudo echo out > /sys/class/gpio/gpio18/direction
+sudo echo 0 > /sys/class/gpio/gpio18/value
+sudo echo 0 > /sys/class/gpio/gpio17/value && sleep 1
+sudo echo 1 > /sys/class/gpio/gpio17/value && sleep 1
+sudo echo 1 > /sys/class/gpio/gpio18/value
+sudo avrdude -u -p atmega1284p -P /dev/ttyAMA0 -c avr109 -b 38400 -U flash:w:SCC.hex
+~~~
+
 
 # 3 Finish
 
-At last, don't forget to remove the released tarball to avoid cluttering of your system.
+To finish the whole process, make sure to unexport the used GPIO Pins
+
+~~~
+if test -d /sys/class/gpio/gpio17; then sudo echo 17 > /sys/class/gpio/unexport; fi
+if test -d /sys/class/gpio/gpio17; then sudo echo 18 > /sys/class/gpio/unexport; fi
+~~~
+
+At last, don't forget to remove the released tarball, to avoid cluttering of your system
 
 ~~~
 cd ~
@@ -64,6 +86,6 @@ rm -r culfw*
 If avrdude won't be needed anymore, it can be removed as well by issuing
 
 ~~~
-sudo apt-get remove avrdude
+sudo apt-get remove avrdude gcc-avr binutils-avr avr-libc && sudo apt-get autoremove
 ~~~
 
