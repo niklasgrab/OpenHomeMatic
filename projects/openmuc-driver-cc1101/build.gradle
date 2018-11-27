@@ -1,0 +1,46 @@
+
+def projectName = "OpenMUC Driver - HomeMatic"
+
+def pi4jVersion = '1.2-SNAPSHOT'
+def jsonVersion = '20170516'
+
+configurations.create('embed')
+
+repositories {
+   flatDir {
+       dirs rootDir.getPath() + '/dependencies/pi4j'
+   }
+}
+
+dependencies {
+  //compile fileTree(dir: rootDir.getPath() + '/dependencies/openmuc', include: ['*.jar'])
+
+  compile group: 'org.osgi', name: 'org.osgi.core', version: '6.0.0'
+  compile group: 'org.osgi', name: 'org.osgi.service.component.annotations', version: '1.3.0'
+  compile group: "org.apache.felix", name: "org.apache.felix.scr", version: "2.0.10"
+  compile group: "org.apache.felix", name: "org.apache.felix.http.api", version: "3.0.0"
+
+  compile project(':homematic-cc1101')
+  embed project(':homematic-cc1101')
+
+  embed group: 'com.pi4j', name: 'pi4j-core', version: pi4jVersion
+  embed group: 'com.pi4j', name: 'pi4j-device', version: pi4jVersion
+  embed group: 'com.pi4j', name: 'pi4j-gpio-extension', version: pi4jVersion
+
+  embed group: 'org.json', name: 'json', version: jsonVersion
+}
+
+jar {
+  manifest {
+    name = projectName
+    instruction 'Bundle-ClassPath', '.,lib/homematic-cc1101-' + cfgVersion + '.jar,lib/pi4j-core.jar,lib/pi4j-device.jar,lib/pi4j-gpio-extension.jar,lib/json-' + jsonVersion + '.jar'
+    instruction 'Import-Package', '!org.ogema.driver.homematic*,!com.pi4j*,!org.json*,org.openmuc.jrxtx,javax.xml.bind,javax.xml.datatype,*' + jarDefaultImportPackageVersion
+    instruction 'Export-Package', ''
+  }
+}
+
+jar {
+  into('lib') {
+    from configurations.embed
+  }
+}

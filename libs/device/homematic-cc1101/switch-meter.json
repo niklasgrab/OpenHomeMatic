@@ -1,0 +1,210 @@
+{
+    "name": "Switch Meter",
+    "category": "Control",
+    "group": "eQ-3 HomeMatic",
+    "description": "eQ-3 HomeMatic Wireless Switch Actuator 1-channel with power metering",
+    
+    "driver": "homematic-cc1101",
+    "devices": [
+        {
+            "description": "eQ-3 HomeMatic Smart Plug"
+        }
+    ],
+    "scan": true,
+    
+    "options": [
+        {
+            "id": "address",
+            "name": "Address",
+            "description": "Address of the HomeMatic Device",
+            "type": "text",
+			"scan": true,
+            "mandatory": true,
+            "syntax": "deviceAddress"
+        },
+        {
+            "id": "type",
+            "name": "Type",
+            "description": "Type of the HomeMatic Device",
+            "type": "selection",
+            "select": [
+                { "name": "HM-ES-PMSw1-Pl", "value": "00AC" },
+                { "name": "HM-ES-PMSw1-Pl-DN-R1", "value": "00D7" },
+                { "name": "HM-ES-PMSw1-Pl-DN-R3", "value": "00E3" },
+                { "name": "HM-ES-PMSw1-Pl-DN-R4", "value": "00E4" },
+                { "name": "HM-ES-PMSw1-Pl-DN-R5", "value": "00E5" }
+            ],
+			"scan": true,
+            "mandatory": true,
+            "syntax": "deviceSettings"
+        }
+    ],
+    
+    "items": [
+        {
+            "id": "state",
+            "type": "Switch",
+            "label": "State",
+            "left": "Off",
+            "right": "On",
+            "mapping": {
+                "ON": { "channel": "control", "value": true },
+                "OFF": { "channel": "control", "value": false }
+            },
+            "input": "state"
+        },
+        {
+            "id": "power",
+            "type": "Text",
+            "label": "Power",
+            "format": "%i",
+            "right": "W",
+            "input": "power"
+        }
+    ],
+    
+    "channels": [
+        {
+            "name": "control",
+            "description": "Plug Control",
+            "address": "01",
+            "settings": "type:COMMAND",
+            "configs": {"valueType":"BOOLEAN"}
+        },
+        {
+            "name": "state",
+            "description": "Plug State",
+            "address": "0001",
+            "settings": "type:ATTRIBUTE",
+            "logging": {"loggingInterval": 5000, "loggingMaxInterval": 180000},
+            "configs": {"samplingInterval": 5000, "valueType":"BOOLEAN"},
+            "processList": [
+                {
+                    "process": "log_to_feed",
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "state"}
+                }
+            ]
+        },
+        {
+            "name": "energy",
+            "description": "Plug Energy",
+            "address": "0006",
+            "settings": "type:ATTRIBUTE",
+            "logging": {"loggingInterval": 5000, "loggingMaxInterval": 180000},
+            "configs": {"samplingInterval": 5000, "valueType":"FLOAT", "unit":"kWh"},
+            "processList": [
+                {
+                    "process": "log_to_feed",
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "energy"}
+                }
+            ]
+        },
+        {
+            "name": "power",
+            "description": "Plug Power",
+            "address": "0004",
+            "settings": "type:ATTRIBUTE",
+            "logging": {"loggingInterval": 5000, "loggingMaxInterval": 180000},
+            "configs": {"samplingInterval": 5000, "valueType":"FLOAT", "unit":"W"},
+            "processList": [
+                {
+                    "process": "log_to_feed",
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "power"}
+                }
+            ]
+        },
+        {
+            "name": "current",
+            "description": "Plug Current",
+            "address": "0002",
+            "settings": "type:ATTRIBUTE",
+            "logging": {"loggingInterval": 5000, "loggingMaxInterval": 180000},
+            "configs": {"samplingInterval": 5000, "valueType":"FLOAT", "scalingFactor": 0.001, "unit":"A"},
+            "processList": [
+                {
+                    "process": "log_to_feed",
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "current"}
+                }
+            ]
+        },
+        {
+            "name": "voltage",
+            "description": "Plug Voltage",
+            "address": "0003",
+            "settings": "type:ATTRIBUTE",
+            "logging": {"loggingInterval": 5000, "loggingMaxInterval": 180000, "loggingTolerance": 1, "average": true},
+            "configs": {"samplingInterval": 5000, "valueType":"FLOAT", "unit":"V"},
+            "processList": [
+                {
+                    "process": "log_to_feed",
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "voltage"}
+                }
+            ]
+        },
+        {
+            "name": "frequency",
+            "description": "Plug Frequency",
+            "address": "0005",
+            "settings": "type:ATTRIBUTE",
+            "logging": {"loggingInterval": 5000, "loggingMaxInterval": 180000, "loggingTolerance": 0.1, "average": true},
+            "configs": {"samplingInterval": 5000, "valueType":"FLOAT", "unit":"Hz"},
+            "processList": [
+                {
+                    "process": "log_to_feed",
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "frequency"}
+                }
+            ]
+        }
+    ],
+    
+    "feeds": [
+        {
+            "name": "state",
+            "tag": "State",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPTIMESERIES"
+        },
+        {
+            "name": "energy",
+            "tag": "Energy",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPTIMESERIES",
+            "unit": "kWh"
+        },
+        {
+            "name": "power",
+            "tag": "Power",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPTIMESERIES",
+            "unit": "W"
+        },
+        {
+            "name": "current",
+            "tag": "Current",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPTIMESERIES",
+            "unit": "A"
+        },
+        {
+            "name": "voltage",
+            "tag": "Voltage",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPTIMESERIES",
+            "unit": "V"
+        },
+        {
+            "name": "frequency",
+            "tag": "Frequency",
+            "type": "DataType::REALTIME",
+            "engine": "Engine::PHPTIMESERIES",
+            "unit": "Hz"
+        }
+    ],
+    
+    "prefix": "node",
+    "syntax": {
+        "deviceAddress": {
+            "keyValue": false
+        }
+    }
+}

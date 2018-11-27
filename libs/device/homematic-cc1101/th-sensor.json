@@ -1,13 +1,13 @@
 {
     "name": "Temperature/Humidity",
-    "category": "Sensors",
-    "group": "eQ-3 Homematic",
-    "description": "eQ-3 Homematic Wireless Temperature/Humidity Sensor",
+    "category": "Sensor",
+    "group": "eQ-3 HomeMatic",
+    "description": "eQ-3 HomeMatic Wireless Temperature/Humidity Sensor",
     
     "driver": "homematic-cc1101",
     "devices": [
         {
-            "description": "eQ-3 Homematic Sensor"
+            "description": "eQ-3 HomeMatic Sensor"
         }
     ],
     "scan": true,
@@ -16,7 +16,7 @@
         {
             "id": "address",
             "name": "Address",
-            "description": "Address of the Homematic Device",
+            "description": "Address of the HomeMatic Device",
             "type": "text",
 			"scan": true,
             "mandatory": true,
@@ -25,7 +25,7 @@
         {
             "id": "type",
             "name": "Type",
-            "description": "Type of the Homematic Device",
+            "description": "Type of the HomeMatic Device",
             "type": "selection",
             "select": [
                 { "name": "ASH550", "value": "000D" },
@@ -145,7 +145,7 @@
         }
     ],
     
-    "prefix": "name",
+    "prefix": "node",
     "syntax": {
         "deviceAddress": {
             "keyValue": false

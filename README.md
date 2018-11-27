@@ -70,10 +70,10 @@ With the protocol driver being enabled, some first steps can be taken to learn a
 For this purpose, a [First Steps guide](docs/FirstSteps.md) was documented to be followed.
 
 
-
 ## 3 Development
 
-To provide an entrypoint for further developments, a generated [javadoc](https://isc-konstanz.github.io/OpenHomeMatic/javadoc/) can be visited.  
+To provide an entrypoint for further developments, a generated [javadoc](https://isc-konstanz.github.io/OpenHomeMatic/javadoc/) can be visited. 
+A description of system resources and a rough architecture overview got documented in the [Development](docs/Development.md) site and is encouraged to be read.  
 For other questions or initiatives please don't hesitate to file an issue or get into contact directly.
 
 

@@ -1,6 +1,5 @@
-include "ogema", "ogema-driver-homematic", "openmuc-driver-homematic-cc1101"
+include "homematic-cc1101", "openmuc-driver-homematic-cc1101"
 
-project(":ogema").projectDir = file("projects/ogema")
-project(":ogema-driver-homematic").projectDir = file("projects/ogema-driver")
+project(":homematic-cc1101").projectDir = file("projects/cc1101")
 
-project(":openmuc-driver-homematic-cc1101").projectDir = file("projects/openmuc-driver")
+project(":openmuc-driver-homematic-cc1101").projectDir = file("projects/openmuc-driver-cc1101")
