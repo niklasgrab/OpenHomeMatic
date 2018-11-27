@@ -12,8 +12,10 @@ This project implements a communication protocol as part of [emonmuc](https://gi
 This project is based on the [OGEMA](http://www.ogema.org/) project and allows to read and control HomeMatic devices inside the emonmuc framework, allowing them to be controlled by other applications or energy management systems. To enable communication over 868-MHz, the installation of a radio transceiver is necessary.  
 Recommended and tested hardware are e.g. CC1101 RF transceivers:
 
-- [Stackable CC1101 (SCC) module for Raspberry Pi](http://busware.de/tiki-index.php?page=SCC)
-- [CC1101 USB Lite (CUL) module](http://busware.de/tiki-index.php?page=CUL)
+- [**C**C1101 **U**SB **L**ite (CUL) module](http://busware.de/tiki-index.php?page=CUL)
+- [**S**tackable **CC**1101 (SCC) module for Raspberry Pi](http://busware.de/tiki-index.php?page=SCC)
+
+To flash and prepare the **SCC** module, a comprehensive [firmware installation guide](docs/FirmwareSCC.md) may be followed.
 
 
 ## 1 Installation
@@ -54,6 +56,12 @@ The property `org.openmuc.framework.driver.homematic.connection.port` defines th
 
 Additionally, the transceivers ID, used to pair and identify itself with HomeMatic devices, may be chosen.  
 The property `org.openmuc.framework.driver.homematic.id` allows to set this ID, which can be an arbitrary string of 6 characters. The default value is *F11034*.
+
+
+### 1.2 Serial Port
+
+To use any serial port with the emonmuc framework, the open-source project [jRxTx](https://github.com/openmuc/jrxtx) is used. This, as well as some additional steps to use the UART Pins of the Raspberry Pi Platform, need to be prepared.  
+The [Serial Port preparation guide](docs/LinuxSerialPort.md) needs to be followed to do so.
 
 
 ## 2 Guide

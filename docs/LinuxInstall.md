@@ -1,6 +1,6 @@
 ![emonmuc header](img/emonmuc-logo.png)
 
-This document describes how to install the  (**e**nergy **mon**itoring **m**ulty **u**tility **c**ommunication), an open-source protocoll driver project to enable the communication with a variety of metering or other devices, developed based on the [OpenMUC](https://www.openmuc.org/) project.
+This document describes how to install the [emonmuc](https://github.com/isc-konstanz/emonmuc/) (**e**nergy **mon**itoring **m**ulty **u**tility **c**ommunication), an open-source protocoll driver project to enable the communication with a variety of metering or other devices, developed based on the [OpenMUC](https://www.openmuc.org/) project.
 
 
 ---------------
@@ -33,7 +33,17 @@ mv ./OpenHomeMatic/libs/device/homematic-cc1101 /opt/emonmuc/lib/device/
 ~~~
 
 
-## 1.2 Finish
+---------------
+
+## 1.2 Prepare the Serial Port
+
+To use any serial port with the emonmuc framework, the open-source project [jRxTx](https://github.com/openmuc/jrxtx) is used. This, as well as some additional steps to use the UART Pins of the Raspberry Pi Platform, need to be prepared.  
+The [Serial Port preparation guide](docs/LinuxSerialPort.md) needs to be followed to do so.
+
+
+---------------
+
+# 3 Finish
 
 At last, don't forget to remove the released tarball to avoid cluttering of your system.
 
