@@ -5,8 +5,10 @@
 This project allow to read and control HomeMatic devices inside the [emonmuc](https://github.com/isc-konstanz/emonmuc/) (**e**nergy **mon**itoring **m**ulty **u**tility **c**ommunication) framework, allowing them to be controlled by other applications or energy management systems. To enable communication over 868-MHz, the installation of a radio transceiver is necessary.  
 Recommended and tested hardware are e.g. CC1101 RF transceivers:
 
-- [Stackable CC1101 (SCC) module for Raspberry Pi](http://busware.de/tiki-index.php?page=SCC)
-- [CC1101 USB Lite (CUL) module](http://busware.de/tiki-index.php?page=CUL)
+- [**C**C1101 **U**SB **L**ite (CUL) module](http://busware.de/tiki-index.php?page=CUL)
+- [**S**tackable **CC**1101 (SCC) module for Raspberry Pi](http://busware.de/tiki-index.php?page=SCC)
+
+To flash and prepare the **SCC** module, a comprehensive [firmware installation guide](docs/FirmwareSCC.md) may be followed.
 
 With the emonmuc framework installed, the driver should be enabled with
 
