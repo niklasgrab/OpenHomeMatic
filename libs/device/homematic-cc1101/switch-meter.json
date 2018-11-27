@@ -201,7 +201,7 @@
         }
     ],
     
-    "prefix": "name",
+    "prefix": "node",
     "syntax": {
         "deviceAddress": {
             "keyValue": false
