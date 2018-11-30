@@ -18,8 +18,12 @@ package org.ogema.driver.homematic.manager.messages;
 import java.util.Arrays;
 
 import org.ogema.driver.homematic.tools.Converter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StatusMessage {
+
+	private final Logger logger = LoggerFactory.getLogger(StatusMessage.class);
 
 	public String source;
 	public String destination;
@@ -59,6 +63,12 @@ public class StatusMessage {
 		int startAll = start;
 		
 		length = Converter.toLong(data[start++]);
+		if (data.length != this.length + 3) {
+			logger.warn("Invalid Message received: Reason length of message {} not equal to expected length {}.", data.length, this.length+2);
+			logger.debug("Invalid Message received: Reason length of message {} not equal to expected length {}: \"{}\"", 
+					data.length, this.length+3, Converter.toHexString(data));
+			throw new RuntimeException("Invalid Message received: Reason length of message not equal to expected length.");
+		}
 		number = Converter.toInt(data[start++]);
 		flag = data[start++];
 		type = data[start++];
@@ -71,6 +81,7 @@ public class StatusMessage {
 		
 		if (this.length > 9)
 			this.data = Arrays.copyOfRange(data, start, (int) (2 + this.length));
+		logger.debug("Last byte: " + Converter.toHexString(data[data.length-1]));
 		msg = Arrays.copyOfRange(data, startAll, (int) (2 + this.length));
 
 		if (source.equals(destination))
@@ -79,10 +90,18 @@ public class StatusMessage {
 
 	public byte[] parseAscii(byte[] data) {
 		byte[] retVal = new byte[data.length/2];
-		for (int i = 0; i < data.length; i+=2) {
-			retVal[i/2] = (byte) ((Character.digit(data[i], 16) << 4)
-					+ Character.digit(data[i+1], 16));
+		try {
+			for (int i = 0; i < data.length; i+=2) {
+				retVal[i/2] = (byte) ((Character.digit(data[i], 16) << 4)
+						+ Character.digit(data[i+1], 16));
+			}
 		}
+		catch(Exception e) {
+			logger.warn("Invalid Message received: Reason Wrong length.");
+			logger.debug("Invalid Message received: Reason Wrong length: {} \"{}\"", e.getMessage(), new String(data));
+			throw e;
+		}
+		logger.debug("Data Received: " + new String(data));
 		
 		return retVal;
 	}
@@ -95,4 +114,16 @@ public class StatusMessage {
 		return new String(Arrays.copyOfRange(data, 3, 13));
 	}
 
+	public static void main(String[] argv) {
+		StatusMessage mess = new StatusMessage(Converter.hexStringToByteArray(argv[0])); 
+		System.out.println("Lenght: " + mess.length);
+		System.out.println("Number: " + mess.number);
+		System.out.println("Flag: " + mess.flag);
+		System.out.println("Type: " + mess.type);
+		System.out.println("Source: " + mess.source);
+		System.out.println("Destination: " + mess.destination);
+		System.out.println("Data: " + mess.data);
+		System.out.println("PartyMode: " + mess.partyMode);
+		
+	}
 }
