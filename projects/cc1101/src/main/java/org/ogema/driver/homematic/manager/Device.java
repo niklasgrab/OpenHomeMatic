@@ -196,6 +196,7 @@ public abstract class Device {
 			getRegisterValues2(response.data, list);
 			break;
 		default:
+			logger.debug("configs not used content type {}", contentType);
 			break;
 		}
 		parseRegisterEntry(list, channel);
@@ -211,6 +212,7 @@ public abstract class Device {
 		while (length > 1) { // >1 because to each value belong two bytes
 			int register = msg_data[offset++];
 			int value = msg_data[offset++];
+			logger.debug("configs1: register {}, value {}", register, value);
 			target.put(register, value);
 			length -= 2;
 		}
@@ -224,6 +226,7 @@ public abstract class Device {
 		Map<Integer, Integer> target = configs.getRegValues(list);
 		while (length > 0) { // > 0 because the start register is followed by a values each byte
 			int value = msg_data[offset++];
+			logger.debug("configs2: register {}, value {}", register, value);
 			target.put(register++, value);
 			length--;
 		}
@@ -239,8 +242,14 @@ public abstract class Device {
 			Object o = listObj.entriesByRegs.get(register);
 			List<ConfigListEntryValue> valueList = getMatchingEntry(o);
 			for (ConfigListEntryValue entryVal : valueList) {
-				if (entryVal != null) {
+				if (entryVal == null) {
+					logger.debug("Not found reg: " + register + " in list: " + list);
+				}
+				else {
+					logger.debug("Found reg: " + register + " in list: " + list);
+					// int bytes = parseValue(entryVal, registers, register);
 					entryVal.entry.channel = channel;
+					logger.debug(entryVal.getDescription());
 				}
 			}
 		}
@@ -369,7 +378,7 @@ public abstract class Device {
 						if (peerReq) {
 							if (!pReq) {
 								pReq = true;
-								System.out.println("Send Peer Conf on channel " + channel[2]);
+								logger.debug("Send Peer Conf on channel " + channel[2]);
 								messageHandler.sendMessage(getAddress(), (byte) 0xA0, (byte) 0x01, "0" + channel[2] + "03");
 								try {
 									Thread.sleep(1500);
@@ -379,7 +388,7 @@ public abstract class Device {
 							}
 						}
 						else {
-							System.out.println("Send device Conf on channel " + channel[2] + " and list " + lstPart[0]);
+							logger.debug("Send device Conf on channel " + channel[2] + " and list " + lstPart[0]);
 							messageHandler.sendMessage(getAddress(), (byte) 0xA0, (byte) 0x01, "0" + channel[2] + "04000000000"
 									+ lstPart[0]);
 							try {

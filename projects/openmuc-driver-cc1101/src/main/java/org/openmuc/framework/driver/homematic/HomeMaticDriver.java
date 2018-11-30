@@ -123,7 +123,7 @@ public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallba
 	@Override
 	public Connection connect(String addressStr, String settingsStr) throws ArgumentSyntaxException, ConnectionException {
 		
-		logger.debug("Connect HomeMatic device: ", addressStr);
+		logger.debug("Connect HomeMatic device: \"", addressStr +  "\" length: " + addressStr.length());
 		if (addressStr.length() != 6) {
 			throw new ArgumentSyntaxException("Device Address has an incorrect length. The length has to be 6 Characters.");
 		}

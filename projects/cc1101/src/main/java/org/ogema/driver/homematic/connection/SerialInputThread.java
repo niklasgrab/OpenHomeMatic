@@ -24,13 +24,19 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class SerialInputThread extends Thread {
     private static final long SLEEP_TIME = 100L;
+
+	private final Logger logger = LoggerFactory.getLogger(SerialInputThread.class);
 
 	private final ConnectionListener listener;
     private final DataInputStream input;
 
 	private boolean closed = true;
+	private boolean once = true;
 
 	public SerialInputThread(ConnectionListener connection, InputStream inputStream) throws IOException {
 		this.listener = connection;
@@ -56,8 +62,15 @@ public class SerialInputThread extends Thread {
 			int numBytesInStream;
 			byte[] bytesInStream = null;
 			try {
+				if (once) {
+					logger.debug("");
+					logger.debug("Listener ready " + System.currentTimeMillis());
+					once = false;
+				}
 				numBytesInStream = input.available();
 				if (numBytesInStream > 0) {
+					logger.debug("");
+					logger.debug("Data available " + numBytesInStream + " " + System.currentTimeMillis());
 					bytesInStream = new byte[numBytesInStream];
 					input.read(bytesInStream);
 					

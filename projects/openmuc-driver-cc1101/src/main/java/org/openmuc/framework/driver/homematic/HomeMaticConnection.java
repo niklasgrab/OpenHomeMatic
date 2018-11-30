@@ -140,6 +140,7 @@ public class HomeMaticConnection implements Connection, UpdateListener {
 				catch (NullPointerException | ArgumentSyntaxException e) {
 					container.setRecord(new Record(Flag.DRIVER_ERROR_CHANNEL_ADDRESS_SYNTAX_INVALID));	
 					logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
+					e.printStackTrace();
 				}
 			}
 		} catch (Exception e) {
@@ -218,6 +219,7 @@ public class HomeMaticConnection implements Connection, UpdateListener {
 				}
 				catch (NullPointerException | ArgumentSyntaxException e) {
 					logger.warn("Unable to configure channel address \"{}\": {}", container.getChannelAddress(), e.getMessage());
+					e.printStackTrace();
 				}
 			}
 		} catch (IOException e) {
