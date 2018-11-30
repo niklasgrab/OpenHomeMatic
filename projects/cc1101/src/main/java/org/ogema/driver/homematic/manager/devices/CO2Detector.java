@@ -25,8 +25,12 @@ import org.ogema.driver.homematic.manager.ValueType;
 import org.ogema.driver.homematic.manager.messages.CommandMessage;
 import org.ogema.driver.homematic.manager.messages.StatusMessage;
 import org.ogema.driver.homematic.tools.Converter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CO2Detector extends Device {
+
+	private final Logger logger = LoggerFactory.getLogger(CO2Detector.class);
 
 	public CO2Detector(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) 
 			throws HomeMaticConnectionException {
@@ -59,10 +63,10 @@ public class CO2Detector extends Device {
 		// state = Converter.toLong(msg.msg_data[2]);
 		// String state_str = (state > 2) ? "off" : "smoke-Alarm";
 		//
-		// System.out.println("Level: " + state);
+		// logger.debug("Level: " + state);
 		// deviceAttributes.get((short) 0x0001).setValue(new FloatValue(state));
 		// // String err_str = ((err & 0x80) > 0) ? "low" : "ok";
-		// System.out.println("State: " + state_str);
+		// logger.debug("State: " + state_str);
 		// }
 	}
 
@@ -78,11 +82,11 @@ public class CO2Detector extends Device {
 		state = Converter.toLong(msg.data[2]);
 
 		if (key.equals("009F"))
-			System.out.println("Level: " + state);
-		System.out.println("State: " + state);
+			logger.debug("Level: " + state);
+		logger.debug("State: " + state);
 		deviceAttributes.get((short) 0x0001).setValue(new FloatValue(state));
-		System.out.println("#######################\tCO2\t#############################");
-		System.out.println("Concentration: " + state);
+		logger.debug("#######################\tCO2\t#############################");
+		logger.debug("Concentration: " + state);
 	}
 
 }

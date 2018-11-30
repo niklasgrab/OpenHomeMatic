@@ -25,9 +25,12 @@ import org.ogema.driver.homematic.manager.MessageHandler;
 import org.ogema.driver.homematic.manager.ValueType;
 import org.ogema.driver.homematic.manager.messages.CommandMessage;
 import org.ogema.driver.homematic.manager.messages.StatusMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Remote extends Device {
 
+	private final Logger logger = LoggerFactory.getLogger(Remote.class);
 	private long btncnt = 0;
 	private byte oldflag = 0x00;
 	private int numOfSwitches;
@@ -66,11 +69,11 @@ public class Remote extends Device {
 					oldflag = msg.flag;
 					if ((msg.flag & 0x20) > 0) {
 						deviceAttributes.get((short) (btn_no + 0x100)).setValue(new BooleanValue(false)); // Release
-						System.out.println("Long Pressed button: " + false);
+						logger.debug("Long Pressed button: " + false);
 					}
 					else if (msg.data[1] != btncnt) {
 						deviceAttributes.get((short) (btn_no + 0x100)).setValue(new BooleanValue(true)); // Press
-						System.out.println("Long Pressed button: " + true);
+						logger.debug("Long Pressed button: " + true);
 					}
 				}
 			}
@@ -79,12 +82,12 @@ public class Remote extends Device {
 				if (oldValue == null)
 					oldValue = new BooleanValue(false);
 				deviceAttributes.get((short) btn_no).setValue(new BooleanValue(!oldValue.asBoolean())); // press
-				System.out.println("Short Pressed button value: " + !oldValue.asBoolean());
-				System.out.println("Short Pressed button count: " + btncnt);
+				logger.debug("Short Pressed button value: " + !oldValue.asBoolean());
+				logger.debug("Short Pressed button count: " + btncnt);
 			}
 			String err_str = ((msg.data[0] & 0x80) > 0) ? "low" : "ok";
 			float batt = ((msg.data[0] & 0x80) > 0) ? 5 : 95;
-			System.out.println("Battery: " + err_str);
+			logger.debug("Battery: " + err_str);
 			deviceAttributes.get((short) 0x0300).setValue(new FloatValue(batt));
 			btncnt = msg.data[1];
 		}

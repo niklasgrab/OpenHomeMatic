@@ -26,9 +26,12 @@ import org.ogema.driver.homematic.manager.ValueType;
 import org.ogema.driver.homematic.manager.messages.CommandMessage;
 import org.ogema.driver.homematic.manager.messages.StatusMessage;
 import org.ogema.driver.homematic.tools.Converter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ThreeStateSensor extends Device {
 	
+	private final Logger logger = LoggerFactory.getLogger(ThreeStateSensor.class);
 	// otherwise we assume it is a water sensor
 	private final boolean isDoorWindowSensor;
 
@@ -74,8 +77,8 @@ public class ThreeStateSensor extends Device {
 		else if (state == 0xC8)
 			state_str = isDoorWindowSensor ? "open" :  "wet";
 
-		System.out.println("State of " + (isDoorWindowSensor ? "WindowStatus" : "HighWater") + ":" + state_str);
-		System.out.println("State of Battery: " + err_str);
+		logger.debug("State of " + (isDoorWindowSensor ? "WindowStatus" : "HighWater") + ":" + state_str);
+		logger.debug("State of Battery: " + err_str);
 		deviceAttributes.get((short) 0x0001).setValue(new StringValue(state_str));
 		deviceAttributes.get((short) 0x0002).setValue(new FloatValue(batt));
 	}

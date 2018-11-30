@@ -26,8 +26,12 @@ import org.ogema.driver.homematic.manager.ValueType;
 import org.ogema.driver.homematic.manager.messages.CommandMessage;
 import org.ogema.driver.homematic.manager.messages.StatusMessage;
 import org.ogema.driver.homematic.tools.Converter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SmokeSensor extends Device {
+
+	private final Logger logger = LoggerFactory.getLogger(SmokeSensor.class);
 
 	public SmokeSensor(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) 
 			throws HomeMaticConnectionException {
@@ -48,15 +52,15 @@ public class SmokeSensor extends Device {
 
 			String err_str = ((err & 0x80) > 0) ? "low" : "ok";
 			float batt = ((err & 0x80) > 0) ? 5 : 95;
-			System.out.println("State of Battery: " + err_str);
+			logger.debug("State of Battery: " + err_str);
 			deviceAttributes.get((short) 0x0003).setValue(new FloatValue(batt));
 
 			if (status > 1) {
-				System.out.println("Smoke Alert: true");
+				logger.debug("Smoke Alert: true");
 				deviceAttributes.get((short) 0x0001).setValue(new BooleanValue(true));
 			}
 			else {
-				System.out.println("Smoke Alert: false");
+				logger.debug("Smoke Alert: false");
 				deviceAttributes.get((short) 0x0001).setValue(new BooleanValue(false));
 			}
 		}
