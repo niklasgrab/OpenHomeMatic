@@ -99,6 +99,8 @@ public class MessageHandler {
 						connection.sendFrame(new byte[] {(byte) 0x41, (byte) 0x72});
 //						connection.sendFrame("V".getBytes());
 						connection.sendFrame(new byte[] {(byte) 0x56});
+						logger.debug("");
+						logger.debug("After Send V " + System.currentTimeMillis());
 				}
 				else {
 					break;
@@ -217,6 +219,7 @@ public class MessageHandler {
 		private String destination;
 		private int tries = 0;
 		private int errors = 0;
+		private int pushConfigCnt = 0;
 
 		private InputOutputFifo<Message> unsent; // Messages waiting to be sent
 
@@ -268,8 +271,13 @@ public class MessageHandler {
 											sent.keySet().toString());
 								}
 							}
-							logger.debug("Sending message {} to device {}: {}", device.getMessageNumber(), destination,
-									Converter.toHexString(cmd.data));
+							String data = cmd.data!=null?Converter.toHexString(cmd.data):"";
+							logger.info("Sending message {} to device {}: {}", device.getMessageNumber(), destination,
+									data);
+							
+							if (data.length() > 2 && data.substring(2).startsWith("0500000000")) { // Start_Config
+								pushConfigCnt = 0;
+							}
 
 							connection.sendFrame(cmd.getFrame(device));
 
@@ -284,10 +292,16 @@ public class MessageHandler {
 							if (!sent.containsKey(token)) {
 								if (tries <= SEND_RETRIES) {
 									logger.debug("Message sent to device {}", destination);
-
-									if (device.getInitState() == InitState.PAIRING) {
+									data = cmd.data!=null?Converter.toHexString(cmd.data):"";
+									if (data.length() > 2 && data.substring(2).startsWith("0500000000") || // Start_Config
+										data.length() > 2 && data.substring(2).startsWith("08")	        || // Config
+										data.length() > 2 && data.substring(2).startsWith("06")          ) { // End_Config
+										pushConfigCnt++;
+									}
+									if (device.getInitState() == InitState.PAIRING && pushConfigCnt == 3) {
 										device.setInitState(InitState.PAIRED);
 										logger.info("Successfully paired device {}", destination);
+										device.getAllConfigs();
 									}
 								} else if (device.getInitState() == InitState.PAIRING) {
 									// here we aren't sure that the device is no longer present. In case of configuration request,
@@ -353,14 +367,22 @@ public class MessageHandler {
 					}
 					try {
 						byte[] data = connection.getReceivedFrame();
+						logger.debug("");
+						logger.debug("getReceivedFrame \"{}\" {}", new String(data), System.currentTimeMillis());
 						int j = 0;
 						for (int i = 0; i < data.length; i++) {
-							if (i > 0 && data[i-1] == 13 && data[i] == 10) {
+							if (i > 0 && data[i-1] == 13 && data[i] == 10) {  // look for Carriage Return
 								byte[] nextData = new byte[i+1-j];
 								System.arraycopy(data, j, nextData, 0, nextData.length);
+								logger.debug("");
+								logger.debug("ReceivedFrame \"{}\" {}", new String(nextData), System.currentTimeMillis());
 								handleMessage(nextData);
 								j = i + 1;
 							}
+						}
+						if (j == 0) { // no Carriage Return found, irregular message
+							logger.warn("Invalid Message received: Reason no Carriage Return found.");
+							logger.debug("Invalid Message received: Reason no Carriage Return found: \"{}\"", new String(data));
 						}
 					} catch (Throwable t) {
 						t.printStackTrace();
@@ -378,11 +400,22 @@ public class MessageHandler {
 				break;
 			case 'a':
 			case 'A':
-				StatusMessage message = new StatusMessage(data);
+				StatusMessage message;
+				try {
+					message = new StatusMessage(data);
 
-				logger.debug("Received {} {} of type {} from device {}: {}",
-						(message.destination.equals("000000") ? "broadcast" : "message"), message.number & 0x000000FF,
-						message.type, message.source, Converter.toHexString(message.data));
+					logger.debug("Received {} {} of type {} from device {}: {}",
+							(message.destination.equals("000000") ? "broadcast" : "message"), message.number & 0x000000FF,
+							message.type, message.source, Converter.toHexString(message.data));
+					if (message.data == null) {
+						logger.warn("Invalid Message received: Reason Message contains no data.");
+						logger.debug("Invalid Message received: Reason Message contains no data: \"{}\"", new String(data));
+						return;
+					}
+				}
+				catch (Exception e) {
+					return;
+				}
 
 				if (!isReady()) {
 					break;
