@@ -91,10 +91,10 @@ public class MotionDetector extends Device {
 
 			if (cnt != old_cnt) {
 				old_cnt = cnt;
-				logger.info("State: motion");
+				logger.debug("State: motion");
 				deviceAttributes.get((short) 0x0001).setValue(new BooleanValue(true));
-				logger.info("MotionCount: " + cnt + " next Trigger: " + nextTr + "s");
-				logger.info("Brightness: " + brightn);
+				logger.debug("MotionCount: " + cnt + " next Trigger: " + nextTr + "s");
+				logger.debug("Brightness: " + brightn);
 				deviceAttributes.get((short) 0x0002).setValue(new FloatValue(brightn));
 				if (timer.isAlive()) {
 					motionInRun = true;
@@ -116,7 +116,7 @@ public class MotionDetector extends Device {
 								else {
 									repeat = false;
 									deviceAttributes.get((short) 0x0001).setValue(new BooleanValue(false));
-									logger.info("reset State: no motion");
+									logger.debug("reset State: no motion");
 								}
 							}
 						}

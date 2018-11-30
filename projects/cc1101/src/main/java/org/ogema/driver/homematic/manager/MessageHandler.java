@@ -272,7 +272,7 @@ public class MessageHandler {
 								}
 							}
 							String data = cmd.data!=null?Converter.toHexString(cmd.data):"";
-							logger.info("Sending message {} to device {}: {}", device.getMessageNumber(), destination,
+							logger.debug("Sending message {} to device {}: {}", device.getMessageNumber(), destination,
 									data);
 							
 							if (data.length() > 2 && data.substring(2).startsWith("0500000000")) { // Start_Config
