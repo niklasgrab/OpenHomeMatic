@@ -83,6 +83,7 @@ public class Converter {
 	}
 
 	public static String toHexString(byte[] array) {
+		if (array == null) return "";
 		return toHexString(array, 0, array.length);
 	}
 
