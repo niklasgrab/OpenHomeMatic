@@ -41,6 +41,21 @@ public class THSensor extends Device {
 	}
 
 	@Override
+	protected String[] getPushConfigData(String channel, String list, String pushConfigs) {
+		String[] pushConfigData = null;
+		logger.debug("name of device: " + name);
+		if (name.equals("HM-WDS30-T-O")) {
+			pushConfigData = new String[1];
+			pushConfigData[0] = channel + "0500000000" + list;
+		}
+		else {
+			pushConfigData = super.getPushConfigData(channel, list, pushConfigs);
+		}
+		return pushConfigData;
+		
+	}
+	
+	@Override
 	protected void configureChannels() {
 		deviceAttributes.put((short) 0x0001, new DeviceAttribute((short) 0x0001, "Temperature", true, true, ValueType.FLOAT));
 		deviceAttributes.put((short) 0x0002, new DeviceAttribute((short) 0x0002, "Humidity", true, true, ValueType.FLOAT));

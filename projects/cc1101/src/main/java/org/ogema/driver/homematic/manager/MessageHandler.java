@@ -49,6 +49,7 @@ public class MessageHandler {
 	private InputThread inputThread;
 	private Connection connection;
 	private String id = null;
+	private int numberOfPushConfigs = 0;
 
 	private volatile Map<String, Message> sent = new LinkedHashMap<String, Message>(); // <Token>
 	private volatile Map<String, OutputThread> outputThreads = new ConcurrentHashMap<String, OutputThread>();
@@ -113,6 +114,10 @@ public class MessageHandler {
 			}
 		}
 	}
+	
+	public String getId() {
+		return id;
+	}
 
 	protected boolean isReady() {
 		return this.id != null;
@@ -159,14 +164,11 @@ public class MessageHandler {
 				.getFrame(device, msg.number));
 	}
 
-	public void pushConfig(String address, String channel, String list) throws HomeMaticConnectionException {
-		String owner = id;
-		String configs = "0201" + "0A" + owner.charAt(0) + owner.charAt(1) + "0B" + owner.charAt(2) + owner.charAt(3)
-				+ "0C" + owner.charAt(4) + owner.charAt(5);
-
-		sendMessage(address, (byte) 0xA0, (byte) 0x01, channel + "0500000000" + list);
-		sendMessage(address, (byte) 0xA0, (byte) 0x01, channel + "08" + configs);
-		sendMessage(address, (byte) 0xA0, (byte) 0x01, channel + "06");
+	public void pushConfig(String address, String[] pushConfigData) throws HomeMaticConnectionException {
+		numberOfPushConfigs = pushConfigData.length;
+		for (String data : pushConfigData) {
+			sendMessage(address, (byte) 0xA0, (byte) 0x01, data);
+		}
 	}
 
 	public void sendMessage(String destination, byte flag, byte type, String data) throws HomeMaticConnectionException {
@@ -298,7 +300,7 @@ public class MessageHandler {
 										data.length() > 2 && data.substring(2).startsWith("06")          ) { // End_Config
 										pushConfigCnt++;
 									}
-									if (device.getInitState() == InitState.PAIRING && pushConfigCnt == 3) {
+									if (device.getInitState() == InitState.PAIRING && pushConfigCnt == numberOfPushConfigs) {
 										device.setInitState(InitState.PAIRED);
 										logger.info("Successfully paired device {}", destination);
 										device.getAllConfigs();
@@ -433,8 +435,10 @@ public class MessageHandler {
 							} else {
 								device = manager.getDevice(device.getAddress());
 								if (device.getInitState().equals(InitState.UNKNOWN)) {
+									logger.debug("Init Device true");
 									device.init();
 								} else if (device.getInitState().equals(InitState.PAIRED)) {
+									logger.debug("Init Device false");
 									device.init(false);
 								}
 							}

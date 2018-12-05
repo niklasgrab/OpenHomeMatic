@@ -148,13 +148,29 @@ public abstract class Device {
 
 	public void init(boolean channels) throws HomeMaticConnectionException {
 		setInitState(InitState.PAIRING);
-		messageHandler.pushConfig(getAddress(), "00", "00");
+		pushConfig(getAddress(), "00", "00");
 		
 		if (channels) {
 			configureChannels();
 		}
 	}
 
+	private void pushConfig(String address, String channel, String list) throws HomeMaticConnectionException {
+		String owner = messageHandler.getId();
+		String pushConfigs = "0201" + "0A" + owner.charAt(0) + owner.charAt(1) + "0B" + owner.charAt(2) + owner.charAt(3)
+				+ "0C" + owner.charAt(4) + owner.charAt(5);
+		String[] pushConfigData = getPushConfigData(channel, list, pushConfigs);
+		messageHandler.pushConfig(address, pushConfigData);
+	}
+
+	protected String[] getPushConfigData(String channel, String list, String pushConfigs) {
+		String[] pushConfigData = new String[3];
+		pushConfigData[0] = channel + "0500000000" + list;
+		pushConfigData[1] = channel + "08" + pushConfigs;
+		pushConfigData[2] = channel + "06";
+		return pushConfigData;
+	}
+	
 	protected abstract void configureChannels()  throws HomeMaticConnectionException;
 
 	protected abstract void parseValue(StatusMessage msg);
