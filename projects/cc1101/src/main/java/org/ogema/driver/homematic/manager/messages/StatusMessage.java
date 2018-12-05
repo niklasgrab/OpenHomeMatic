@@ -115,7 +115,7 @@ public class StatusMessage {
 	}
 
 	public static void main(String[] argv) {
-		StatusMessage mess = new StatusMessage(Converter.hexStringToByteArray(argv[0])); 
+		StatusMessage mess = new StatusMessage(argv[0].getBytes()); 
 		System.out.println("Lenght: " + mess.length);
 		System.out.println("Number: " + mess.number);
 		System.out.println("Flag: " + mess.flag);
