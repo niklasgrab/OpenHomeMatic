@@ -3,7 +3,7 @@
     "category": "Control",
     "group": "eQ-3 HomeMatic",
     "description": "eQ-3 HomeMatic Wireless Switch Actuator 1-channel with power metering",
-    
+
     "driver": "homematic-cc1101",
     "devices": [
         {
@@ -11,7 +11,7 @@
         }
     ],
     "scan": true,
-    
+
     "options": [
         {
             "id": "address",
@@ -39,40 +39,40 @@
             "syntax": "deviceSettings"
         }
     ],
-    
+
     "items": [
         {
             "id": "state",
             "type": "Switch",
             "label": "State",
+            "header": true,
             "left": "Off",
             "right": "On",
             "mapping": {
-                "ON": { "channel": "control", "value": true },
-                "OFF": { "channel": "control", "value": false }
+                "ON": { "channel": "<node>_control", "value": true },
+                "OFF": { "channel": "<node>_control", "value": false }
             },
-            "input": "state"
+            "input": "<node>_state"
         },
         {
             "id": "power",
             "type": "Text",
             "label": "Power",
-            "format": "%i",
-            "right": "W",
-            "input": "power"
+            "format": "%i W",
+            "input": "<node>_power"
         }
     ],
-    
+
     "channels": [
         {
-            "name": "control",
+            "name": "<node>_control",
             "description": "Plug Control",
             "address": "01",
             "settings": "type:COMMAND",
             "configs": {"valueType":"BOOLEAN"}
         },
         {
-            "name": "state",
+            "name": "<node>_state",
             "description": "Plug State",
             "address": "0001",
             "settings": "type:ATTRIBUTE",
@@ -81,12 +81,12 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "state"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "State"}
                 }
             ]
         },
         {
-            "name": "energy",
+            "name": "<node>_energy",
             "description": "Plug Energy",
             "address": "0006",
             "settings": "type:ATTRIBUTE",
@@ -95,12 +95,12 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "energy"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Energy"}
                 }
             ]
         },
         {
-            "name": "power",
+            "name": "<node>_power",
             "description": "Plug Power",
             "address": "0004",
             "settings": "type:ATTRIBUTE",
@@ -109,12 +109,12 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "power"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Power"}
                 }
             ]
         },
         {
-            "name": "current",
+            "name": "<node>_current",
             "description": "Plug Current",
             "address": "0002",
             "settings": "type:ATTRIBUTE",
@@ -123,12 +123,12 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "current"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Current"}
                 }
             ]
         },
         {
-            "name": "voltage",
+            "name": "<node>_voltage",
             "description": "Plug Voltage",
             "address": "0003",
             "settings": "type:ATTRIBUTE",
@@ -137,12 +137,12 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "voltage"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Voltage"}
                 }
             ]
         },
         {
-            "name": "frequency",
+            "name": "<node>_frequency",
             "description": "Plug Frequency",
             "address": "0005",
             "settings": "type:ATTRIBUTE",
@@ -151,57 +151,56 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "frequency"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Frequency"}
                 }
             ]
         }
     ],
-    
+
     "feeds": [
         {
-            "name": "state",
+            "name": "<node>",
             "tag": "State",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES"
         },
         {
-            "name": "energy",
+            "name": "<node>",
             "tag": "Energy",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "kWh"
         },
         {
-            "name": "power",
+            "name": "<node>",
             "tag": "Power",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "W"
         },
         {
-            "name": "current",
+            "name": "<node>",
             "tag": "Current",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "A"
         },
         {
-            "name": "voltage",
+            "name": "<node>",
             "tag": "Voltage",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "V"
         },
         {
-            "name": "frequency",
+            "name": "<node>",
             "tag": "Frequency",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "Hz"
         }
     ],
-    
-    "prefix": "node",
+
     "syntax": {
         "deviceAddress": {
             "keyValue": false
