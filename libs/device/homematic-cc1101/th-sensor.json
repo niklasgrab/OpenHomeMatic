@@ -3,7 +3,7 @@
     "category": "Sensor",
     "group": "eQ-3 HomeMatic",
     "description": "eQ-3 HomeMatic Wireless Temperature/Humidity Sensor",
-    
+
     "driver": "homematic-cc1101",
     "devices": [
         {
@@ -11,7 +11,7 @@
         }
     ],
     "scan": true,
-    
+
     "options": [
         {
             "id": "address",
@@ -56,29 +56,35 @@
             "syntax": "deviceSettings"
         }
     ],
-    
+
     "items": [
         {
             "id": "temperature",
             "type": "Text",
             "label": "Temperature",
-            "format": "%.1f",
-            "right": "°C",
-            "input": "temperature"
+            "header": true,
+            "format": "%.1f °C",
+            "input": "<node>_temperature"
+        },
+        {
+            "id": "humidity",
+            "type": "Text",
+            "label": "Humidity",
+            "format": "%i %",
+            "input": "<node>_humidity"
         },
         {
             "id": "battery",
             "type": "Text",
             "label": "Battery",
-            "format": "%i",
-            "right": "%",
-            "input": "battery_state"
+            "format": "%i %",
+            "input": "<node>_battery"
         }
     ],
-    
+
     "channels": [
         {
-            "name": "temperature",
+            "name": "<node>_temperature",
             "description": "Temperature",
             "address": "0001",
             "settings": "type:ATTRIBUTE",
@@ -87,12 +93,12 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "temperature"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Temperature"}
                 }
             ]
         },
         {
-            "name": "humidity",
+            "name": "<node>_humidity",
             "description": "Humidity",
             "address": "0002",
             "settings": "type:ATTRIBUTE",
@@ -101,12 +107,12 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "humidity"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Humidity"}
                 }
             ]
         },
         {
-            "name": "battery_state",
+            "name": "<node>_battery",
             "description": "Battery state",
             "address": "0003",
             "settings": "type:ATTRIBUTE",
@@ -115,43 +121,39 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "battery_state"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>_battery", "tag": "State"}
                 }
             ]
         }
     ],
-    
+
     "feeds": [
         {
-            "name": "temperature",
+            "name": "<node>",
             "tag": "Temperature",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "°C"
         },
         {
-            "name": "humidity",
+            "name": "<node>",
             "tag": "Humidity",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "%"
         },
         {
-            "name": "battery_state",
+            "name": "<node>_battery",
             "tag": "State",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "%"
         }
     ],
-    
-    "prefix": "node",
+
     "syntax": {
         "deviceAddress": {
             "keyValue": false
-        },
-        "deviceSettings": {
-            "keyValue": true
         }
     }
 }
