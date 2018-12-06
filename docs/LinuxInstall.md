@@ -38,7 +38,8 @@ mv ./OpenHomeMatic/libs/device/homematic-cc1101 /opt/emonmuc/lib/device/
 ## 1.2 Prepare the Serial Port
 
 To use any serial port with the emonmuc framework, the open-source project [jRxTx](https://github.com/openmuc/jrxtx) is used. This, as well as some additional steps to use the UART Pins of the Raspberry Pi Platform, need to be prepared.  
-The [Serial Port preparation guide](docs/LinuxSerialPort.md) needs to be followed to do so.
+The [Serial Port preparation guide](LinuxSerialPort.md) needs to be followed to do so.
+
 
 
 ---------------

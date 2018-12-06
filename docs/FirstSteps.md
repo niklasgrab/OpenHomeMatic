@@ -8,13 +8,40 @@ Recommended and tested hardware are e.g. CC1101 RF transceivers:
 - [**C**C1101 **U**SB **L**ite (CUL) module](http://busware.de/tiki-index.php?page=CUL)
 - [**S**tackable **CC**1101 (SCC) module for Raspberry Pi](http://busware.de/tiki-index.php?page=SCC)
 
-To flash and prepare the **SCC** module, a comprehensive [firmware installation guide](docs/FirmwareSCC.md) may be followed.
+To flash and prepare the **SCC** module, a comprehensive [firmware installation guide](FirmwareSCC.md) may be followed.
+
+# Installation
 
 With the emonmuc framework installed, the driver should be enabled with
 
 ~~~
 emonmuc install homematic-cc1101
 ~~~
+
+## Configuration
+
+Depending on the RF transceiver used, some additional configurations may be necessary.  
+This can be done in the OSGi frameworks system properties, located by default in `/opt/emonmuc/conf/system.properties`. Add any of the optional properties like this:
+
+~~~ini
+# Define the hardware interface used: <SCC/CUL>. Default is SCC
+org.openmuc.framework.driver.homematic.interface = CUL
+
+# If the CUL interface is used, the serial port of the stick needs to be defined. Default for CUL is /dev/ttyUSB0
+;org.openmuc.framework.driver.homematic.connection.port = /dev/ttyACM0
+~~~
+
+Both hardware interface communication options **SCC** and **CUL** are serial connections.  
+The property `org.openmuc.framework.driver.homematic.connection.port` defines the port to be used. For *CUL* the default value of the port is */dev/ttyUSB0*. For *SCC*, the default value of the port is */dev/ttyAMA0*.
+
+Additionally, the transceivers ID, used to pair and identify itself with HomeMatic devices, may be chosen.  
+The property `org.openmuc.framework.driver.homematic.id` allows to set this ID, which can be an arbitrary string of 6 characters. The default value is *F11034*.
+
+
+## Serial Port
+
+To use any serial port with the emonmuc framework, the open-source project [jRxTx](https://github.com/openmuc/jrxtx) is used. This, as well as some additional steps to use the UART Pins of the Raspberry Pi Platform, need to be prepared.  
+The [Serial Port preparation guide](LinuxSerialPort.md) needs to be followed to do so.
 
 
 ----------
@@ -38,7 +65,7 @@ The Smart Plug has only one button, with which it e.g. can be turned on/off or p
 ## Pairing
 
 The Smart Plug needs to be paired first, before using it in the emonmuc framework. To enable the pairing of the device, proceed as follows:  
-Make sure to plug it into a socket first, open and log in to your local [emoncms](https://emoncms.org/) platform. Go to **Setup > Inputs** and add a **new Device**.
+Make sure to plug it into a socket first, open and log in to your local [emoncms](https://emoncms.org/) platform. Go to **Setup > Devices** and add a **new Device**.
 
 ![device config](img/device-config.jpg)
 
