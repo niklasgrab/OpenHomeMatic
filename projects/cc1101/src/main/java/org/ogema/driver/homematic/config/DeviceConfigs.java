@@ -30,6 +30,7 @@ public abstract class DeviceConfigs {
 		configsByType.put("HM-CC-RT-DN", ThermostatConfig.class);
 		configsByType.put("HM-SEC-WDS-2", WaterDetectorConfig.class);
 		configsByType.put("HM-ES-PMSw1-Pl", PowerMeterConfig.class);
+		configsByType.put("HM-WDS40-TH-I-2", THSensorConfig.class);
 	}
 
 	public abstract HashMap<String, ConfigListEntryValue> getDeviceConfigs();

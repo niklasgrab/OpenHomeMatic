@@ -15,7 +15,12 @@
  */
 package org.ogema.driver.homematic.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ConfigListEntryValue {
+
+	public final static Logger logger = LoggerFactory.getLogger(ConfigListEntryValue.class);
 
 	public ConfigListEntry entry;
 
@@ -44,6 +49,7 @@ public class ConfigListEntryValue {
 	public String getDescription() {
 		String setting = null;
 		int value = regValue;
+		logger.debug("Value in getDescription: " + value);
 		int mask = ((1 << entry.size) - 1) << entry.offsetBits;
 		value = value & mask;
 		value = value >> entry.offsetBits;

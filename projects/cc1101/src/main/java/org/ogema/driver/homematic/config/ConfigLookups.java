@@ -17,6 +17,9 @@ package org.ogema.driver.homematic.config;
 
 import java.util.HashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ConfigLookups {
 	static final String[] lookup1 = { "off", "on", "auto" }; // lit={off=0,on=1}}
 	static final String[] lookup2 = { "invisible", "visible" };// lit={invisib=0,visib=1}}
@@ -135,6 +138,9 @@ public class ConfigLookups {
 		lookup57.put(6, "30");// lit={0=0,5=1,10=2,15=3,20=4,25=5,30=6}},
 
 	}
+	
+	public final static Logger logger = LoggerFactory.getLogger(ConfigLookups.class);
+	
 
 	public static String getSetting2Value(String lookup, int value) {
 		String result = value + "";
@@ -308,7 +314,7 @@ public class ConfigLookups {
 			result = lookup57.get(value);
 			break;
 		default:
-			System.err.println("No specific lookup!");
+			logger.debug("No specific lookup!");
 		}
 		return result;
 	}
@@ -552,7 +558,7 @@ public class ConfigLookups {
 			result = lookup57;
 			break;
 		default:
-			System.err.println("No specific lookup!");
+			logger.debug("No specific lookup!");
 			break;
 		}
 		return result;
