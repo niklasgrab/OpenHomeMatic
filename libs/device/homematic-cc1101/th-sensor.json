@@ -102,8 +102,8 @@
             "description": "Humidity",
             "address": "0002",
             "settings": "type:ATTRIBUTE",
-            "logging": {"loggingInterval": 5000, "loggingMaxInterval": 180000},
-            "configs": {"samplingInterval": 5000, "valueType":"FLOAT", "unit":"%"},
+            "logging": {"loggingInterval": 60000, "loggingMaxInterval": 900000},
+            "configs": {"samplingInterval": 60000, "valueType":"FLOAT", "unit":"%"},
             "processList": [
                 {
                     "process": "log_to_feed",
@@ -116,8 +116,8 @@
             "description": "Battery state",
             "address": "0003",
             "settings": "type:ATTRIBUTE",
-            "logging": {"loggingInterval": 5000, "loggingMaxInterval": 180000},
-            "configs": {"samplingInterval": 5000, "valueType":"FLOAT", "unit":"%"},
+            "logging": {"loggingInterval": 60000, "loggingMaxInterval": 900000},
+            "configs": {"samplingInterval": 60000, "valueType":"FLOAT", "unit":"%"},
             "processList": [
                 {
                     "process": "log_to_feed",
