@@ -79,7 +79,7 @@
             "description": "Control",
             "address": "01",
             "settings": "type:COMMAND",
-            "configs": {"valueType":"BOOLEAN"}
+            "configs": {"valueType":"FLOAT"}
         },
         {
             "name": "<node>_setpoint",

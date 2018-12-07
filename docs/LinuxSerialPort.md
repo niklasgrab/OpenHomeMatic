@@ -44,18 +44,18 @@ sudo systemctl mask serial-getty@ttyAMA0.service
 
 As soon as the system will be rebooted after completing the dependency configurations, the serial port will be prepared to use.
 
-## 2.1 Paspberry Pi v1 and v2 Compatibility
+## 2.1 Paspberry Pi Compatibility
 
-**Caution:** When using a SCC module, non-priviledged access only works since the Raspberry Pi 3 and onwards. Older platforms need to start the emonmuc framework with root permissions.  
+**Caution:** The SCC module occupies UART RX/TX- and the GPIO17/18-Pins. Non-priviledged access only works since the Raspberry Pi 3 and onwards though. Older platforms need to start the emonmuc framework with root permissions.  
 To do so, simply change the ownership of the runscript and restart the framework:
 
 ~~~
-sudo chown root -R /opt/emonmuc/bin
+sudo chown root -R /opt/emonmuc
 sudo systemctl restart emonmuc
 ~~~
 
 
-## 2.2 Raspberry Pi v3 Compatibility
+### 2.1.1 Raspberry Pi v3 Compatibility
 
 
 **This section only applies to Raspberry Pi v3 and later.**
