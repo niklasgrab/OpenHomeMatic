@@ -15,7 +15,7 @@
  */
 package org.ogema.driver.homematic.manager.devices;
 
-import org.ogema.driver.homematic.HomeMaticConnectionException;
+import org.ogema.driver.homematic.HomeMaticException;
 import org.ogema.driver.homematic.data.FloatValue;
 import org.ogema.driver.homematic.data.StringValue;
 import org.ogema.driver.homematic.data.Value;
@@ -36,7 +36,7 @@ public class ThreeStateSensor extends Device {
 	private final boolean isDoorWindowSensor;
 
 	public ThreeStateSensor(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial, 
-			boolean isDoorWindowSensor) throws HomeMaticConnectionException {
+			boolean isDoorWindowSensor) throws HomeMaticException {
 		super(descriptor, messageHandler, address, deviceKey, serial);
 		this.isDoorWindowSensor = isDoorWindowSensor;
 	}

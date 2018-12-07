@@ -15,7 +15,7 @@
  */
 package org.ogema.driver.homematic.manager.devices;
 
-import org.ogema.driver.homematic.HomeMaticConnectionException;
+import org.ogema.driver.homematic.HomeMaticException;
 import org.ogema.driver.homematic.data.FloatValue;
 import org.ogema.driver.homematic.data.Value;
 import org.ogema.driver.homematic.manager.Device;
@@ -35,7 +35,7 @@ public class Thermostat extends Device {
 	private static final String THERMOSTAT_KEY = "0095";
 
 	public Thermostat(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) 
-			throws HomeMaticConnectionException {
+			throws HomeMaticException {
 		super(descriptor, messageHandler, address, deviceKey, serial);
 	}
 
@@ -45,7 +45,7 @@ public class Thermostat extends Device {
 		deviceAttributes.put((short) 0x0001, new DeviceAttribute((short) 0x0001, "desiredTemp", true, true, ValueType.FLOAT));
 		deviceAttributes.put((short) 0x0002, new DeviceAttribute((short) 0x0002, "currentTemp", true, true, ValueType.FLOAT));
 		deviceAttributes.put((short) 0x0003, new DeviceAttribute((short) 0x0003, "ValvePosition", true, true, ValueType.FLOAT));
-		deviceAttributes.put((short) 0x0004, new DeviceAttribute((short) 0x0004, "batteryStatus", true, true, ValueType.FLOAT));
+		deviceAttributes.put((short) 0x0004, new DeviceAttribute((short) 0x0004, "batteryVoltage", true, true, ValueType.FLOAT));
 	}
 
 	public void parseMessage(StatusMessage msg, CommandMessage cmd, Device device) {
@@ -159,7 +159,7 @@ public class Thermostat extends Device {
 	}
 
 	@Override
-	public void channelChanged(byte identifier, Value value) throws HomeMaticConnectionException {
+	public void channelChanged(byte identifier, Value value) throws HomeMaticException {
 		if (identifier == 0x01) { // desiredTemp
 			float localDesiredTemp = value.asFloat();
 			localDesiredTemp = (float) (Math.ceil(localDesiredTemp * 2) / 2);

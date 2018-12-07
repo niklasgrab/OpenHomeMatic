@@ -17,6 +17,7 @@ package org.ogema.driver.homematic.manager.messages;
 
 import java.util.Arrays;
 
+import org.ogema.driver.homematic.HomeMaticException;
 import org.ogema.driver.homematic.tools.Converter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +43,7 @@ public class StatusMessage {
 		isEmpty = true;
 	}
 
-	public StatusMessage(byte[] data) {
+	public StatusMessage(byte[] data) throws HomeMaticException {
 		switch (data[0]) {
 		case 'A':
 			byte[] tmp = parseAscii(Arrays.copyOfRange(data, 1, data.length));
@@ -59,15 +60,16 @@ public class StatusMessage {
 		}
 	}
 
-	void parse(byte[] data, int start) {
+	void parse(byte[] data, int start) throws HomeMaticException {
 		int startAll = start;
 		
 		length = Converter.toLong(data[start++]);
 		if (data.length != this.length + 3) {
-			logger.warn("Invalid Message received: Reason length of message {} not equal to expected length {}.", data.length, this.length+2);
-			logger.debug("Invalid Message received: Reason length of message {} not equal to expected length {}: \"{}\"", 
+			logger.warn("Invalid Message received: Length of message {} not equal to expected length {}.", data.length, this.length+2);
+			logger.debug("Invalid Message received: Length of message {} not equal to expected length {}: \"{}\"", 
 					data.length, this.length+3, Converter.toHexString(data));
-			throw new RuntimeException("Invalid Message received: Reason length of message not equal to expected length.");
+			
+			throw new HomeMaticException("Invalid Message received: Length of message not equal to expected length.");
 		}
 		number = Converter.toInt(data[start++]);
 		flag = data[start++];
@@ -79,13 +81,16 @@ public class StatusMessage {
 		destination = Converter.toHexString(data, start, 3);
 		start += 3;
 		
-		if (this.length > 9)
+		if (this.length > 9) {
 			this.data = Arrays.copyOfRange(data, start, (int) (2 + this.length));
-		logger.debug("Last byte: " + Converter.toHexString(data[data.length-1]));
+		}
+		// TODO: Check if last byte is some sort of BCC
+//		logger.debug("Last byte: " + Converter.toHexString(data[data.length-1]));
 		msg = Arrays.copyOfRange(data, startAll, (int) (2 + this.length));
 
-		if (source.equals(destination))
+		if (source.equals(destination)) {
 			partyMode = true;
+		}
 	}
 
 	public byte[] parseAscii(byte[] data) {
@@ -114,7 +119,7 @@ public class StatusMessage {
 		return new String(Arrays.copyOfRange(data, 3, 13));
 	}
 
-	public static void main(String[] argv) {
+	public static void main(String[] argv) throws HomeMaticException {
 		StatusMessage mess = new StatusMessage(argv[0].getBytes()); 
 		System.out.println("Lenght: " + mess.length);
 		System.out.println("Number: " + mess.number);
@@ -124,6 +129,5 @@ public class StatusMessage {
 		System.out.println("Destination: " + mess.destination);
 		System.out.println("Data: " + mess.data);
 		System.out.println("PartyMode: " + mess.partyMode);
-		
 	}
 }

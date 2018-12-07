@@ -22,7 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.ogema.driver.homematic.HomeMaticConnectionException;
+import org.ogema.driver.homematic.HomeMaticException;
 import org.ogema.driver.homematic.connection.Connection;
 import org.ogema.driver.homematic.connection.ConnectionType;
 import org.ogema.driver.homematic.connection.CulConnection;
@@ -100,8 +100,6 @@ public class MessageHandler {
 						connection.sendFrame(new byte[] {(byte) 0x41, (byte) 0x72});
 //						connection.sendFrame("V".getBytes());
 						connection.sendFrame(new byte[] {(byte) 0x56});
-						logger.debug("");
-						logger.debug("After Send V " + System.currentTimeMillis());
 				}
 				else {
 					break;
@@ -164,24 +162,24 @@ public class MessageHandler {
 				.getFrame(device, msg.number));
 	}
 
-	public void pushConfig(String address, String[] pushConfigData) throws HomeMaticConnectionException {
+	public void pushConfig(String address, String[] pushConfigData) throws HomeMaticException {
 		numberOfPushConfigs = pushConfigData.length;
 		for (String data : pushConfigData) {
 			sendMessage(address, (byte) 0xA0, (byte) 0x01, data);
 		}
 	}
 
-	public void sendMessage(String destination, byte flag, byte type, String data) throws HomeMaticConnectionException {
+	public void sendMessage(String destination, byte flag, byte type, String data) throws HomeMaticException {
 		if (!isReady()) {
-			throw new HomeMaticConnectionException("Connection not yet established!");
+			throw new HomeMaticException("Connection not yet established!");
 		}
 		CommandMessage cmdMessage = new CommandMessage(destination, id, flag, type, data);
 		sendMessage(cmdMessage);
 	}
 
-	public void sendMessage(String destination, byte flag, byte type, byte[] data) throws HomeMaticConnectionException {
+	public void sendMessage(String destination, byte flag, byte type, byte[] data) throws HomeMaticException {
 		if (!isReady()) {
-			throw new HomeMaticConnectionException("Connection not yet established!");
+			throw new HomeMaticException("Connection not yet established!");
 		}
 		CommandMessage cmdMessage = new CommandMessage(destination, id, flag, type, data);
 		sendMessage(cmdMessage);
@@ -370,14 +368,12 @@ public class MessageHandler {
 					}
 					try {
 						byte[] data = connection.getReceivedFrame();
-						logger.debug("");
-						logger.debug("getReceivedFrame \"{}\" {}", new String(data), System.currentTimeMillis());
+//						logger.debug("getReceivedFrame \"{}\" {}", new String(data), System.currentTimeMillis());
 						int j = 0;
 						for (int i = 0; i < data.length; i++) {
 							if (i > 0 && data[i-1] == 13 && data[i] == 10) {  // look for Carriage Return
 								byte[] nextData = new byte[i+1-j];
 								System.arraycopy(data, j, nextData, 0, nextData.length);
-								logger.debug("");
 								logger.debug("ReceivedFrame \"{}\" {}", new String(nextData), System.currentTimeMillis());
 								handleMessage(nextData);
 								j = i + 1;
@@ -445,7 +441,7 @@ public class MessageHandler {
 							}
 						}
 						}
-					catch (HomeMaticConnectionException e) {
+					catch (HomeMaticException e) {
 						// nothing to do here, because we break if connection is not ready (!isReady).
 						// Messages are ignored during not ready state!
 					}

@@ -73,7 +73,9 @@ public class DeviceDescriptor {
 	public String getName(String key) {
 		String name = null;
 		try {
-			name = deviceObjects.get(key).getString("name");
+			if (deviceObjects.containsKey(key)) {
+				name = deviceObjects.get(key).getString("name");
+			}
 		} catch (JSONException e) {
 			logger.error("Homematic device Type " + key + " unknown");
 		}
@@ -83,7 +85,9 @@ public class DeviceDescriptor {
 	public String getType(String key) {
 		String classType = null;
 		try {
-			classType = deviceObjects.get(key).getString("st");
+			if (deviceObjects.containsKey(key)) {
+				classType = deviceObjects.get(key).getString("st");
+			}
 		} catch (JSONException e) {
 			logger.error("Homematic device Type " + key + " unknown");
 		}
@@ -94,8 +98,10 @@ public class DeviceDescriptor {
 		String chnstr = null;
 		String[] channels = null;
 		try {
-			chnstr = deviceObjects.get(key).getString("chn");
-			channels = chnstr.split(",");
+			if (deviceObjects.containsKey(key)) {
+				chnstr = deviceObjects.get(key).getString("chn");
+				channels = chnstr.split(",");
+			}
 		} catch (JSONException e) {
 			logger.error("Homematic device Type " + key + " unknown");
 		}
@@ -106,8 +112,10 @@ public class DeviceDescriptor {
 		String lststr = null;
 		String[] lists = null;
 		try {
-			lststr = deviceObjects.get(key).getString("lst");
-			lists = lststr.split(",");
+			if (deviceObjects.containsKey(key)) {
+				lststr = deviceObjects.get(key).getString("lst");
+				lists = lststr.split(",");
+			}
 		} catch (JSONException e) {
 			logger.error("Homematic device Type " + key + " unknown");
 		}

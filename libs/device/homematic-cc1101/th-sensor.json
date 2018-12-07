@@ -117,13 +117,7 @@
             "address": "0003",
             "settings": "type:ATTRIBUTE",
             "logging": {"loggingInterval": 60000, "loggingMaxInterval": 900000},
-            "configs": {"samplingInterval": 60000, "valueType":"FLOAT", "unit":"%"},
-            "processList": [
-                {
-                    "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>_battery", "tag": "State"}
-                }
-            ]
+            "configs": {"samplingInterval": 60000, "valueType":"FLOAT", "unit":"%"}
         }
     ],
 
@@ -138,13 +132,6 @@
         {
             "name": "<node>",
             "tag": "Humidity",
-            "type": "DataType::REALTIME",
-            "engine": "Engine::PHPTIMESERIES",
-            "unit": "%"
-        },
-        {
-            "name": "<node>_battery",
-            "tag": "State",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "%"

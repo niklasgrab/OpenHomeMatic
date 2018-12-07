@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.ogema.driver.homematic.HomeMaticConnectionException;
+import org.ogema.driver.homematic.HomeMaticException;
 import org.ogema.driver.homematic.config.ConfigList;
 import org.ogema.driver.homematic.config.ConfigListEntry;
 import org.ogema.driver.homematic.config.ConfigListEntryValue;
@@ -76,12 +76,12 @@ public abstract class Device {
 
 	protected DeviceDescriptor descriptor;
 	protected MessageHandler messageHandler;
-	
+
 	public Map<Byte, DeviceCommand> deviceCommands;
 	public Map<Short, DeviceAttribute> deviceAttributes;
 
 	protected Device(DeviceDescriptor descriptor, MessageHandler messageHandler, 
-			String address, String key, String serial) throws HomeMaticConnectionException {
+			String address, String key, String serial) throws HomeMaticException {
 		this.descriptor = descriptor;
 		this.messageHandler = messageHandler;
 
@@ -94,7 +94,7 @@ public abstract class Device {
 	}
 
 	public static Device createDevice(DeviceDescriptor descriptor, MessageHandler messageHandler, 
-			String address, String type, String serial) throws HomeMaticConnectionException {
+			String address, String type, String serial) throws HomeMaticException {
 
 		String key = descriptor.getType(type);
 		switch (key) {
@@ -120,12 +120,12 @@ public abstract class Device {
 		case "swi":
 			return new Remote(descriptor, messageHandler, address, type, serial);
 		default:
-			throw new RuntimeException("Type not supported: " + key);
+			throw new HomeMaticException("Type not supported: " + key);
 		}
 	}
 
 	public static Device createPairedDevice(DeviceDescriptor descriptor, MessageHandler messageHandler, 
-			String address, String type, String serial) throws HomeMaticConnectionException {
+			String address, String type, String serial) throws HomeMaticException {
 
 		Device device = createDevice(descriptor, messageHandler, address, type, serial);
 		device.configureChannels();
@@ -135,7 +135,7 @@ public abstract class Device {
 	}
 
 	public static Device createDevice(DeviceDescriptor descriptor, MessageHandler messageHandler, StatusMessage message) 
-			throws HomeMaticConnectionException {
+			throws HomeMaticException {
 		return createDevice(descriptor, messageHandler, message.source, message.parseKey(), message.parseSerial());
 	}
 
@@ -143,11 +143,11 @@ public abstract class Device {
 		return name;
 	}
 
-	public void init() throws HomeMaticConnectionException {
+	public void init() throws HomeMaticException {
 		this.init(true);
 	}
 
-	public void init(boolean channels) throws HomeMaticConnectionException {
+	public void init(boolean channels) throws HomeMaticException {
 		setInitState(InitState.PAIRING);
 		pushConfig(getAddress(), "00", "00");
 		
@@ -156,7 +156,7 @@ public abstract class Device {
 		}
 	}
 
-	private void pushConfig(String address, String channel, String list) throws HomeMaticConnectionException {
+	private void pushConfig(String address, String channel, String list) throws HomeMaticException {
 		String owner = messageHandler.getId();
 		String pushConfigs = "0201" + "0A" + owner.charAt(0) + owner.charAt(1) + "0B" + owner.charAt(2) + owner.charAt(3)
 				+ "0C" + owner.charAt(4) + owner.charAt(5);
@@ -172,13 +172,13 @@ public abstract class Device {
 		return pushConfigData;
 	}
 	
-	protected abstract void configureChannels()  throws HomeMaticConnectionException;
+	protected abstract void configureChannels()  throws HomeMaticException;
 
 	protected abstract void parseValue(StatusMessage msg);
 
 	public abstract void parseMessage(StatusMessage msg, CommandMessage cmd, Device device);
 
-	public abstract void channelChanged(byte identifier, Value value)  throws HomeMaticConnectionException;
+	public abstract void channelChanged(byte identifier, Value value)  throws HomeMaticException;
 
 	protected void parseConfig(StatusMessage response, CommandMessage cmd) {
 		if (configs == null)
@@ -316,7 +316,7 @@ public abstract class Device {
 		return messageLast;
 	}
 
-	public void pushConfig(int channel, int list, byte[] configs) throws HomeMaticConnectionException {
+	public void pushConfig(int channel, int list, byte[] configs) throws HomeMaticException {
 		// see HACK in 10_CUL_HM.pm, for the Thermostat HM-CC-RT-DN the channel 0 is a shadow of channel 4
 		if (name.equals("HM-CC-RT-DN")) {
 			if (list == 7 && channel == 4)
@@ -360,7 +360,7 @@ public abstract class Device {
 		this.initState = initState;
 	}
 
-	public void getAllConfigs() throws HomeMaticConnectionException { // 00040000000000: chNUM[1]| |peer[4]|lst[1]
+	public void getAllConfigs() throws HomeMaticException { // 00040000000000: chNUM[1]| |peer[4]|lst[1]
 		messageHandler.sendMessage(getAddress(), (byte) 0xA0, (byte) 0x01, "00040000000000"); // TODO: last byte should be
 		// listnumber, first byte the channel number!
 		String[] channels = descriptor.getChannels(key);
@@ -433,7 +433,7 @@ public abstract class Device {
 	}
 
 	// PUSH CONFIGURATION
-	public void writeConfig(String confName, String setting) throws HomeMaticConnectionException {
+	public void writeConfig(String confName, String setting) throws HomeMaticException {
 		HashMap<String, ConfigListEntryValue> devconfigs = configs.getDeviceConfigs();
 		ConfigListEntryValue entryV = devconfigs.get(confName);
 		ConfigListEntry entry = entryV.entry;

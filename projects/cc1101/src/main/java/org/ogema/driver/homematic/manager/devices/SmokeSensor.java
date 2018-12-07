@@ -15,7 +15,7 @@
  */
 package org.ogema.driver.homematic.manager.devices;
 
-import org.ogema.driver.homematic.HomeMaticConnectionException;
+import org.ogema.driver.homematic.HomeMaticException;
 import org.ogema.driver.homematic.data.BooleanValue;
 import org.ogema.driver.homematic.data.FloatValue;
 import org.ogema.driver.homematic.data.Value;
@@ -34,7 +34,7 @@ public class SmokeSensor extends Device {
 	private final Logger logger = LoggerFactory.getLogger(SmokeSensor.class);
 
 	public SmokeSensor(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) 
-			throws HomeMaticConnectionException {
+			throws HomeMaticException {
 		super(descriptor, messageHandler, address, deviceKey, serial);
 	}
 

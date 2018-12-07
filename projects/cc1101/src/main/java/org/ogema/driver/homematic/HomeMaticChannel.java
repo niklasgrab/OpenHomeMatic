@@ -55,7 +55,7 @@ public abstract class HomeMaticChannel {
 	abstract public Record readRecord() throws IOException, UnsupportedOperationException;
 
 	abstract public void writeValue(Value value) throws IOException,
-		HomeMaticConnectionException , UnsupportedOperationException;
+		HomeMaticException , UnsupportedOperationException;
 
 	abstract public void setEventListener(UpdateListener listener)
 			throws IOException, UnsupportedOperationException;

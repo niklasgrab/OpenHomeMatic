@@ -46,7 +46,7 @@ public class CommandChannel extends HomeMaticChannel {
 	 * The value has to be a ByteArrayValue in reversed byte order
 	 */
 	@Override
-	public void writeValue(Value value) throws IOException, HomeMaticConnectionException   {
+	public void writeValue(Value value) throws IOException, HomeMaticException   {
 		// byte[] messagePayload = value.getByteArrayValue();
 		// if (messagePayload == null)
 		// messagePayload = emptyMessagePayload;

@@ -37,7 +37,7 @@ import org.openmuc.framework.data.Flag;
 import org.openmuc.framework.data.Record;
 import org.openmuc.framework.data.ValueType;
 import org.ogema.driver.homematic.HomeMaticChannel;
-import org.ogema.driver.homematic.HomeMaticConnectionException;
+import org.ogema.driver.homematic.HomeMaticException;
 import org.ogema.driver.homematic.data.UpdateListener;
 import org.ogema.driver.homematic.manager.Device;
 import org.ogema.driver.homematic.manager.DeviceAttribute;
@@ -90,7 +90,7 @@ public class HomeMaticConnection implements Connection, UpdateListener {
 				if (!defaultState.equals(device.deviceAttributes.get((short) 0x0001).getValue())) {
 					try {
 						device.channelChanged((byte) 0x01, HomeMaticPort.convert2CC1101(defaultState));
-					} catch (HomeMaticConnectionException e) {
+					} catch (HomeMaticException e) {
 						throw new ConnectionException(e.getMessage());
 					}
 				}
@@ -211,7 +211,7 @@ public class HomeMaticConnection implements Connection, UpdateListener {
 					HomeMaticChannel channel = getChannel(container.getChannelAddress(), settings.getType());
 					try {
 						channel.writeValue(HomeMaticPort.convert2CC1101(container.getValue()));
-					} catch (HomeMaticConnectionException e) {
+					} catch (HomeMaticException e) {
 						throw new ConnectionException(e.getMessage());
 					}
 					

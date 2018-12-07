@@ -15,7 +15,7 @@
  */
 package org.ogema.driver.homematic.manager.devices;
 
-import org.ogema.driver.homematic.HomeMaticConnectionException;
+import org.ogema.driver.homematic.HomeMaticException;
 import org.ogema.driver.homematic.data.BooleanValue;
 import org.ogema.driver.homematic.data.FloatValue;
 import org.ogema.driver.homematic.data.Value;
@@ -36,12 +36,12 @@ public class PowerMeter extends Device {
 	private BooleanValue isOn;
 
 	public PowerMeter(DeviceDescriptor descriptor, MessageHandler messageHandler, String address, String deviceKey, String serial) 
-			throws HomeMaticConnectionException {
+			throws HomeMaticException {
 		super(descriptor, messageHandler, address, deviceKey, serial);
 	}
 
 	@Override
-	protected void configureChannels() throws HomeMaticConnectionException {
+	protected void configureChannels() throws HomeMaticException {
 		deviceCommands.put((byte) 0x01, new DeviceCommand(this, (byte) 0x01, "onOff", true, ValueType.BOOLEAN));
 		deviceAttributes.put((short) 0x0001, new DeviceAttribute((short) 0x0001, "isOn", true, true, ValueType.BOOLEAN));
 		deviceAttributes.put((short) 0x0002, new DeviceAttribute((short) 0x0002, "iRes", true, true, ValueType.FLOAT));
@@ -104,7 +104,7 @@ public class PowerMeter extends Device {
 	}
 
 	@Override
-	public void channelChanged(byte identifier, Value value) throws HomeMaticConnectionException {
+	public void channelChanged(byte identifier, Value value) throws HomeMaticException {
 		if (identifier == 0x01) {
 			BooleanValue v = (BooleanValue)value;
 			messageHandler.sendMessage(address, (byte) 0xA0, (byte) 0x11, "0201" + ((v.asBoolean()) ? "C8" : "00") + "0000");

@@ -63,13 +63,6 @@
             "header": true,
             "format": "%.1f °C",
             "input": "<node>_temperature"
-        },
-        {
-            "id": "battery",
-            "type": "Text",
-            "label": "Battery",
-            "format": "%i %",
-            "input": "<node>_battery"
         }
     ],
 
@@ -79,7 +72,7 @@
             "description": "Control",
             "address": "01",
             "settings": "type:COMMAND",
-            "configs": {"valueType":"FLOAT"}
+            "configs": {"valueType":"FLOAT", "unit":"%"}
         },
         {
             "name": "<node>_setpoint",
@@ -87,7 +80,7 @@
             "address": "0001",
             "settings": "type:ATTRIBUTE",
             "logging": {"loggingInterval": 5000, "loggingMaxInterval": 900000},
-            "configs": {"samplingInterval": 5000, "valueType":"BOOLEAN", "unit":"°C"},
+            "configs": {"samplingInterval": 5000, "valueType":"FLoAT", "unit":"°C"},
             "processList": [
                 {
                     "process": "log_to_feed",
@@ -108,20 +101,6 @@
                     "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Temperature"}
                 }
             ]
-        },
-        {
-            "name": "<node>_battery",
-            "description": "Battery state",
-            "address": "0004",
-            "settings": "type:ATTRIBUTE",
-            "logging": {"loggingInterval": 60000, "loggingMaxInterval": 900000},
-            "configs": {"samplingInterval": 60000, "valueType":"FLOAT", "unit":"%"},
-            "processList": [
-                {
-                    "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>_battery", "tag": "State"}
-                }
-            ]
         }
     ],
 
@@ -139,13 +118,6 @@
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "°C"
-        },
-        {
-            "name": "<node>_battery",
-            "tag": "State",
-            "type": "DataType::REALTIME",
-            "engine": "Engine::PHPTIMESERIES",
-            "unit": "%"
         }
     ],
 
