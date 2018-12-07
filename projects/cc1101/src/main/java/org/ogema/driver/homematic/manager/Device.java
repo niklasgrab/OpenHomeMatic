@@ -130,6 +130,7 @@ public abstract class Device {
 		Device device = createDevice(descriptor, messageHandler, address, type, serial);
 		device.configureChannels();
 		device.setInitState(InitState.PAIRED);
+		logger.info("Paired Device {} with address {} created", descriptor.getName(type), address);
 		return device;
 	}
 

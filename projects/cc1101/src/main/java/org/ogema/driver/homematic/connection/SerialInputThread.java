@@ -58,23 +58,38 @@ public class SerialInputThread extends Thread {
 
 	@Override
 	public void run() {
+		byte[] bytesOut = null;
 		while (!closed) {
 			int numBytesInStream;
 			byte[] bytesInStream = null;
 			try {
 				if (once) {
 					logger.debug("");
-					logger.debug("Listener ready " + System.currentTimeMillis());
+					logger.debug("Listener ready");
 					once = false;
 				}
 				numBytesInStream = input.available();
 				if (numBytesInStream > 0) {
 					logger.debug("");
-					logger.debug("Data available " + numBytesInStream + " " + System.currentTimeMillis());
+					logger.debug("Data available " + numBytesInStream);
 					bytesInStream = new byte[numBytesInStream];
 					input.read(bytesInStream);
-					
-					listener.onReceivedFrame(bytesInStream);
+					if (bytesOut == null) {
+						bytesOut = bytesInStream;
+					}
+					else {
+						byte[] temp = new byte[bytesOut.length+numBytesInStream];
+						System.arraycopy(bytesOut, 0, temp, 0, bytesOut.length);
+						System.arraycopy(bytesInStream, 0, temp, bytesOut.length, numBytesInStream);
+						bytesOut = temp;
+						logger.debug("Data available bytesOut " + bytesOut.length);
+					}
+					if (bytesInStream[numBytesInStream-2] == 13 && bytesInStream[numBytesInStream-1] == 10) {
+						listener.onReceivedFrame(bytesOut);
+						bytesOut = null;
+					}
+					else {
+					}
 				}
 				Thread.sleep(SLEEP_TIME);
 				

@@ -302,8 +302,9 @@ public class MessageHandler {
 									}
 									if (device.getInitState() == InitState.PAIRING && pushConfigCnt == numberOfPushConfigs) {
 										device.setInitState(InitState.PAIRED);
-										logger.info("Successfully paired device {}", destination);
-										device.getAllConfigs();
+										logger.info("Successfully paired device {} with address {}", device.getName(), destination);
+										//TODO We want to use Configs later
+//										device.getAllConfigs(); Not used yet
 									}
 								} else if (device.getInitState() == InitState.PAIRING) {
 									// here we aren't sure that the device is no longer present. In case of configuration request,

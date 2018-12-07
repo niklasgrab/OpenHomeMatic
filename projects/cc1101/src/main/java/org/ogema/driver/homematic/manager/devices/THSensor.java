@@ -44,13 +44,14 @@ public class THSensor extends Device {
 	protected String[] getPushConfigData(String channel, String list, String pushConfigs) {
 		String[] pushConfigData = null;
 		logger.debug("name of device: " + name);
-		if (name.equals("HM-WDS30-T-O")) {
+		//TODO We don't know if there exists normal pairing sensors
+//		if (name.equals("HM-WDS30-T-O") || name.equals("HM-WDS40-TH-I-2")) { 
 			pushConfigData = new String[1];
 			pushConfigData[0] = channel + "0500000000" + list;
-		}
-		else {
-			pushConfigData = super.getPushConfigData(channel, list, pushConfigs);
-		}
+//		}
+//		else {
+//			pushConfigData = super.getPushConfigData(channel, list, pushConfigs);
+//		}
 		return pushConfigData;
 		
 	}
