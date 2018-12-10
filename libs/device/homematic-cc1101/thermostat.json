@@ -84,7 +84,7 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "setpoint", "tag": "Setpoint"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Setpoint"}
                 }
             ]
         },
