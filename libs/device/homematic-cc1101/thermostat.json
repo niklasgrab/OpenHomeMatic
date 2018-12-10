@@ -72,7 +72,7 @@
             "description": "Control",
             "address": "01",
             "settings": "type:COMMAND",
-            "configs": {"valueType":"FLOAT", "unit":"%"}
+            "configs": {"valueType":"FLOAT", "unit":"°C"}
         },
         {
             "name": "<node>_setpoint",
