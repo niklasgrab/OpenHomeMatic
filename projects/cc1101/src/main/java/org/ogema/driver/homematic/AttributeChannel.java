@@ -24,9 +24,8 @@ import java.util.Map;
 import javax.xml.bind.DatatypeConverter;
 
 import org.ogema.driver.homematic.data.ByteArrayValue;
-import org.ogema.driver.homematic.data.Flag;
 import org.ogema.driver.homematic.data.ObjectValue;
-import org.ogema.driver.homematic.data.Record;
+import org.ogema.driver.homematic.data.TimeValue;
 import org.ogema.driver.homematic.data.UpdateListener;
 import org.ogema.driver.homematic.data.Value;
 import org.ogema.driver.homematic.manager.Device;
@@ -41,7 +40,7 @@ public final class AttributeChannel extends HomeMaticChannel {
 	private final byte[] emptyMessagePayload = new byte[0];
 	private UpdateListener updateListener;
 	private ByteBuffer messagePayloadBuffer;
-	private Map<Short, Record> recordMap = new HashMap<Short, Record>();
+	private Map<Short, TimeValue> recordMap = new HashMap<Short, TimeValue>();
 	private ArrayList<DeviceAttribute> deviceAttributes = new ArrayList<DeviceAttribute>();
 	private final boolean multipleAttributes;
 
@@ -78,31 +77,17 @@ public final class AttributeChannel extends HomeMaticChannel {
 	}
 
 	@Override
-	public Record readRecord() throws IOException, UnsupportedOperationException {
+	public TimeValue readRecord() throws IOException, UnsupportedOperationException {
 		if (multipleAttributes) {
 			for (DeviceAttribute deviceAttribute : deviceAttributes) { // Retrieve the values from all attributes
-				Record record;
-				if (deviceAttribute.getValue() != null) {
-					record = new Record(deviceAttribute.getValue(),
-							deviceAttribute.getValueTimestamp(), Flag.VALID);
-				}
-				else {
-					record = new Record(Flag.NO_VALUE_RECEIVED_YET);
-				}
+				TimeValue record = new TimeValue(deviceAttribute.getValue(), deviceAttribute.getValueTimestamp());
 				recordMap.put(deviceAttribute.getShortId(), record);
 			}
 			Value value = new ObjectValue(recordMap);
-			return new Record(value, deviceAttribute.getValueTimestamp(), Flag.VALID); // TODO use average for Quality?
+			return new TimeValue(value, deviceAttribute.getValueTimestamp()); // TODO use average for Quality?
 		}
 		else {
-			Record record;
-			if (deviceAttribute.getValue() != null) {
-				record = new Record(deviceAttribute.getValue(), deviceAttribute.getValueTimestamp(), Flag.VALID);
-			}
-			else {
-				record = new Record(Flag.NO_VALUE_RECEIVED_YET);
-			}
-			return record;
+			return new TimeValue(deviceAttribute.getValue(), deviceAttribute.getValueTimestamp());
 		}
 	}
 
@@ -154,8 +139,7 @@ public final class AttributeChannel extends HomeMaticChannel {
 			throw new UnsupportedOperationException(); // TODO implement this method
 		}
 		else {
-			Record record = new Record(deviceAttribute.getValue(), 
-					deviceAttribute.getValueTimestamp(), Flag.VALID);
+			TimeValue record = new TimeValue(deviceAttribute.getValue(), deviceAttribute.getValueTimestamp());
 			updateListener.valueChanged(record, address);
 		}
 	}

@@ -19,7 +19,7 @@ import java.io.IOException;
 
 import javax.xml.bind.DatatypeConverter;
 
-import org.ogema.driver.homematic.data.Record;
+import org.ogema.driver.homematic.data.TimeValue;
 import org.ogema.driver.homematic.data.UpdateListener;
 import org.ogema.driver.homematic.data.Value;
 import org.ogema.driver.homematic.manager.Device;
@@ -38,7 +38,7 @@ public class CommandChannel extends HomeMaticChannel {
 	}
 
 	@Override
-	public Record readRecord() throws IOException, UnsupportedOperationException {
+	public TimeValue readRecord() throws IOException, UnsupportedOperationException {
 		throw new UnsupportedOperationException();
 	}
 

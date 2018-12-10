@@ -89,7 +89,7 @@ public class HomeMaticConnection implements Connection, UpdateListener {
 				BooleanValue defaultState = new BooleanValue(settings.getDefaultState());
 				if (!defaultState.equals(device.deviceAttributes.get((short) 0x0001).getValue())) {
 					try {
-						device.channelChanged((byte) 0x01, HomeMaticPort.convert2CC1101(defaultState));
+						device.channelChanged((byte) 0x01, HomeMaticPort.enocde(defaultState));
 					} catch (HomeMaticException e) {
 						throw new ConnectionException(e.getMessage());
 					}
@@ -131,10 +131,8 @@ public class HomeMaticConnection implements Connection, UpdateListener {
 					ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
 					
 					HomeMaticChannel channel = getChannel(container.getChannelAddress(), settings.getType());
-					Record record = HomeMaticPort.convert2Openmuc(channel.readRecord());
-					if (record.getValue() == null) {
-						logger.debug("No value received yet from device \"{}\" for channel: {}", device.getAddress(), channel.getAddress());
-					}
+					Record record = HomeMaticPort.decode(channel.readRecord());
+					
 					container.setRecord(record);
 				}
 				catch (NullPointerException | ArgumentSyntaxException e) {
@@ -182,7 +180,7 @@ public class HomeMaticConnection implements Connection, UpdateListener {
 	}
 
 	@Override
-	public void valueChanged(org.ogema.driver.homematic.data.Record record, String address) {
+	public void valueChanged(org.ogema.driver.homematic.data.TimeValue record, String address) {
 		Iterator<RecordsReceivedListener> it = listenerMap.keySet().iterator();
 		while (it.hasNext()) {
 			RecordsReceivedListener recordReceivedListener = it.next();
@@ -190,7 +188,7 @@ public class HomeMaticConnection implements Connection, UpdateListener {
 			List<ChannelRecordContainer> updatedContainers = new ArrayList<ChannelRecordContainer>();
 			for (ChannelRecordContainer container : listenerContainers) {
 				if (container.getChannelAddress().equals(address)) {
-					container.setRecord(HomeMaticPort.convert2Openmuc(record));
+					container.setRecord(HomeMaticPort.decode(record));
 					updatedContainers.add(container);
 				}
 			}
@@ -210,7 +208,7 @@ public class HomeMaticConnection implements Connection, UpdateListener {
 					ChannelSettings settings = prefs.get(container.getChannelSettings(), ChannelSettings.class);
 					HomeMaticChannel channel = getChannel(container.getChannelAddress(), settings.getType());
 					try {
-						channel.writeValue(HomeMaticPort.convert2CC1101(container.getValue()));
+						channel.writeValue(HomeMaticPort.encode(container.getValue()));
 					} catch (HomeMaticException e) {
 						throw new ConnectionException(e.getMessage());
 					}

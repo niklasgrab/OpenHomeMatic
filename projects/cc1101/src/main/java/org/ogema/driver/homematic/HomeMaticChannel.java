@@ -17,7 +17,7 @@ package org.ogema.driver.homematic;
 
 import java.io.IOException;
 
-import org.ogema.driver.homematic.data.Record;
+import org.ogema.driver.homematic.data.TimeValue;
 import org.ogema.driver.homematic.data.UpdateListener;
 import org.ogema.driver.homematic.data.Value;
 import org.ogema.driver.homematic.manager.Device;
@@ -52,7 +52,7 @@ public abstract class HomeMaticChannel {
 		throw new NullPointerException("Unable to create Channel for address: " + address);
 	}
 
-	abstract public Record readRecord() throws IOException, UnsupportedOperationException;
+	abstract public TimeValue readRecord() throws IOException, UnsupportedOperationException;
 
 	abstract public void writeValue(Value value) throws IOException,
 		HomeMaticException , UnsupportedOperationException;
