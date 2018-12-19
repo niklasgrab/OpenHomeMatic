@@ -49,30 +49,30 @@
             "left": "Off",
             "right": "On",
             "mapping": {
-                "ON": { "channel": "<node>_control", "value": true },
-                "OFF": { "channel": "<node>_control", "value": false }
+                "ON": { "channel": "<node>*control", "value": true },
+                "OFF": { "channel": "<node>*control", "value": false }
             },
-            "input": "<node>_state"
+            "input": "<node>*state"
         },
         {
             "id": "power",
             "type": "Text",
             "label": "Power",
             "format": "%i W",
-            "input": "<node>_power"
+            "input": "<node>*power"
         }
     ],
 
     "channels": [
         {
-            "name": "<node>_control",
+            "name": "<node>*control",
             "description": "Plug Control",
             "address": "01",
             "settings": "type:COMMAND",
             "configs": {"valueType":"BOOLEAN"}
         },
         {
-            "name": "<node>_state",
+            "name": "<node>*state",
             "description": "Plug State",
             "address": "0001",
             "settings": "type:ATTRIBUTE",
@@ -86,7 +86,7 @@
             ]
         },
         {
-            "name": "<node>_energy",
+            "name": "<node>*energy",
             "description": "Plug Energy",
             "address": "0006",
             "settings": "type:ATTRIBUTE",
@@ -100,7 +100,7 @@
             ]
         },
         {
-            "name": "<node>_power",
+            "name": "<node>*power",
             "description": "Plug Power",
             "address": "0004",
             "settings": "type:ATTRIBUTE",
@@ -114,7 +114,7 @@
             ]
         },
         {
-            "name": "<node>_current",
+            "name": "<node>*current",
             "description": "Plug Current",
             "address": "0002",
             "settings": "type:ATTRIBUTE",
@@ -128,7 +128,7 @@
             ]
         },
         {
-            "name": "<node>_voltage",
+            "name": "<node>*voltage",
             "description": "Plug Voltage",
             "address": "0003",
             "settings": "type:ATTRIBUTE",
@@ -142,7 +142,7 @@
             ]
         },
         {
-            "name": "<node>_frequency",
+            "name": "<node>*frequency",
             "description": "Plug Frequency",
             "address": "0005",
             "settings": "type:ATTRIBUTE",

@@ -64,27 +64,27 @@
             "label": "Temperature",
             "header": true,
             "format": "%.1f °C",
-            "input": "<node>_temperature"
+            "input": "<node>*temperature"
         },
         {
             "id": "humidity",
             "type": "Text",
             "label": "Humidity",
             "format": "%i %",
-            "input": "<node>_humidity"
+            "input": "<node>*humidity"
         },
         {
             "id": "battery",
             "type": "Text",
             "label": "Battery",
             "format": "%i %",
-            "input": "<node>_battery"
+            "input": "<node>*battery"
         }
     ],
 
     "channels": [
         {
-            "name": "<node>_temperature",
+            "name": "<node>*temperature",
             "description": "Temperature",
             "address": "0001",
             "settings": "type:ATTRIBUTE",
@@ -98,7 +98,7 @@
             ]
         },
         {
-            "name": "<node>_humidity",
+            "name": "<node>*humidity",
             "description": "Humidity",
             "address": "0002",
             "settings": "type:ATTRIBUTE",
@@ -112,7 +112,7 @@
             ]
         },
         {
-            "name": "<node>_battery",
+            "name": "<node>*battery",
             "description": "Battery state",
             "address": "0003",
             "settings": "type:ATTRIBUTE",

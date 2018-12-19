@@ -52,9 +52,9 @@
             "min": 5,
             "step": 0.5,
             "mapping": {
-                "SET": { "channel": "<node>_control" }
+                "SET": { "channel": "<node>*control" }
             },
-            "input": "<node>_setpoint"
+            "input": "<node>*setpoint"
         },
         {
             "id": "temperature",
@@ -62,20 +62,20 @@
             "label": "Temperature",
             "header": true,
             "format": "%.1f °C",
-            "input": "<node>_temperature"
+            "input": "<node>*temperature"
         }
     ],
 
     "channels": [
         {
-            "name": "<node>_control",
+            "name": "<node>*control",
             "description": "Control",
             "address": "01",
             "settings": "type:COMMAND",
             "configs": {"valueType":"FLOAT", "unit":"°C"}
         },
         {
-            "name": "<node>_setpoint",
+            "name": "<node>*setpoint",
             "description": "Setpoint",
             "address": "0001",
             "settings": "type:ATTRIBUTE",
@@ -89,7 +89,7 @@
             ]
         },
         {
-            "name": "<node>_temperature",
+            "name": "<node>*temperature",
             "description": "Temperature",
             "address": "0002",
             "settings": "type:ATTRIBUTE",

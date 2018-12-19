@@ -43,20 +43,20 @@
             "label": "Temperature",
             "header": true,
             "format": "%.1f °C",
-            "input": "<node>_temperature"
+            "input": "<node>*temperature"
         },
         {
             "id": "battery",
             "type": "Text",
             "label": "Battery",
             "format": "%i %",
-            "input": "<node>_battery_state"
+            "input": "<node>*battery*state"
         }
     ],
 
     "channels": [
         {
-            "name": "<node>_temperature",
+            "name": "<node>*temperature",
             "description": "Temperature",
             "address": "0001",
             "settings": "type:ATTRIBUTE",
@@ -70,7 +70,7 @@
             ]
         },
         {
-            "name": "<node>_battery_state",
+            "name": "<node>*battery*state",
             "description": "Battery state",
             "address": "0003",
             "settings": "type:ATTRIBUTE",
