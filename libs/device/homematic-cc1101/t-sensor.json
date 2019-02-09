@@ -65,7 +65,7 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Temperature"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "Temperature", "tag": "<name>"}
                 }
             ]
         },
@@ -81,8 +81,8 @@
 
     "feeds": [
         {
-            "name": "<node>",
-            "tag": "Temperature",
+            "name": "Temperature",
+            "tag": "<name>",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "°C"

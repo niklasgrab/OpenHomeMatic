@@ -93,7 +93,7 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Temperature"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "Temperature", "tag": "<name>"}
                 }
             ]
         },
@@ -107,7 +107,7 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Humidity"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "Humidity", "tag": "<name>"}
                 }
             ]
         },
@@ -123,15 +123,15 @@
 
     "feeds": [
         {
-            "name": "<node>",
-            "tag": "Temperature",
+            "name": "Temperature",
+            "tag": "<name>",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "°C"
         },
         {
-            "name": "<node>",
-            "tag": "Humidity",
+            "name": "Humidity",
+            "tag": "<name>",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "%"

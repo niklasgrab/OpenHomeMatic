@@ -81,7 +81,7 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "State"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "State", "tag": "<name>"}
                 }
             ]
         },
@@ -95,7 +95,7 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Energy"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "Energy", "tag": "<name>"}
                 }
             ]
         },
@@ -109,7 +109,7 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Power"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "Power", "tag": "<name>"}
                 }
             ]
         },
@@ -123,7 +123,7 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Current"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "Current", "tag": "<name>"}
                 }
             ]
         },
@@ -137,7 +137,7 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Voltage"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "Voltage", "tag": "<name>"}
                 }
             ]
         },
@@ -151,7 +151,7 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Frequency"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "Frequency", "tag": "<name>"}
                 }
             ]
         }
@@ -159,42 +159,42 @@
 
     "feeds": [
         {
-            "name": "<node>",
-            "tag": "State",
+            "name": "State",
+            "tag": "<name>",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES"
         },
         {
-            "name": "<node>",
-            "tag": "Energy",
+            "name": "Energy",
+            "tag": "<name>",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "kWh"
         },
         {
-            "name": "<node>",
-            "tag": "Power",
+            "name": "Power",
+            "tag": "<name>",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "W"
         },
         {
-            "name": "<node>",
-            "tag": "Current",
+            "name": "Current",
+            "tag": "<name>",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "A"
         },
         {
-            "name": "<node>",
-            "tag": "Voltage",
+            "name": "Voltage",
+            "tag": "<name>",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "V"
         },
         {
-            "name": "<node>",
-            "tag": "Frequency",
+            "name": "Frequency",
+            "tag": "<name>",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "Hz"

@@ -84,7 +84,7 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Setpoint"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "Setpoint", "tag": "<name>"}
                 }
             ]
         },
@@ -98,7 +98,7 @@
             "processList": [
                 {
                     "process": "log_to_feed",
-                    "arguments": {"type": "ProcessArg::FEEDID", "value": "<node>", "tag": "Temperature"}
+                    "arguments": {"type": "ProcessArg::FEEDID", "value": "Temperature", "tag": "<name>"}
                 }
             ]
         }
@@ -106,15 +106,15 @@
 
     "feeds": [
         {
-            "name": "<node>",
-            "tag": "Setpoint",
+            "name": "Setpoint",
+            "tag": "<name>",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "°C"
         },
         {
-            "name": "<node>",
-            "tag": "Temperature",
+            "name": "Temperature",
+            "tag": "<name>",
             "type": "DataType::REALTIME",
             "engine": "Engine::PHPTIMESERIES",
             "unit": "°C"
