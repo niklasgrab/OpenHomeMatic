@@ -69,7 +69,7 @@ Make sure to plug it into a socket first, open and log in to your local [emoncms
 
 ![device config](img/device-config.jpg)
 
-Configure your eQ-3 EnergyMeter device: **Energy meters > eQ-3 HomeMatic > Smart Plug** and press the **Scan** button to start the pairing process.
+Configure your eQ-3 EnergyMeter device: **Control > eQ-3 HomeMatic > Smart Plug** and press the **Scan** button to start the pairing process.
 
 The pairing process will continue for 60 seconds, allowing to go to the HomeMatic device and press its button. Hold the button for at least four seconds. The LED should start flashing slowly (one time per second) yellow. That means, that the teach-in procedure is in progress. After returning back to the emoncms site, it should show something like this:
 
@@ -81,7 +81,7 @@ This process correlates to all available HomeMatic device types and can be used 
 
 ## Control
 
-To switch the Smart Plug, open the *Things* view and turn the plug on/off as you like. Additionally, the listed thing shows the current power of the plug, in this case 23W.
+To switch the Smart Plug, open the *Things* view and turn the plug on/off as you like. Additionally, the listed thing shows the current power of the plug, in this case 0W.
 
 ![device thing](img/device-thing.jpg)
 
