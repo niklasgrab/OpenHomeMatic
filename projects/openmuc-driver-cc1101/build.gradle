@@ -34,7 +34,7 @@ jar {
   manifest {
     name = projectName
     instruction 'Bundle-ClassPath', '.,lib/homematic-cc1101-' + cfgVersion + '.jar,lib/pi4j-core.jar,lib/pi4j-device.jar,lib/pi4j-gpio-extension.jar,lib/json-' + jsonVersion + '.jar'
-    instruction 'Import-Package', '!org.ogema.driver.homematic*,!com.pi4j*,!org.json*,org.openmuc.jrxtx,javax.xml.bind,javax.xml.datatype,*' + jarDefaultImportPackageVersion
+    instruction 'Import-Package', '!org.ogema.driver.homematic*,!com.pi4j*,!org.json*,org.openmuc.jrxtx,*' + jarDefaultImportPackageVersion
     instruction 'Export-Package', ''
   }
 }
