@@ -17,9 +17,8 @@ package org.ogema.driver.homematic;
 
 import java.io.IOException;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.ogema.driver.homematic.data.TimeValue;
+import org.ogema.driver.homematic.data.TypeConverter;
 import org.ogema.driver.homematic.data.UpdateListener;
 import org.ogema.driver.homematic.data.Value;
 import org.ogema.driver.homematic.manager.Device;
@@ -33,7 +32,7 @@ public class CommandChannel extends HomeMaticChannel {
 		super(address);
 		this.setDevice(device);
 		
-		byte[] commandIdArray = DatatypeConverter.parseHexBinary(configs[1]);
+		byte[] commandIdArray = TypeConverter.hexToBytes(configs[1]);
 		commandId = commandIdArray[0];
 	}
 

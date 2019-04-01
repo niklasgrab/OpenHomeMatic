@@ -21,11 +21,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.ogema.driver.homematic.data.ByteArrayValue;
 import org.ogema.driver.homematic.data.ObjectValue;
 import org.ogema.driver.homematic.data.TimeValue;
+import org.ogema.driver.homematic.data.TypeConverter;
 import org.ogema.driver.homematic.data.UpdateListener;
 import org.ogema.driver.homematic.data.Value;
 import org.ogema.driver.homematic.manager.Device;
@@ -49,7 +48,7 @@ public final class AttributeChannel extends HomeMaticChannel {
 		
 		if (configs.length <= 2) { // Only one attribute
 			multipleAttributes = false;
-			byte[] attributeIdArray = DatatypeConverter.parseHexBinary(configs[1]);
+			byte[] attributeIdArray = TypeConverter.hexToBytes(configs[1]);
 			short attributeId = (short) ((short) (attributeIdArray[0] << 8) & 0xff00);
 			attributeId |= attributeIdArray[1] & 0x00ff;
 			
@@ -63,7 +62,7 @@ public final class AttributeChannel extends HomeMaticChannel {
 			messagePayloadBuffer = ByteBuffer.wrap(messagePayload);
 
 			for (int i = 1; i < configs.length; ++i) {
-				byte[] attributeIdArray = DatatypeConverter.parseHexBinary(configs[i]);
+				byte[] attributeIdArray = TypeConverter.hexToBytes(configs[i]);
 				short attributeId = (short) ((short) (attributeIdArray[0] << 8) & 0xff00);
 				attributeId |= attributeIdArray[1] & 0x00ff;
 				if (i > 1) // Skip the first attribute ID because it is implied

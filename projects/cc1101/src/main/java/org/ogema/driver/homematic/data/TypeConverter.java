@@ -20,16 +20,29 @@
  */
 package org.ogema.driver.homematic.data;
 
-public final class TypeConversionException extends RuntimeException {
+public class TypeConverter {
 
-    private static final long serialVersionUID = 968407618209609707L;
+    private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
-    public TypeConversionException() {
-        super();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 
-    public TypeConversionException(String s) {
-        super(s);
+    public static byte[] hexToBytes(String hexStr) {
+        byte[] bytes = new byte[hexStr.length() / 2];
+        int index;
+
+        for (int i = 0; i < bytes.length; i++) {
+            index = i * 2;
+            bytes[i] = (byte) Integer.parseInt(hexStr.substring(index, index + 2), 16);
+        }
+        return bytes;
     }
 
 }
