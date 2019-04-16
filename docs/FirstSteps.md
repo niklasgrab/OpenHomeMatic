@@ -10,7 +10,8 @@ Recommended and tested hardware are e.g. CC1101 RF transceivers:
 
 To flash and prepare the **SCC** module, a comprehensive [firmware installation guide](FirmwareSCC.md) may be followed.
 
-# Installation
+
+# 1 Installation
 
 With the emonmuc framework installed, the driver should be enabled with
 
@@ -18,7 +19,22 @@ With the emonmuc framework installed, the driver should be enabled with
 emonmuc install homematic-cc1101
 ~~~
 
-## Configuration
+This shell command will set up the driver, as instructed in the [setup script](setup.sh).  
+If there is the need to manually install the driver, a separate [installation guide](docs/LinuxInstall.md) may be followed.
+
+
+## 1.1 Serial Port
+
+To use any serial port with the emonmuc framework, the open-source project [jRxTx](https://github.com/openmuc/jrxtx) is used. This, as well as some additional steps to use the UART Pins of the Raspberry Pi Platform, need to be prepared.  
+The [Serial Port preparation guide](https://github.com/isc-konstanz/emonmuc/blob/master/docs/LinuxSerialPort.md) needs to be followed to do so.
+
+
+## 1.2 Wiring Pi
+
+For the **S**tackable **CC**1101 (SCC) module for the Raspberry Pi, the GPIOs 0 and 1 needs to be set. This is done with the [Pi4J](https://www.pi4j.com/) library, that links to the [Wiring Pi](http://wiringpi.com/) debian package. To prepare it, the [Wiring Pi preparation guide](https://github.com/isc-konstanz/emonmuc/blob/master/docs/LinuxWiringPi.md) needs to be followed.
+
+
+## 1.3 Configuration
 
 Depending on the RF transceiver used, some additional configurations may be necessary.  
 This can be done in the OSGi frameworks system properties, located by default in `/opt/emonmuc/conf/system.properties`. Add any of the optional properties like this:
@@ -38,15 +54,9 @@ Additionally, the transceivers ID, used to pair and identify itself with HomeMat
 The property `org.openmuc.framework.driver.homematic.id` allows to set this ID, which can be an arbitrary string of 6 characters. The default value is *F11034*.
 
 
-## Serial Port
-
-To use any serial port with the emonmuc framework, the open-source project [jRxTx](https://github.com/openmuc/jrxtx) is used. This, as well as some additional steps to use the UART Pins of the Raspberry Pi Platform, need to be prepared.  
-The [Serial Port preparation guide](LinuxSerialPort.md) needs to be followed to do so.
-
-
 ----------
 
-# HomeMatic Smart Plug
+# 2 HomeMatic Smart Plug
 
 As a commonly used device in a Smart Home, the HomeMatic Smart Plug will be used here as an example. It allows switching of connected loads and measures the voltage, current, frequency and power consumption. This guide will give a short introduction into how to connect, install and use the plug.  
 The Smart Plug used is a [Wireless Switch Actuator 1-channel with power metering](https://www.eq-3.de/produkte/homematic/schalten-und-messen/homematic-funk-schaltaktor-1-fach-mit-leistungsmessung-typ-f.html) from HomeMatic.
@@ -62,7 +72,7 @@ The Smart Plug has only one button, with which it e.g. can be turned on/off or p
 - **2s lightning up Red:** Pairing failed
 
 
-## Pairing
+## 2.1 Pairing
 
 The Smart Plug needs to be paired first, before using it in the emonmuc framework. To enable the pairing of the device, proceed as follows:  
 Make sure to plug it into a socket first, open and log in to your local [emoncms](https://emoncms.org/) platform. Go to **Setup > Devices** and add a **new Device**.
@@ -79,7 +89,7 @@ Select the device. After saving and initializing it, the Smart Plug was successf
 This process correlates to all available HomeMatic device types and can be used as a reference accordingly.
 
 
-## Control
+## 2.2 Control
 
 To switch the Smart Plug, open the *Things* view and turn the plug on/off as you like. Additionally, the listed thing shows the current power of the plug, in this case 0W.
 

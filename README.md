@@ -35,10 +35,21 @@ emonmuc remove homematic-cc1101
 ~~~
 
 This shell command will set up the driver, as instructed in the [setup script](setup.sh).  
-If there is the need to manually install the driver, the separate [installation guide](docs/LinuxInstall.md) may be followed.
+If there is the need to manually install the driver, a separate [installation guide](docs/LinuxInstall.md) may be followed.
 
 
-### 1.1 Configuration
+### 1.1 Serial Port
+
+To use any serial port with the emonmuc framework, the open-source project [jRxTx](https://github.com/openmuc/jrxtx) is used. This, as well as some additional steps to use the UART Pins of the Raspberry Pi Platform, need to be prepared.  
+The [Serial Port preparation guide](https://github.com/isc-konstanz/emonmuc/blob/master/docs/LinuxSerialPort.md) needs to be followed to do so.
+
+
+### 1.2 Wiring Pi
+
+For the **S**tackable **CC**1101 (SCC) module for the Raspberry Pi, the GPIOs 0 and 1 needs to be set. This is done with the [Pi4J](https://www.pi4j.com/) library, that links to the [Wiring Pi](http://wiringpi.com/) debian package. To prepare it, the [Wiring Pi preparation guide](https://github.com/isc-konstanz/emonmuc/blob/master/docs/LinuxWiringPi.md) needs to be followed.
+
+
+### 1.3 Configuration
 
 Depending on the RF transceiver used, some additional configurations may be necessary.  
 This can be done in the OSGi frameworks system properties, located by default in `/opt/emonmuc/conf/system.properties`. Add any of the optional properties like this:
