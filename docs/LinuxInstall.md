@@ -47,7 +47,7 @@ For the **S**tackable **CC**1101 (SCC) module for the Raspberry Pi, the GPIOs 0 
 
 ---------------
 
-# 3 Finish
+## 1.4 Finish
 
 At last, don't forget to remove the released tarball to avoid cluttering of your system.
 
