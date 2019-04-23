@@ -59,11 +59,11 @@ This can be done in the OSGi frameworks system properties, located by default in
 org.openmuc.framework.driver.homematic.interface = CUL
 
 # If the CUL interface is used, the serial port of the stick needs to be defined. Default for CUL is /dev/ttyUSB0
-;org.openmuc.framework.driver.homematic.connection.port = /dev/ttyACM0
+;org.ogema.driver.homematic.serial.port = /dev/ttyACM0
 ~~~
 
 Both hardware interface communication options **SCC** and **CUL** are serial connections.  
-The property `org.openmuc.framework.driver.homematic.connection.port` defines the port to be used. For *CUL* the default value of the port is */dev/ttyUSB0*. For *SCC*, the default value of the port is */dev/ttyAMA0*.
+The property `org.ogema.driver.homematic.serial.port` defines the port to be used. For *CUL* the default value of the port is */dev/ttyUSB0*. For *SCC*, the default value of the port is */dev/ttyAMA0*.
 
 Additionally, the transceivers ID, used to pair and identify itself with HomeMatic devices, may be chosen.  
 The property `org.openmuc.framework.driver.homematic.id` allows to set this ID, which can be an arbitrary string of 6 characters. The default value is *F11034*.
