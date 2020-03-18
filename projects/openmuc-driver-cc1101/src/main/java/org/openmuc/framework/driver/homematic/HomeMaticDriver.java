@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-18 ISC Konstanz
+ * Copyright 2016-19 ISC Konstanz
  *
  * This file is part of OpenHomeMatic.
  * For more information visit https://github.com/isc-konstanz/OpenHomeMatic.
@@ -21,136 +21,95 @@
 package org.openmuc.framework.driver.homematic;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.openmuc.framework.config.ArgumentSyntaxException;
-import org.openmuc.framework.config.DeviceScanInfo;
-import org.openmuc.framework.config.DriverInfo;
-import org.openmuc.framework.config.DriverInfoFactory;
-import org.openmuc.framework.config.ScanException;
-import org.openmuc.framework.config.ScanInterruptedException;
-import org.openmuc.framework.driver.homematic.HomeMaticConnection.HomeMaticConnectionCallbacks;
 import org.ogema.driver.homematic.HomeMaticException;
-import org.ogema.driver.homematic.manager.Device;
-import org.ogema.driver.homematic.manager.Device.InitState;
-import org.ogema.driver.homematic.manager.HomeMaticManager;
-import org.openmuc.framework.driver.homematic.settings.DeviceScanSettings;
-import org.openmuc.framework.driver.homematic.settings.DeviceSettings;
-import org.openmuc.framework.driver.spi.Connection;
+import org.ogema.driver.homematic.HomeMaticManager;
+import org.ogema.driver.homematic.data.BooleanValue;
+import org.ogema.driver.homematic.data.Value;
+import org.ogema.driver.homematic.device.Device;
+import org.ogema.driver.homematic.device.SwitchMeterPlug;
+import org.ogema.driver.homematic.device.SwitchPlug;
+import org.openmuc.framework.driver.Driver;
+import org.openmuc.framework.driver.DriverContext;
+import org.openmuc.framework.driver.homematic.device.DeviceChannels;
+import org.openmuc.framework.driver.homematic.device.DevicePairing;
+import org.openmuc.framework.driver.homematic.device.DeviceSettings;
 import org.openmuc.framework.driver.spi.ConnectionException;
-import org.openmuc.framework.driver.spi.DriverDeviceScanListener;
 import org.openmuc.framework.driver.spi.DriverService;
 import org.osgi.service.component.annotations.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-@Component
-public class HomeMaticDriver implements DriverService, HomeMaticConnectionCallbacks {
-	private static final Logger logger = LoggerFactory.getLogger(HomeMaticDriver.class);
+@Component(service = DriverService.class)
+public class HomeMaticDriver extends Driver<DeviceSettings> {
 
-	private final DriverInfo info = DriverInfoFactory.getPreferences(HomeMaticDriver.class);
+    private static final String ID = "homematic-cc1101";
+    private static final String NAME = "HomeMatic CC1101";
+    private static final String DESCRIPTION = "The HomeMatic CC1101 Driver implements the communication with " + 
+    		"<a href='https://www.eq-3.de/produkte/homematic.html'>Smart Home devices by eQ-3</a> " + 
+    		"over CC1101 transceivers.";
 
-	private int SLEEP_TIME = 1000;
+	private List<String> connected = new ArrayList<String>();
 
 	private HomeMaticManager manager;
 
-	private final Map<String, HomeMaticConnection> connections = new HashMap<String, HomeMaticConnection>();
+    @Override
+    public String getId() {
+        return ID;
+    }
 
-	private volatile boolean isDeviceScanInterrupted = false;
+    @Override
+    protected void onCreate(DriverContext context) {
+        context.setName(NAME)
+               .setDescription(DESCRIPTION)
+               .setDeviceScanner(DevicePairing.class)
+        	   .setChannelScanner(DeviceChannels.class);
+    }
 
-	public HomeMaticDriver() {
+    @Override
+    protected void onActivate() {
 		manager = new HomeMaticManager();
-	}
+    }
 
-	@Override
-	public DriverInfo getInfo() {
-		return info;
-	}
+    @Override
+    protected void onDeactivate() {
+    	manager.close();
+    }
 
-	@Override
-	public void scanForDevices(String settingsStr, DriverDeviceScanListener listener)
-			throws UnsupportedOperationException, ArgumentSyntaxException, ScanException, ScanInterruptedException {
+    @Override
+    protected DevicePairing onCreateScanner(String settings) {
+    	return new DevicePairing(manager, connected);
+    }
 
-		DeviceScanSettings settings = info.parse(settingsStr, DeviceScanSettings.class);
-		
-		// TODO: implement as deviceScanSettings option
-		int duration = 60;
-		
-		List<String> ignore = new ArrayList<String>();
-		if (settings.ignoreExisting()) {
-			ignore.addAll(connections.keySet());
-		}
-		logger.info("Enabled Pairing for {} seconds", duration);
-		
-		manager.setPairing("0000000000");
-		
-		for (int i = 0; i <= duration; i++) {
-			if (isDeviceScanInterrupted) {
-				break;
+    @Override
+    protected HomeMaticConnection onCreateConnection(DeviceSettings settings) throws ConnectionException {
+    	String id = settings.getId();
+    	Device device = manager.getDevice(id);
+		try {
+			if (device == null) {
+				device = manager.addDevice(id, settings.getType());
 			}
-			for (Device device: manager.getDevices().values()) {
-				if (device.getInitState() == InitState.PAIRED && !ignore.contains(device.getAddress())) {
-					String key = device.getKey();
-					String address = device.getAddress();
-					String description = manager.getDeviceDescriptor().getName(key);
-					
-					DeviceScanInfo info = new DeviceScanInfo(address, "type:" + key, description);
-					listener.deviceFound(info);
-					
-					ignore.add(address);
+			if (device instanceof SwitchMeterPlug || device instanceof SwitchPlug) {
+				if (settings.hasDefaultState()) {
+					Value value = device.getAttributeValue((short) 0x0001);
+					if (value == null || value.asBoolean() != settings.getDefaultState()) {
+						device.sendCommand((byte) 0x01, new BooleanValue(settings.getDefaultState()));
+					}
 				}
 			}
-			listener.scanProgressUpdate((int) Math.round(i/(double) duration*100));
-			
-			try {
-				Thread.sleep(SLEEP_TIME);
-				
-			} catch (InterruptedException e) {
-				throw new ScanInterruptedException("Unexpected interruption during device scan");
-			}
+		} catch (HomeMaticException e) {
+			throw new ConnectionException(e.getMessage());
 		}
-		manager.setPairing(null);
-		logger.info("Pairing disabled.");
-	}
+    	return new HomeMaticConnection(device);
+    }
 
-	@Override
-	public void interruptDeviceScan() throws UnsupportedOperationException {
-		isDeviceScanInterrupted = true;
-	}
+    @Override
+    protected void onConnect(DeviceSettings connection) {
+		connected.add(connection.getId());
+    }
 
-	@Override
-	public Connection connect(String addressStr, String settingsStr) throws ArgumentSyntaxException, ConnectionException {
-		
-		logger.debug("Connect HomeMatic device: \"", addressStr +  "\" length: " + addressStr.length());
-		if (addressStr.length() != 6) {
-			throw new ArgumentSyntaxException("Device Address has an incorrect length. The length has to be 6 Characters.");
-		}
-		
-		HomeMaticConnection connection = connections.get(addressStr);
-		if (connection == null) {
-			DeviceSettings settings = info.parse(settingsStr, DeviceSettings.class);
-			Device device;
-			if (manager.hasDevice(addressStr)) {
-				device = manager.getDevice(addressStr);
-			}
-			else {
-				try {
-					device = manager.addDevice(addressStr, settings.getType());
-				} catch (HomeMaticException e) {
-					throw new ConnectionException(e.getMessage());
-				}
-			}
-			connection = new HomeMaticConnection(this, device, settings);
-			connections.put(addressStr, connection);
-		}
-		return connection;
-	}
-
-	@Override
-	public void onDisconnect(String deviceAddress) {
-		connections.remove(deviceAddress);
-	}
+    @Override
+    protected void onDisconnect(DeviceSettings connection) {
+		connected.remove(connection.getId());
+    }
 
 }

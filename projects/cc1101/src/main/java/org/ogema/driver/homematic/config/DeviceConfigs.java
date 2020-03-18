@@ -102,6 +102,7 @@ public abstract class DeviceConfigs {
 		return lev;
 	}
 
+	@SuppressWarnings("deprecation")
 	public static DeviceConfigs getConfigs(String name) {
 		Class<?> cls = configsByType.get(name);
 		if (cls == null)
@@ -109,9 +110,11 @@ public abstract class DeviceConfigs {
 		DeviceConfigs result = null;
 		try {
 			result = (DeviceConfigs) cls.newInstance();
+			
 		} catch (InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
 		return result;
 	}
+
 }
