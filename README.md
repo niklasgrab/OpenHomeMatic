@@ -90,7 +90,7 @@ For other questions or initiatives please don't hesitate to file an issue or get
 Currently, only a set of HomeMatic devices are supported and provided with templates to be created with the [emoncms device module](https://github.com/emoncms/device). While others should work as well, the only tested devices are:
 
   - Switch Actuator (with power metering):
-    -  HM-ES-PMSw1-Pl
+    - HM-ES-PMSw1-Pl
   - Thermostat:
     - HM-CC-RT-DN
   - Temperature/Humidity Sensor:

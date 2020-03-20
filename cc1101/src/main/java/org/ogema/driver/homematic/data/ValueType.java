@@ -18,6 +18,20 @@
  * along with OpenHomeMatic.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'cc1101', 'bundle'
+package org.ogema.driver.homematic.data;
 
-project(':bundle').projectDir = file('bundles/openmuc')
+/**
+ * Extension of Ogema defines valid value types.
+ * 
+ * @author Godwin Burkhardt
+ * 
+ */
+public enum ValueType {
+	STRING,
+	DOUBLE,
+	FLOAT,
+	LONG,
+	INTEGER,
+	SHORT,
+	BOOLEAN;
+}

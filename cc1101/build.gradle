@@ -1,0 +1,49 @@
+/* 
+ * Copyright 2016-20 ISC Konstanz
+ * 
+ * This file is part of OpenHomeMatic.
+ * For more information visit https://github.com/isc-konstanz/OpenHomeMatic
+ * 
+ * OpenHomeMatic is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * OpenHomeMatic is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with OpenHomeMatic.  If not, see <http://www.gnu.org/licenses/>.
+ */
+archivesBaseName = 'homematic-cc1101'
+def projectName = 'HomeMaticCC1101'
+def projectFullName = 'HomeMatic Core CC1101'
+def projectDescription = 'The core code for CC1101 commication with HomeMatic devices'
+
+dependencies {
+  api            group: 'org.slf4j',   name: 'slf4j-api',           version: '1.7.25'
+
+  implementation group: 'com.pi4j',    name: 'pi4j-core',           version: '1.2'
+  implementation group: 'com.pi4j',    name: 'pi4j-device',         version: '1.2'
+  implementation group: 'com.pi4j',    name: 'pi4j-gpio-extension', version: '1.2'
+
+  implementation group: 'org.openmuc', name: 'jrxtx',               version: '1.0.1'
+
+  implementation group: 'org.json',    name: 'json',                version: '20170516'
+}
+
+eclipse {
+  project {
+    name = projectName
+  }
+}
+
+jar {
+  manifest {
+    attributes('Bundle-Name':        projectFullName,
+               'Bundle-Description': projectDescription,
+               'Export-Package':     'org.ogema.driver.homematic.*')
+  }
+}

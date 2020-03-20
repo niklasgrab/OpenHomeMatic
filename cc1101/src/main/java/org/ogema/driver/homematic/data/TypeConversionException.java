@@ -18,6 +18,18 @@
  * along with OpenHomeMatic.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'cc1101', 'bundle'
+package org.ogema.driver.homematic.data;
 
-project(':bundle').projectDir = file('bundles/openmuc')
+public final class TypeConversionException extends RuntimeException {
+
+    private static final long serialVersionUID = 968407618209609707L;
+
+    public TypeConversionException() {
+        super();
+    }
+
+    public TypeConversionException(String s) {
+        super(s);
+    }
+
+}

@@ -18,6 +18,20 @@
  * along with OpenHomeMatic.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'cc1101', 'bundle'
+package org.ogema.driver.homematic.data;
 
-project(':bundle').projectDir = file('bundles/openmuc')
+import java.nio.ByteBuffer;
+
+public class FloatValue extends NumberValue {
+
+    public FloatValue(float value) {
+        super(value);
+    }
+
+    @Override
+    public byte[] asByteArray() {
+        byte[] bytes = new byte[4];
+        ByteBuffer.wrap(bytes).putFloat(super.asFloat());
+        return bytes;
+    }
+}

@@ -18,6 +18,12 @@
  * along with OpenHomeMatic.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'cc1101', 'bundle'
+package org.ogema.driver.homematic.device;
 
-project(':bundle').projectDir = file('bundles/openmuc')
+import java.util.Collection;
+
+public interface DeviceListener {
+
+	public void onAttributesChanged(Collection<DeviceAttribute> attributes);
+
+}

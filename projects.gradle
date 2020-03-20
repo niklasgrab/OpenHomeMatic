@@ -18,6 +18,24 @@
  * along with OpenHomeMatic.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'cc1101', 'bundle'
+project.ext {
 
-project(':bundle').projectDir = file('bundles/openmuc')
+  projectVersion = '1.1.0'
+
+  projectGroup = 'org.openmuc'
+
+  projectVendor = 'ISC Konstanz e.V.'
+  projectSite = 'https://github.com/isc-konstanz/OpenHomeMatic'
+
+  copyDependencies = false
+
+  distributionProjects = subprojects.findAll {
+    it.getPath() == ':cc1101' ||
+    it.getPath() == ':bundle'
+  }
+
+  javadocProjects = distributionProjects.findAll {
+    it.getPath() == ':cc1101'
+  }
+
+}
