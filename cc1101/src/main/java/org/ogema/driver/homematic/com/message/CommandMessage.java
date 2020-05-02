@@ -57,7 +57,6 @@ public class CommandMessage extends Message {
 	@Override
 	public byte[] getFrame(Device device, int num) {
 		ByteArrayOutputStream body = new ByteArrayOutputStream(1);
-		TypeConverter.toHexString(num);
 		try {
 			body.write(TypeConverter.toHexString((byte)num).getBytes());
 			body.write(TypeConverter.toHexString(flag).getBytes());
@@ -65,10 +64,10 @@ public class CommandMessage extends Message {
 			body.write(getId().getBytes());
 			body.write(getDestination().getBytes());
 			body.write(TypeConverter.toHexString(data).getBytes());
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		ByteBuffer message = ByteBuffer.allocate(64);
 		message.put("As".getBytes());
 		message.put(TypeConverter.toHexString((byte)(body.size()/2)).getBytes());

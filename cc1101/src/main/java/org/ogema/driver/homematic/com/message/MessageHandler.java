@@ -137,21 +137,27 @@ public class MessageHandler {
 						}
 					}
 				}
+			} else if (msg.destination.equals("000000")) {
+				logger.debug("Received broadcast {} from device {}", msg.number, msg.source);
+				
 			} else if (!msg.destination.equals("000000")) {
+				logger.debug("Received message {} from device {}", msg.number, msg.source);
 				// Acknowledge message
 				sendAck(msg, device);
+				device.setMessageNumber(msg.number);
+				device.incMessageNumber();
 			}
 
-			CommandMessage cmd;
+			Message cmd;
 			synchronized (sent) {
 				if (sent.containsKey(token)) {
-					cmd = (CommandMessage) sent.get(token);
+					cmd = sent.get(token);
 				} else {
-					cmd = (CommandMessage) device.getLastMessage();
+					cmd = device.getLastMessage();
 				}
 				sent.remove(token);
 			}
-			device.parseMessage(msg, cmd);
+			device.parseMessage(msg, (CommandMessage) cmd);
 		}
 	}
 
@@ -213,7 +219,7 @@ public class MessageHandler {
 	private class MessageThread extends Thread {
 
 		private static final int SEND_SLEEP = 2500;
-		private static final int SEND_RETRIES = 4;
+		private static final int SEND_RETRIES = 256;
 
 		private String destination;
 		private int tries = 0;
@@ -271,8 +277,7 @@ public class MessageHandler {
 								}
 							}
 							String data = cmd.data!=null?TypeConverter.toHexString(cmd.data):"";
-							logger.debug("Sending message {} to device {}: {}", device.getMessageNumber(), destination,
-									data);
+							logger.debug("Sending message {} to device {}: {}", device.getMessageNumber(), destination, data);
 							
 							if (data.length() > 2 && data.substring(2).startsWith("0500000000")) { // Start_Config
 								pushConfigCnt = 0;
@@ -291,7 +296,7 @@ public class MessageHandler {
 							if (!sent.containsKey(token)) {
 								if (tries <= SEND_RETRIES) {
 									logger.debug("Message sent to device {}", destination);
-									data = cmd.data!=null?TypeConverter.toHexString(cmd.data):"";
+									data = cmd.data != null ? TypeConverter.toHexString(cmd.data) : "";
 									if (data.length() > 2 && data.substring(2).startsWith("0500000000") || // Start_Config
 										data.length() > 2 && data.substring(2).startsWith("08")	        || // Config
 										data.length() > 2 && data.substring(2).startsWith("06")          ) { // End_Config

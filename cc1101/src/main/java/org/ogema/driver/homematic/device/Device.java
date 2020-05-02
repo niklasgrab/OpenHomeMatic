@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public abstract class Device {
-	public final static Logger logger = LoggerFactory.getLogger(Device.class);
+	private final static Logger logger = LoggerFactory.getLogger(Device.class);
 
 	private static final byte CONFIG_RESPONSE_TYPE1 = (byte) 0x02;
 	private static final byte CONFIG_RESPONSE_TYPE2 = (byte) 0x03;
@@ -262,9 +262,10 @@ public abstract class Device {
 	protected void parseConfig(StatusMessage response, CommandMessage cmd) {
 		if (configs == null)
 			configs = DeviceConfigs.getConfigs(getName());
-
+		
 		if (cmd == null)
 			return; // should never happen
+		
 		// update message number for the case that the remote device has incremented it.
 		setMessageNumber(response.number);
 		byte contentType = response.data[0];
@@ -378,15 +379,19 @@ public abstract class Device {
 	}
 
 	public int getMessageNumber() {
-		return messageNum;
+		return messageNum; //& 0x000000FF;
 	}
 
 	public int incMessageNumber() {
-		return messageNum = (messageNum + 1) & 0x000000FF;
+		messageNum++;
+		if (messageNum > 127) {
+			messageNum = -128;
+		}
+		return messageNum; //& 0x000000FF;
 	}
 
-	protected void setMessageNumber(int number) {
-		int next = number & 0x000000FF;
+	public void setMessageNumber(int number) {
+		int next = number; //& 0x000000FF;
 		if (next > messageNum)
 			messageNum = next;
 	}

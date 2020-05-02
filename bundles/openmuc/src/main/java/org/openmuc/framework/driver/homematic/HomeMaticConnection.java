@@ -32,6 +32,7 @@ import org.ogema.driver.homematic.device.DeviceCommand;
 import org.ogema.driver.homematic.device.DeviceListener;
 import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.ScanException;
+import org.openmuc.framework.data.Flag;
 import org.openmuc.framework.driver.Device;
 import org.openmuc.framework.driver.homematic.device.DeviceChannel;
 import org.openmuc.framework.driver.homematic.device.DeviceChannels;
@@ -85,6 +86,9 @@ public class HomeMaticConnection extends Device<DeviceChannel> implements Device
             throws UnsupportedOperationException, ConnectionException {
 		
 		for (DeviceChannel channel : channels) {
+			if (channel.getType().toUpperCase().equals("COMMAND")) {
+				throw new UnsupportedOperationException("Unable to read device Command "+channel.getAddress());
+			}
 			channel.setRecord(device.getAttribute(channel.getAddress()));
 		}
 		return null;
@@ -96,8 +100,12 @@ public class HomeMaticConnection extends Device<DeviceChannel> implements Device
 
 		try {
 			for (DeviceChannel channel : channels) {
+				if (channel.getType().toUpperCase().equals("ATTRIBUTE")) {
+					throw new UnsupportedOperationException("Unable to read device Attribute "+channel.getAddress());
+				}
 				DeviceCommand command = device.getCommand(channel.getAddress());
 				device.sendCommand(command, channel.encodeValue());
+				channel.setFlag(Flag.VALID);
 			}
 		} catch (HomeMaticException e) {
 			throw new ConnectionException(e);
