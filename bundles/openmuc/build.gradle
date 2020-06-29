@@ -25,9 +25,9 @@ configurations.create('embed')
 
 dependencies {
   implementation fileTree(dir: 'libs/openmuc', include: ['*.jar'])
-  implementation group: 'org.osgi', name: 'osgi.core', version: '7.0.0'
-  implementation group: 'org.osgi', name: 'org.osgi.service.component.annotations', version: '1.4.0'
-  implementation group: 'org.apache.felix', name: 'org.apache.felix.scr', version: '2.1.14'
+  implementation group: 'org.osgi',         name: 'osgi.core',                              version: '7.0.0'
+  implementation group: 'org.osgi',         name: 'org.osgi.service.component.annotations', version: '1.4.0'
+  implementation group: 'org.apache.felix', name: 'org.apache.felix.scr',                   version: '2.1.14'
 
   implementation project(':cc1101')
   embed          project(':cc1101')
@@ -47,7 +47,7 @@ jar {
                'Bundle-ClassPath': '.,' + embed.collect { 'libs/'+it.getName() }.join(','),
                'Import-Package':   '!org.ogema.driver.homematic.*,' +
                                    '!org.json.*,' +
-                                   '!com.pi4j.*,' +
+								   '!com.pi4j.*,' +
                                    '!sun.misc.*,' +
                                    '*;version=0',
                'Export-Package':   '')
