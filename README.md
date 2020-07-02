@@ -34,8 +34,7 @@ To disable the driver, use
 emonmuc remove homematic-cc1101
 ~~~
 
-This shell command will set up the driver, as instructed in the [setup script](setup.sh).  
-If there is the need to manually install the driver, a separate [installation guide](docs/LinuxInstall.md) may be followed.
+This shell command will automatically set up the driver. If there is the need to manually install the driver, a separate [installation guide](docs/LinuxInstall.md) may be followed.
 
 
 ### 1.1 Serial Port
