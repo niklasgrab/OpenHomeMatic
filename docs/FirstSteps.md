@@ -59,7 +59,7 @@ The property `org.openmuc.framework.driver.homematic.id` allows to set this ID, 
 # 2 HomeMatic Smart Plug
 
 As a commonly used device in a Smart Home, the HomeMatic Smart Plug will be used here as an example. It allows switching of connected loads and measures the voltage, current, frequency and power consumption. This guide will give a short introduction into how to connect, install and use the plug.  
-The Smart Plug used is a [Wireless Switch Actuator 1-channel with power metering](https://www.eq-3.de/produkte/homematic/schalten-und-messen/homematic-funk-schaltaktor-1-fach-mit-leistungsmessung-typ-f.html) from HomeMatic.
+The Smart Plug used is a [Wireless Switch Actuator 1-channel with power metering](https://www.eq-3.de/produkte/homematic/detail/homematic-funk-schaltaktor-1-fach-mit-leistungsmessung-typ-f.html) from HomeMatic.
 
 ![Smart Plug](img/homematic-plug.jpg)
 
